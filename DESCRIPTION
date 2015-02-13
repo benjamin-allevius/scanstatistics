@@ -1,0 +1,11 @@
+Package: scanstatistics
+Type: Package
+Title: Spatio-Temporal Event Detection using Scan Statistics
+Version: 0.0.0.9000
+Date: 2015-02-09
+Author: Benjamin Kjellson
+Maintainer: Benjamin Kjellson <benjak@math.su.se>
+Description: Event (a.k.a. anomaly, outbreak) detection in a spatio-temporal, spatial or setting.
+License: GPL (>= 3)
+Imports: Rcpp (>= 0.11.4)
+LinkingTo: Rcpp
