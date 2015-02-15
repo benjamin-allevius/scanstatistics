@@ -6,9 +6,11 @@ Date: 2015-02-09
 Author: Benjamin Kjellson
 Maintainer: Benjamin Kjellson <benjak@math.su.se>
 Description: Event (a.k.a. anomaly, outbreak) detection in a spatio-temporal, spatial or setting.
+Encoding: UTF-8
 License: GPL (>= 3)
-Imports: Rcpp (>= 0.11.4)
 LinkingTo: Rcpp
+Depends: data.table
+Imports: Rcpp (>= 0.11.4)
 Suggests: knitr,
     testthat
 VignetteBuilder: knitr
