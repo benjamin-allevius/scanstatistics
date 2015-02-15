@@ -9,3 +9,6 @@ Description: Event (a.k.a. anomaly, outbreak) detection in a spatio-temporal, sp
 License: GPL (>= 3)
 Imports: Rcpp (>= 0.11.4)
 LinkingTo: Rcpp
+Suggests: knitr,
+    testthat
+VignetteBuilder: knitr
