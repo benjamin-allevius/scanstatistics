@@ -31,7 +31,9 @@ probability_map <- function(event_probability_map) {
 #' @return A \code{data.table} of probabilities \eqn{P(H_1(s_i,E_k)|D)} 
 #' for each location \eqn{s_i} and event type \eqn{E_k}.
 event_probability_map <- function(region_event_probabilities) {
-    
+    region_event_probabilities[, 
+                               list(probability = sum(probability)), 
+                               by = "event,location"]
 }
 
 
