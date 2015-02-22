@@ -90,3 +90,15 @@ test_that("sums correctly", {
   expect_equal(null_llh(llh_stream, llh_rest), 
                0)
 })
+
+
+test_that("sums correctly", {
+  llh_mnt <- data.table(stream = rep(1:3, each = 4), 
+                        location = rep(1:2, 6),
+                        time = rep(0:1, 3, each = 2),
+                        llh = 1:12,
+                        key = "stream")
+
+  expect_equal(null_llh_rest(llh_mnt)[, llh_sum_st], 
+               c(sum(1:4), sum(5:8), sum(9:12)))
+})

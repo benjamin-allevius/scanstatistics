@@ -74,7 +74,7 @@ spacetime_llh_uniform <- function(lrsums,
 }
 
 
-#' Compute log-likelihood log(\eqn{P(D|H_0}))
+#' Computes log-likelihood log(\eqn{P(D|H_0}))
 #' 
 #' Computes the log-likelihood log(\eqn{P(D|H_0}))
 #' under the null hypotesis of no events.
@@ -92,4 +92,17 @@ spacetime_llh_uniform <- function(lrsums,
 #' @return The log-likelihood log(\eqn{P(D|H_0})), a scalar value.
 null_llh <- function(llh_stream, llh_rest) {
   llh_stream[llh_rest][, sum(llh_stream_value + llh_sum_st)]
+}
+
+#' Computes sum over locations and time steps of log-likelihood with
+#' terms independent of location and time removed.
+#' 
+#' @param llh_mnt A \code{data.table} \emph{keyed by} column \code{stream},
+#'        with additional columns \code{location}, \code{time},
+#'        and \code{llh}. \code{llh} is the value of the log-pmf
+#'        or log-pdf for each count in the data, with the terms that
+#'        depend at most on the stream removed.
+#'        
+null_llh_rest <- function(llh_mnt) {
+  llh_mnt[, .(llh_sum_st = sum(llh)), by = stream]
 }
