@@ -1,44 +1,80 @@
-
 # Warning: these functions modify their arguments
 
-#' Compute likelihoods \eqn{P(D|H_1(S,E_k))}
+#' Compute the log-likelihood \eqn{\log P(D|H_1(S,E_k))}
+#'
+#' Compute the log-likelihood \eqn{\log P(D|H_1(S,E_k))}
 #' of the data given that an event of type \eqn{E_k} occurs in region 
-#' \eqn{S\subseteq\{s_1,\ldots,s_N\}},
-#' for all such regions and for all event types,
+#' \eqn{S}, for all such regions and for all event types,
 #' considering events of time duration up to \eqn{W_{\max}}.
+#' This function assumes that the event duration is uniformly distributed,
+#' and that the event severity is uniformly distributed 
+#' over its possible values.
 #' 
-#' @param region_event_duration_likelihoods A \code{data.table} of 
-#' @param duration_probabilities A \code{data.table} of 
-#' @return likelihoods \eqn{P(D|H_1(S,E_k))}
+#' @param lrsums A \code{data.table} with columns for region,
+#'        location, event, and \code{llh},
+#'        the log of the sum of likelihood ratios.
+#' @param null_llh The log-likelihood for the complete data set under
+#'        the null hypothesis of no event.
+#' @param L The number of different possible event severities,
+#'        or equivalently the number of possible impact factors.
+#' @param max_duration The number of time periods of the longest
+#'        event duration considered.
+#' @return The input \code{data.table} with the \code{llh} column
+#'         \strong{modified}, now containing the log-likelihoods
+#'         \eqn{\log P(D|H_1(S,E_k))}.
 #' @examples
-#' reps <- data.table()
-#' event_probability_map(reps)
-spatial_llh_uniform <- function(logsums, 
+#' lr_input <- data.table(region = rep(c(1,2,1,2), 2),
+#'                        location = rep(c(1,2,3,3), 2), 
+#'                        event = rep(1:2, each = 4),
+#'                        llh = 1:8)
+#' spatial_llh_uniform(lr_input, 
+#'                     null_llh = 1, 
+#'                     L = exp(2),
+#'                     max_duration = exp(-3))
+spatial_llh_uniform <- function(lrsums, 
                                 null_llh, 
-                                n_severities,
+                                L,
                                 max_duration) {
-  logsums[, llh := llh + null_llh - log(n_severities) - log(max_duration)]
+  lrsums[, llh := llh + null_llh - log(L) - log(max_duration)]
 }
 
-
+#' Compute log-likelihoods \eqn{\log P(D|H_1(S,E_k), W)}
+#'
 #' Compute log-likelihoods \eqn{\log P(D|H_1(S,E_k), W)}
 #' of the data given that an event of type \eqn{E_k} 
 #' with time duration \eqn{W} occurs in spatial region \eqn{S},
-#' for all durations \eqn{1 \leq W \leq W_{\max}},
+#' for all durations \eqn{1 \le W \le W_{\max}},
 #' all event types, and all regions.
 #' Assumes the event severities are uniformly distributed over
 #' \eqn{L} different values; same \eqn{L} for all event types.
 #' 
-#' @param logsums A \code{data.table} of 
+#' @param lrsums A \code{data.table} with columns for region,
+#'        location, event, duration, and \code{llh},
+#'        the log of the sum of likelihood ratios.
 #' @param null_llh The log-likelihood of the complete data
 #'        under the null hypothesis of no event. 
-#' @param n_severities The number of event severities.
-#' @return 
+#' @param L The number of event severities, or equivalently the
+#'        number of values the impact factor can take on.
+#' @return The input \code{data.table} with the \code{llh} column
+#'         \strong{modified}, now containing the log-likelihoods
+#'         \eqn{\log P(D|H_1(S,E_k),W)}.
 #' @examples
-#' reps <- data.table()
-#' event_probability_map(reps)
-spacetime_llh_uniform <- function(logsums, 
-                          null_llh, 
-                          n_severities) {
-  logsums[, llh := llh + null_llh - log(n_severities)]
+#' stlr_input <- data.table(region = rep(c(1,2,1,2), 4),
+#'                          location = rep(c(1,2,3,3), 4),
+#'                          event = rep(1:2, 2, each = 4),
+#'                          duration = rep(1:2, each = 8),
+#'                          llh = 1:16)
+#' spacetime_llh_uniform(stlr_input, 
+#'                       null_llh = 1, 
+#'                       L = exp(2))
+spacetime_llh_uniform <- function(lrsums, 
+                                  null_llh, 
+                                  L) {
+  lrsums[, llh := llh + null_llh - log(L)]
+}
+
+
+#' Compute log-likelihood \eqn{\log P(D|H_0}
+null_llh <- function() {
+  dt[, sum()]
 }
