@@ -1,8 +1,8 @@
 # Warning: these functions modify their arguments
 
-#' Compute the log-likelihood \eqn{\log P(D|H_1(S,E_k))}
+#' Compute the log-likelihood log(\eqn{P(D|H_1(S,E_k))})
 #'
-#' Compute the log-likelihood \eqn{\log P(D|H_1(S,E_k))}
+#' Compute the log-likelihood log(\eqn{P(D|H_1(S,E_k))})
 #' of the data given that an event of type \eqn{E_k} occurs in region 
 #' \eqn{S}, for all such regions and for all event types,
 #' considering events of time duration up to \eqn{W_{\max}}.
@@ -21,7 +21,7 @@
 #'        event duration considered.
 #' @return The input \code{data.table} with the \code{llh} column
 #'         \strong{modified}, now containing the log-likelihoods
-#'         \eqn{\log P(D|H_1(S,E_k))}.
+#'         log(\eqn{P(D|H_1(S,E_k))}).
 #' @examples
 #' lr_input <- data.table(region = rep(c(1,2,1,2), 2),
 #'                        location = rep(c(1,2,3,3), 2), 
@@ -38,9 +38,9 @@ spatial_llh_uniform <- function(lrsums,
   lrsums[, llh := llh + null_llh - log(L) - log(max_duration)]
 }
 
-#' Compute log-likelihoods \eqn{\log P(D|H_1(S,E_k), W)}
+#' Compute log-likelihoods log(\eqn{P(D|H_1(S,E_k), W)})
 #'
-#' Compute log-likelihoods \eqn{\log P(D|H_1(S,E_k), W)}
+#' Compute log-likelihoods log(\eqn{P(D|H_1(S,E_k), W)})
 #' of the data given that an event of type \eqn{E_k} 
 #' with time duration \eqn{W} occurs in spatial region \eqn{S},
 #' for all durations \eqn{1 \le W \le W_{\max}},
@@ -57,7 +57,7 @@ spatial_llh_uniform <- function(lrsums,
 #'        number of values the impact factor can take on.
 #' @return The input \code{data.table} with the \code{llh} column
 #'         \strong{modified}, now containing the log-likelihoods
-#'         \eqn{\log P(D|H_1(S,E_k),W)}.
+#'         log(\eqn{P(D|H_1(S,E_k), W)}).
 #' @examples
 #' stlr_input <- data.table(region = rep(c(1,2,1,2), 4),
 #'                          location = rep(c(1,2,3,3), 4),
@@ -74,7 +74,22 @@ spacetime_llh_uniform <- function(lrsums,
 }
 
 
-#' Compute log-likelihood \eqn{\log P(D|H_0}
-null_llh <- function() {
-  dt[, sum()]
+#' Compute log-likelihood log(\eqn{P(D|H_0}))
+#' 
+#' Computes the log-likelihood log(\eqn{P(D|H_0}))
+#' under the null hypotesis of no events.
+#' 
+#' @param llh_stream A \code{data.table} with \emph{key column} \code{stream}
+#'        and column \code{llh_stream_value} which for each stream is the
+#'        term(s) of the log-pmf or log-pdf that at most depends on the 
+#'        particular stream \eqn{m}, not on the time index \eqn{t}
+#'        nor the location \eqn{i}.
+#' @param llh_rest A \code{data.table} with \emph{key column} \code{stream}
+#'        and column \code{llh_stream_value} which for each stream is the
+#'        sum over all time steps and locations, of the log-pmf or 
+#'        log-pdf with the term(s) that depend at most on the stream \eqn{m}
+#'        subtracted.
+#' @return The log-likelihood log(\eqn{P(D|H_0})), a scalar value.
+null_llh <- function(llh_stream, llh_rest) {
+  llh_stream[llh_rest][, sum(llh_stream_value + llh_sum_st)]
 }

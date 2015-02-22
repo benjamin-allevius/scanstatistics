@@ -76,3 +76,17 @@ test_that("value of llh in table has changed correctly", {
                1:16 - 1)
 })
 
+
+# Log-likelihood under null hypothesis of no events ---------------------------
+
+test_that("sums correctly", {
+  llh_stream <- data.table(stream = 1:3, 
+                           llh_stream_value= c(1,10,100),
+                           key = "stream")
+  llh_rest <- data.table(stream = 1:3, 
+                          llh_sum_st = c(-1,-10,-100),
+                          key = "stream")
+  
+  expect_equal(null_llh(llh_stream, llh_rest), 
+               0)
+})
