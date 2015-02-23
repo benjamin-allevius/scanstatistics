@@ -80,25 +80,11 @@ test_that("value of llh in table has changed correctly", {
 # Log-likelihood under null hypothesis of no events ---------------------------
 
 test_that("sums correctly", {
-  llh_stream <- data.table(stream = 1:3, 
-                           llh_stream_value= c(1,10,100),
-                           key = "stream")
-  llh_rest <- data.table(stream = 1:3, 
-                          llh_sum_st = c(-1,-10,-100),
-                          key = "stream")
+  densities <- data.table(stream = rep(c(1,2,1,2), 2),
+                          location = rep(c(1,2,3,3), 2),
+                          event = rep(1:2, each = 4),
+                          density = 1:8)
   
-  expect_equal(null_llh(llh_stream, llh_rest), 
-               0)
-})
-
-
-test_that("sums correctly", {
-  llh_mnt <- data.table(stream = rep(1:3, each = 4), 
-                        location = rep(1:2, 6),
-                        time = rep(0:1, 3, each = 2),
-                        llh = 1:12,
-                        key = "stream")
-
-  expect_equal(null_llh_rest(llh_mnt)[, llh_sum_st], 
-               c(sum(1:4), sum(5:8), sum(9:12)))
+  expect_equal(null_llh(densities), 
+               sum(1:8))
 })

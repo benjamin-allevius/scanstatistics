@@ -79,30 +79,12 @@ spacetime_llh_uniform <- function(lrsums,
 #' Computes the log-likelihood log(\eqn{P(D|H_0}))
 #' under the null hypotesis of no events.
 #' 
-#' @param llh_stream A \code{data.table} with \emph{key column} \code{stream}
-#'        and column \code{llh_stream_value} which for each stream is the
-#'        term(s) of the log-pmf or log-pdf that at most depends on the 
-#'        particular stream \eqn{m}, not on the time index \eqn{t}
-#'        nor the location \eqn{i}.
-#' @param llh_rest A \code{data.table} with \emph{key column} \code{stream}
-#'        and column \code{llh_stream_value} which for each stream is the
-#'        sum over all time steps and locations, of the log-pmf or 
-#'        log-pdf with the term(s) that depend at most on the stream \eqn{m}
-#'        subtracted.
+#' @param densities A \code{data.table} with column \code{density},
+#'        containing the log-\emph{density} (log-pmf or log-pdf)
+#'        for each observation in the data.
+#'        Other columns should thus preferably be \code{location},
+#'        \code{time}, and \code{stream}.
 #' @return The log-likelihood log(\eqn{P(D|H_0})), a scalar value.
-null_llh <- function(llh_stream, llh_rest) {
-  llh_stream[llh_rest][, sum(llh_stream_value + llh_sum_st)]
-}
-
-#' Computes sum over locations and time steps of log-likelihood with
-#' terms independent of location and time removed.
-#' 
-#' @param llh_mnt A \code{data.table} \emph{keyed by} column \code{stream},
-#'        with additional columns \code{location}, \code{time},
-#'        and \code{llh}. \code{llh} is the value of the log-pmf
-#'        or log-pdf for each count in the data, with the terms that
-#'        depend at most on the stream removed.
-#'        
-null_llh_rest <- function(llh_mnt) {
-  llh_mnt[, .(llh_sum_st = sum(llh)), by = stream]
+null_llh <- function(densities) {
+  densities[, sum(density)]
 }
