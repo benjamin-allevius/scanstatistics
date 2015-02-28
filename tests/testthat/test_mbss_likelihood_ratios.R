@@ -1,5 +1,34 @@
 context("MBSS likelihood ratio functions")
 
+
+# Copies of functions in utility_functions.R, in case these change
+
+# table_creator
+tc <- function(col_list, key = NULL) {
+  data.table(do.call(expand.grid, col_list), key = key)
+}
+
+# region_table_creator
+rtc <- function(regions, key = NULL) {
+  
+  region_names <- names(regions)
+  if (is.null(region_names)) {
+    region_names <- seq_along(regions)
+  }
+  
+  data.table(location = unlist(regions, use.names = FALSE),
+             region = rep(region_names, 
+                          vapply(regions, length, integer(1))),
+             key = key)
+}
+
+# region_joiner
+rj <- function(locations_etc, regions) {
+  merge(x = rtc(regions, key = "location"), 
+        y = locations_etc,
+        by = "location", allow.cartesian = TRUE)
+}
+
 # Log-likelihood ratios: event of type k and severity l vs no event.
 # For all locations and times, log-likelihood ratios are specified in terms 
 # of one part that only depends on the data stream m, 
@@ -8,21 +37,28 @@ context("MBSS likelihood ratio functions")
 
 
 
+test_that("sum over locations in region", {
+  
+  DT <- tc(list(stream = 1:2,
+                time = 0:1,
+                severity = 1,
+                event = 1, 
+                location = 1:2))
+  DT <- rj(DT, list(1, 2, 1:2))
+  
+  kc <- c("stream", "time", "severity", "event")
+  setkeyv(DT, c("region", kc))
+  
+  DT[, lg := c(1:8, rep(c(10, 100, 1000, 10000) / 2, each = 2))]
+  
+  region_sums <- sum_locations_in_region(DT)
+  
+  # Sort by the sums, for easier comparison
+  setkey(region_sums, "slg")
+  
+  expect_equal(region_sums[, slg], 
+               c(1:8, c(10, 100, 1000, 10000)))
+})
 
 
-
-
-
-
-
-
-# llr_location_independent <- data.table(stream = ,
-#                                        event = ,
-#                                        severity = ,
-#                                        llr_part = )
-# llr_location_dependent <- data.table(location = ,
-#                                      stream = ,
-#                                      event = ,
-#                                      severity = ,
-#                                      llr_part = )
 
