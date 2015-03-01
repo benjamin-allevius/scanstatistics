@@ -30,17 +30,22 @@ llr_time <- function() {
   DT5[, .(time = time, llr = cumsum(lq)), by = .(severity, event, region)]
 }
 
-
-sum_over_streams <- function(region_table, stream_table) {
-  region_table[stream_table][, .
-                             (lq = sum(lf, slg)),
+#' Adds the region independent and dependent parts together,
+#' of the LLR over the data stream, then sums over the stream.
+sum_over_streams <- function(region_table, 
+                             stream_table) {
+  region_table[stream_table][, .(lq = sum(lf, slg)),
                              keyby = .(time, severity, event, region)]
 }
 
 
 #' Sums the location-dependent part of the LLR for all regions.
 #' 
-#' 
+#' @param lg_table A \code{data.table} containing columns
+#'        \code{location}, \code{stream}, \code{time}, \code{severity}, 
+#'        \code{event}, \code{region}, and \code{lg}.
+#'        \code{lg} contains that part of the (full) log-likelihood
+#'        ratio which depends on the locations contained in spatial region S.
 sum_locations_in_region <- function(lg_table) {
   # sum_{i \in S} log g_{W-1}(i,m|x_{m,l}^k)
   lg_table[, .(slg = sum(lg)), 

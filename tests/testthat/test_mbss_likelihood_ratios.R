@@ -36,7 +36,31 @@ rj <- function(locations_etc, regions) {
 # and another part which also depends on the location i.
 
 
+test_that("sum LLR over stream is correct", {
+  kc <- c("stream", "time", "severity", "event")
+  
+  # Part of LLR dependent on region
+  DT <- tc(list(stream = 1:2,
+                time = 0:1,
+                severity = 1,
+                event = 1, 
+                region = 1:3))
+  setkeyv(DT, kc)
+  DT[, slg := rep(1:6, 2) / 2]
+  
+  # Part of LLR independent of region
+  DT2 <- tc(list(stream = 1:2,
+                 time = 0:1,
+                 severity = 1,
+                 event = 1),
+            key = kc)
+  DT2[, lf := c(-2, -1, 2, 1)]
+  
+  stream_term <- sum_over_streams(DT, DT2)
+  expect_equal(stream_term[, lq], 1:6)
+})
 
+# sum_locations_in_region
 test_that("sum over locations in region", {
   
   DT <- tc(list(stream = 1:2,
