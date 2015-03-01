@@ -6,6 +6,27 @@ logsumexp <- function(x) {
     A + log(sum(exp(x - A)))
 }
 
+haskeys <- function(data_table, keys) {
+  keys %in% getkeys(data_table)
+}
+
+# Get the keys from a data.table
+getkeys <- function(data_table) {
+  attributes(data_table)$sorted
+}
+
+# Check if the first few keys of the supplied table
+# match those in keys
+first_keys_are_equal <- function(data_table, keys) {
+  table_keys <- getkeys(data_table)
+  if (is.null(table_keys) || length(keys) > length(table_keys)) {
+    return(FALSE)
+  } else {
+    return(any(keys == table_keys[1:length(table_keys)]))
+  }
+}
+
+
 #' Create a \code{data.table} with all combinations of the supplied variables.
 #' 
 #' @param col_list A named list of the variables you want 
