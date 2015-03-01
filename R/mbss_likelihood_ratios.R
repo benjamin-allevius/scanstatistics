@@ -26,12 +26,19 @@ llr_region_sum <- function() {
 }
 
 
-llr_time <- function() {
-  DT5[, .(time = time, llr = cumsum(lq)), by = .(severity, event, region)]
+llr_duration <- function(lq_table) {
+  lq_table[, .(time = time, llr = cumsum(lq)), 
+           by = .(severity, event, region)]
 }
 
-#' Adds the region independent and dependent parts together,
-#' of the LLR over the data stream, then sums over the stream.
+#' Adds the region independent and dependent LLR parts together
+#' over the data stream, then sums over the stream.
+#' 
+#' Both tables must have the following columns as the first 5 keys:
+#' \code{c("stream", "time", "severity", "event")}.
+#' 
+#' @param region_table A \code{data.table} with
+#' @param stream_table A \code{data.table} with
 sum_over_streams <- function(region_table, 
                              stream_table) {
   region_table[stream_table][, .(lq = sum(lf, slg)),

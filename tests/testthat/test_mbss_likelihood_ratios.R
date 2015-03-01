@@ -36,6 +36,20 @@ rj <- function(locations_etc, regions) {
 # and another part which also depends on the location i.
 
 
+test_that("cumulative sum for duration LLR is correct", {
+  DT <- data.table(time = rep(0:3, 3),
+                   severity = rep(1, 12),
+                   event = rep(1, 12),
+                   region = rep(1:3, each = 4),
+                   lq = c(0:3, 10:13, 100:103))
+  
+  duration_llr <- llr_duration(DT)
+  expect_equal(duration_llr[, llr],
+               c(cumsum(0:3), cumsum(10:13), cumsum(100:103)))
+})
+
+
+
 test_that("sum LLR over stream is correct", {
   kc <- c("stream", "time", "severity", "event")
   
