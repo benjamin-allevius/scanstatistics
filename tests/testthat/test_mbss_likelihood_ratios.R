@@ -36,14 +36,14 @@ rj <- function(locations_etc, regions) {
 # and another part which also depends on the location i.
 
 
-test_that("cumulative sum for duration LLR is correct", {
+test_that("cumulative sum over time for full LLR is correct", {
   DT <- data.table(time = rep(0:3, 3),
                    severity = rep(1, 12),
                    event = rep(1, 12),
                    region = rep(1:3, each = 4),
                    lq = c(0:3, 10:13, 100:103))
   
-  duration_llr <- llr_duration(DT)
+  duration_llr <- full_llr(DT)
   expect_equal(duration_llr[, llr],
                c(cumsum(0:3), cumsum(10:13), cumsum(100:103)))
 })
@@ -54,20 +54,20 @@ test_that("sum LLR over stream is correct", {
   kc <- c("stream", "time", "severity", "event")
   
   # Part of LLR dependent on region
-  DT <- tc(list(stream = 1:2,
-                time = 0:1,
-                severity = 1,
-                event = 1, 
-                region = 1:3))
+  DT <- data.table(stream = rep(1:2, 6),
+                   time = rep(0:1, 3, each = 2),
+                   severity = rep(1, 12),
+                   event = rep(1, 12),
+                   region =  rep(1:3, each = 4))
   setkeyv(DT, kc)
   DT[, slg := rep(1:6, 2) / 2]
   
   # Part of LLR independent of region
-  DT2 <- tc(list(stream = 1:2,
-                 time = 0:1,
-                 severity = 1,
-                 event = 1),
-            key = kc)
+  DT2 <- data.table(stream = rep(1:2, each = 2),
+                    time = rep(0:1, 2),
+                    severity = rep(1, 4),
+                    event = rep(1, 4),
+                    key = kc)
   DT2[, lf := c(-2, -1, 2, 1)]
   
   stream_term <- sum_over_streams(DT, DT2)
@@ -76,24 +76,20 @@ test_that("sum LLR over stream is correct", {
 
 # sum_locations_in_region
 test_that("sum over locations in region", {
-  
-  DT <- tc(list(stream = 1:2,
-                time = 0:1,
-                severity = 1,
-                event = 1, 
-                location = 1:2))
-  DT <- rj(DT, list(1, 2, 1:2))
-  
+  DT <- data.table(location = rep(1:2, each = 8),
+                   region = rep(c(1,3,2,3), each = 4),
+                   stream = rep(1:2, 8),
+                   time = rep(0:1, 4, each = 2),
+                   severity = rep(1, 16),
+                   event = rep(1, 16))
   kc <- c("stream", "time", "severity", "event")
   setkeyv(DT, c("region", kc))
   
   DT[, lg := c(1:8, rep(c(10, 100, 1000, 10000) / 2, each = 2))]
-  
   region_sums <- sum_locations_in_region(DT)
   
   # Sort by the sums, for easier comparison
   setkey(region_sums, "slg")
-  
   expect_equal(region_sums[, slg], 
                c(1:8, c(10, 100, 1000, 10000)))
 })

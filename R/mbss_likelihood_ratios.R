@@ -1,12 +1,7 @@
 
 # Note: we only calculate (log) likelihood ratios for time steps 0 <= t < W_max
 
-#' Computes log(\eqn{P(D | H_1(S,E_k), W, \theta_l^k) / P(D|H_0)})
-full_llr <- function() {
-  dt[time < maximum_duration,
-     , 
-     by = .(region, time, severity)]
-}
+
 
 
 llr_sums_over_stream <- function() {
@@ -26,7 +21,9 @@ llr_region_sum <- function() {
 }
 
 
-llr_duration <- function(lq_table) {
+#' Computes log(\eqn{P(D | H_1(S,E_k), W, \theta_l^k) / P(D|H_0)})
+#' for all values 1 <= W <= W_max
+full_llr <- function(lq_table) {
   lq_table[, .(time = time, llr = cumsum(lq)), 
            by = .(severity, event, region)]
 }
