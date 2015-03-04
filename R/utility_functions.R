@@ -1,7 +1,12 @@
 
 
-# log-sum-exp trick: avoids arithmetic underflow and overflow
+# May over/underflow
 logsumexp <- function(x) {
+  log(sum(exp(x)))
+}
+
+# log-sum-exp trick: avoids arithmetic underflow and overflow
+logsumexp_stable <- function(x) {
     A <- max(x)
     A + log(sum(exp(x - A)))
 }
