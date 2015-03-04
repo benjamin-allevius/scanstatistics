@@ -13,7 +13,7 @@ Encoding: UTF-8
 License: GPL (>= 3)
 LinkingTo: Rcpp
 Depends: data.table
-Imports: Rcpp (>= 0.11.4)
+Imports: 
 Suggests: knitr,
     testthat
 VignetteBuilder: knitr
