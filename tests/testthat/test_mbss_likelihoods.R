@@ -4,32 +4,14 @@ context("MBSS likelihood functions")
 
 # Spatial log-likelihood with uniform prior ---------------------------
 
-test_that("output data.table has correct names", {
-  lr_input <- data.table(region = rep(c(1,2,1,2), 2),
-                         location = rep(c(1,2,3,3), 2),
-                         event = rep(1:2, each = 4),
-                         llh = 1:8)
-  
-  spatial_llh_uniform(lr_input, 
-                      null_llh = 1, 
-                      L = exp(2),
-                      max_duration = exp(-3))
-  
-  expect_equal(names(lr_input), 
-               c("region",
-                 "location",                  
-                 "event",
-                 "llh"))
-})
-
-test_that("value of llh in table has changed correctly", {
+test_that("spatial_llh: value of llh in table has changed correctly", {
   lr_input <- data.table(region = rep(c(1,2,1,2), 2),
                          location = rep(c(1,2,3,3), 2),
                          event = rep(1:2, each = 4),
                          llh = 1:8)
   
   # add 1, subtract 2, add 3 = add 2
-  spatial_llh_uniform(lr_input, 
+  spatial_llh(lr_input, 
                       null_llh = 1, 
                       L = exp(2),
                       max_duration = exp(-3))
@@ -41,39 +23,23 @@ test_that("value of llh in table has changed correctly", {
 
 # Space-time log-likelihood with uniform prior ---------------------------
 
-test_that("output data.table has correct names", {
-  stlr_input <- data.table(region = rep(c(1,2,1,2), 4),
-                           location = rep(c(1,2,3,3), 4),
-                           event = rep(1:2, 2, each = 4),
-                           duration = rep(1:2, each = 8),
-                           llh = 1:16)
+test_that("spacetime_llh: value of llh in table has changed correctly", {
+  fullr <- data.table(event = rep(1, 12),
+                      region = rep(1:3, each = 4),
+                      severity = rep(1:2, 3, each = 2),
+                      time = rep(0:1, 6),
+                      key = c("event", "region", "time"))
+  fullr[, llr := log(rep(1:6, each = 2) / 2)]
+  setkeyv(fullr, c("event", "region", "severity"))
   
-  spacetime_llh_uniform(stlr_input, 
-                null_llh = 1, 
-                L = exp(2))
+    
+  # add 2, subtract 1 from logsumexp(llh)
+  stlh <- spacetime_llh(fullr, 
+                        null_llh = 2, 
+                        L = exp(1))
   
-  expect_equal(names(stlr_input), 
-               c("region",
-                 "location",                  
-                 "event",
-                 "duration",
-                 "llh"))
-})
-
-test_that("value of llh in table has changed correctly", {
-  stlr_input <- data.table(region = rep(c(1,2,1,2), 4),
-                           location = rep(c(1,2,3,3), 4),
-                           event = rep(1:2, 2, each = 4),
-                           duration = rep(1:2, each = 8),
-                           llh = 1:16)
-  
-  # add one, subtract 2 from llh
-  spacetime_llh_uniform(stlr_input, 
-                null_llh = 1, 
-                L = exp(2))
-  
-  expect_equal(stlr_input[, llh], 
-               1:16 - 1)
+  expect_equal(stlh[, st_llh], 
+               log(1:6) + 2 - 1)
 })
 
 

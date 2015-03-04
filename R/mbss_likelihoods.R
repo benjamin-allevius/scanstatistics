@@ -38,7 +38,7 @@ spatial_llh_uniform <- function(lrsums,
   lrsums[, llh := llh + null_llh - log(L) - log(max_duration)]
 }
 
-#' Compute log-likelihoods log(\eqn{P(D|H_1(S,E_k), W)})
+#' Compute log-likelihoods log(\eqn{P(D|H_1(S,E_k), W)}).
 #'
 #' Compute log-likelihoods log(\eqn{P(D|H_1(S,E_k), W)})
 #' of the data given that an event of type \eqn{E_k} 
@@ -64,17 +64,14 @@ spatial_llh_uniform <- function(lrsums,
 #'                          event = rep(1:2, 2, each = 4),
 #'                          duration = rep(1:2, each = 8),
 #'                          llh = 1:16)
-#' spacetime_llh_uniform(stlr_input, 
-#'                       null_llh = 1, 
-#'                       L = exp(2))
-spacetime_llh_uniform <- function(lrsums, 
-                                  null_llh, 
-                                  L) {
-  lrsums[, llh := llh + null_llh - log(L)]
+#' spacetime_llh(stlr_input, null_llh = 2)
+spacetime_llh <- function(full_llr, null_llh, L) {
+  full_llr[, .(st_llh = logsumexp(llr) + null_llh - log(L)), 
+           keyby = .(event, region, time)]
 }
 
 
-#' Computes log-likelihood log(\eqn{P(D|H_0}))
+#' Computes log-likelihood log(\eqn{P(D|H_0})).
 #' 
 #' Computes the log-likelihood log(\eqn{P(D|H_0}))
 #' under the null hypotesis of no events.
