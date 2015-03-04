@@ -13,7 +13,7 @@
 #' @param lq_table A \code{data.table} 
 full_llr <- function(lq_table) {
   lq_table[, .(time = time, llr = cumsum(lq)), 
-           by = .(severity, event, region)]
+           keyby = .(event, region, severity)]
 }
 
 #' Computes log-likelihood contribution for each time step.
@@ -23,14 +23,14 @@ full_llr <- function(lq_table) {
 #' 
 #' @section Important:
 #' Both tables must have the following columns as the first 4 keys:
-#' \code{c("stream", "time", "severity", "event")}.
+#' \code{c("stream", "time", "event", "severity")}.
 #' 
 #' @param region_table A \code{data.table} with
 #' @param stream_table A \code{data.table} with
 sum_over_streams <- function(region_table, 
                              stream_table) {
   region_table[stream_table][, .(lq = sum(lf, slg)),
-                             keyby = .(time, severity, event, region)]
+                             keyby = .(time, event, severity, region)]
 }
 
 
@@ -41,7 +41,9 @@ sum_over_streams <- function(region_table,
 #'        \code{event}, \code{region}, and \code{lg}.
 #'        \code{lg} contains that part of the (full) log-likelihood
 #'        ratio which depends on the locations contained in spatial region S.
+#'        Table keys should preferably be
+#'        c("stream", )
 sum_locations_in_region <- function(lg_table) {
   lg_table[, .(slg = sum(lg)), 
-           keyby = c("stream", "time", "severity", "event", "region")]
+           keyby = c("stream", "time", "event", "severity", "region")]
 } 

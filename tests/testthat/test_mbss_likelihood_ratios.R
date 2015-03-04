@@ -1,34 +1,5 @@
 context("MBSS likelihood ratio functions")
 
-
-# Copies of functions in utility_functions.R, in case these change
-
-# table_creator
-tc <- function(col_list, key = NULL) {
-  data.table(do.call(expand.grid, col_list), key = key)
-}
-
-# region_table_creator
-rtc <- function(regions, key = NULL) {
-  
-  region_names <- names(regions)
-  if (is.null(region_names)) {
-    region_names <- seq_along(regions)
-  }
-  
-  data.table(location = unlist(regions, use.names = FALSE),
-             region = rep(region_names, 
-                          vapply(regions, length, integer(1))),
-             key = key)
-}
-
-# region_joiner
-rj <- function(locations_etc, regions) {
-  merge(x = rtc(regions, key = "location"), 
-        y = locations_etc,
-        by = "location", allow.cartesian = TRUE)
-}
-
 # Log-likelihood ratios: event of type k and severity l vs no event.
 # For all locations and times, log-likelihood ratios are specified in terms 
 # of one part that only depends on the data stream m, 
@@ -36,57 +7,58 @@ rj <- function(locations_etc, regions) {
 # and another part which also depends on the location i.
 
 
-test_that("cumulative sum over time for full LLR is correct", {
-  DT <- data.table(time = rep(0:3, 3),
-                   severity = rep(1, 12),
+test_that("full_llr: cumsum over time correct when no missing values", {
+  d1 <- data.table(time = rep(0:3, 3),
                    event = rep(1, 12),
+                   severity = rep(1, 12),
                    region = rep(1:3, each = 4),
-                   lq = c(0:3, 10:13, 100:103))
+                   lq = c(0:3, 10:13, 100:103),
+                   key = c("time", "event", "severity", "region"))
   
-  duration_llr <- full_llr(DT)
+  duration_llr <- full_llr(d1)
   expect_equal(duration_llr[, llr],
                c(cumsum(0:3), cumsum(10:13), cumsum(100:103)))
 })
 
 
 
-test_that("sum LLR over stream is correct", {
-  kc <- c("stream", "time", "severity", "event")
+test_that("sum_over_streams: sums correctly when no missing values", {
+  kc <- c("stream", "time", "event", "severity")
   
   # Part of LLR dependent on region
-  DT <- data.table(stream = rep(1:2, 6),
+  d1 <- data.table(stream = rep(1:2, 6),
                    time = rep(0:1, 3, each = 2),
-                   severity = rep(1, 12),
                    event = rep(1, 12),
+                   severity = rep(1, 12),
                    region =  rep(1:3, each = 4))
-  setkeyv(DT, kc)
-  DT[, slg := rep(1:6, 2) / 2]
+  setkeyv(d1, kc)
+  d1[, slg := rep(1:6, 2) / 2]
   
   # Part of LLR independent of region
-  DT2 <- data.table(stream = rep(1:2, each = 2),
-                    time = rep(0:1, 2),
-                    severity = rep(1, 4),
-                    event = rep(1, 4),
-                    key = kc)
-  DT2[, lf := c(-2, -1, 2, 1)]
+  d2 <- data.table(stream = rep(1:2, each = 2),
+                   time = rep(0:1, 2),
+                   event = rep(1, 4),
+                   severity = rep(1, 4),
+                   key = kc)
+  d2[, lf := c(-2, -1, 2, 1)]
   
-  stream_term <- sum_over_streams(DT, DT2)
+  stream_term <- sum_over_streams(d1, d2)
   expect_equal(stream_term[, lq], 1:6)
 })
 
-# sum_locations_in_region
-test_that("sum over locations in region", {
-  DT <- data.table(location = rep(1:2, each = 8),
-                   region = rep(c(1,3,2,3), each = 4),
-                   stream = rep(1:2, 8),
-                   time = rep(0:1, 4, each = 2),
-                   severity = rep(1, 16),
-                   event = rep(1, 16))
+
+test_that("sum_locations_in_region: sums correctly when no missing values", {
+  tab <- data.table(location = rep(1:2, each = 8),
+                    region = rep(c(1,3,2,3), each = 4),
+                    stream = rep(1:2, 8),
+                    time = rep(0:1, 4, each = 2),
+                    severity = rep(1, 16),
+                    event = rep(1, 16))
   kc <- c("stream", "time", "severity", "event")
-  setkeyv(DT, c("region", kc))
+  setkeyv(tab, c("region", kc))
   
-  DT[, lg := c(1:8, rep(c(10, 100, 1000, 10000) / 2, each = 2))]
-  region_sums <- sum_locations_in_region(DT)
+  tab[, lg := c(1:8, rep(c(10, 100, 1000, 10000) / 2, each = 2))]
+  region_sums <- sum_locations_in_region(tab)
   
   # Sort by the sums, for easier comparison
   setkey(region_sums, "slg")
