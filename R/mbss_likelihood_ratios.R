@@ -29,34 +29,41 @@ full_llr <- function(lq_table) {
            keyby = .(event, region, severity)]
 }
 
-#' Computes log-likelihood contribution for each time step.
+#' Sums the LLRs over all data streams.
 #' 
-#' Adds the region independent and dependent LLR parts together
-#' over the data stream, then sums over the stream.
+#' For a given time step \eqn{t}, region \eqn{S},
+#' and event \eqn{E_k} with severity \eqn{\theta_l^k}, 
+#' sums the log-likelihood ratios over all data streams.
 #' 
-#' @section Important:
-#' Both tables must have the following columns as the first 4 keys:
-#' \code{c("stream", "time", "event", "severity")}.
-#' 
-#' @param region_table A \code{data.table} with
-#' @param stream_table A \code{data.table} with
-sum_over_streams <- function(region_table, 
-                             stream_table) {
-  region_table[stream_table][, .(lq = sum(lf, slg)),
-                             keyby = .(time, event, severity, region)]
+#' @param llr_table A \code{data.table} containing the following columns 
+#'        as keys in the given order: \code{region}, \code{event}, \code{time}, 
+#'        \code{severity}, \code{stream}.
+#'        Additionally, the column \code{llr} contains the sum of 
+#'        log-likelihoods over the locations in the given region.
+#' @return A \code{data.table} with the same key columns as the input 
+#'         \code{data.table}, less the column \code{stream}.
+#'         The column \code{llr} now contains the sum
+#'         of the column \code{llr} in the input \code{data.table}
+#'         over all data streams.
+sum_over_streams <- function(llr_table) {
+  llr_table[, .(llr = sum(llr)), by = .(region, event, time, severity)]
 }
 
 
-#' Sums the location-dependent part of the LLR for all regions.
+#' Sums individual LLRs over all locations in each region.
 #' 
-#' @param lg_table A \code{data.table} containing columns
-#'        \code{location}, \code{stream}, \code{time}, \code{severity}, 
-#'        \code{event}, \code{region}, and \code{lg}.
-#'        \code{lg} contains that part of the (full) log-likelihood
-#'        ratio which depends on the locations contained in spatial region S.
-#'        Table keys should preferably be
-#'        c("stream", )
-sum_locations_in_region <- function(lg_table) {
-  lg_table[, .(slg = sum(lg)), 
-           keyby = c("stream", "time", "event", "severity", "region")]
+#' For a given data stream \eqn{m}, time step \eqn{t}, region \eqn{S},
+#' and event \eqn{E_k} with severity \eqn{\theta_l^k}, 
+#' sums the log-likelihood ratios of the counts over the locations in \eqn{S}.
+#' 
+#' @param llr_table A \code{data.table} containing columns \code{location}
+#'        and column \code{llr}, and the following columns as keys in
+#'        the given order: \code{region}, \code{event}, \code{time}, 
+#'        \code{severity}, \code{stream}.
+#' @return A \code{data.table} with the same key columns as the input 
+#'         \code{data.table}, with column \code{llr} containing the sum
+#'         of the column \code{llr} in the input \code{data.table}
+#'         over all locations in each region.
+sum_locations_in_region <- function(llr_table) {
+  llr_table[, .(llr = sum(llr)), by = .(region, event, time, severity, stream)]
 } 
