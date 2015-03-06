@@ -37,31 +37,33 @@ spatial_llh <- function(full_llrs, null_llh, L, max_duration) {
             keyby = .(event, region)]
 }
 
-#' Compute log-likelihoods log(\eqn{P(D|H_1(S,E_k), W)}).
+#' Compute log-likelihood for each space-time region and event type.
 #'
 #' Compute log-likelihoods log(P\eqn{(D|H_1(S,E_k), W)})
 #' of the data given that an event of type \eqn{E_k} 
 #' with time duration \eqn{W} occurs in spatial region \eqn{S},
-#' for all durations \eqn{1 \le W \le W_{\max}},
-#' all event types, and all regions.
+#' for each duration \eqn{1 \le W \le W_{\max}},
+#' each event type, and each region.
 #' Assumes the event severities are uniformly distributed over
 #' \eqn{L} different values; same \eqn{L} for all event types.
 #' 
 #' @param full_llr A \code{data.table} with columns 
-#'        \code{event, region, severity, time, llr}.
-#'        The column \code{llr} contains the full log-likelihood ratios
-#'        LR\eqn{_S^{k,l}(W)}.
+#'        \code{region}, \code{event}, \code{severity}, \code{time}, 
+#'        and \code{llr}. Keys should preferably be at 
+#'        least \code{region, event}.        
+#'        The column \code{llr} contains the full log-likelihood ratios.
 #' @param null_llh The full log-likelihood (scalar value) 
 #'        under the null hypothesis of no event. 
 #' @param L The number of event severities, or equivalently the
 #'        number of values the impact factor can take on.
 #'        Assumed to be the same for all event types.
-#' @return A \code{data.table} with columns \code{event, region, time, llh}.
+#' @return A \code{data.table} with columns \code{region}, \code{event}, 
+#'         \code{time}, and \code{llh}.
 #'         The column \code{llh} contains the log-likelihoods
-#'         log(P\eqn{(D|H_1(S,E_k), W)}).
+#'         space-time log likelihoods for each region, event type, and time.
 spacetime_llh <- function(full_llr, null_llh, L) {
   full_llr[, .(llh = logsumexp(llr) + null_llh - log(L)), 
-           keyby = .(event, region, time)]
+           keyby = .(region, event, time)]
 }
 
 

@@ -1,12 +1,5 @@
 context("MBSS likelihood ratio functions")
 
-# Log-likelihood ratios: event of type k and severity l vs no event.
-# For all locations and times, log-likelihood ratios are specified in terms 
-# of one part that only depends on the data stream m, 
-# and event type and severity through impact factor x;
-# and another part which also depends on the location i.
-
-
 test_that("full_llr: cumsum over time correct when no missing values", {
   llrs <- data.table(region = rep(1:3, each = 3),
                      event = rep(1, 9),
@@ -15,11 +8,10 @@ test_that("full_llr: cumsum over time correct when no missing values", {
   setkeyv(llrs, c("region", "event", "time", "severity"))
   llrs[, llr := 1:9]
   
-  duration_llr <- full_llr(llrs)
-  expect_equal(duration_llr[, llr],
+  fullr <- full_llr(llrs)
+  expect_equal(fullr[, llr],
                c(cumsum(1:3), cumsum(4:6), cumsum(7:9)))
 })
-
 
 
 test_that("sum_over_streams: sums correctly when no missing values", {

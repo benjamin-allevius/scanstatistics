@@ -25,14 +25,13 @@ test_that("spatial_llh: value of llh in table has changed correctly", {
 # Space-time log-likelihood with uniform prior ---------------------------
 
 test_that("spacetime_llh: calculated correctly", {
-  fullr <- data.table(event = rep(1, 12),
-                      region = rep(1:3, each = 4),
+  fullr <- data.table(region = rep(1:3, each = 4),
+                      event = rep(1, 12),
                       severity = rep(1:2, 3, each = 2),
-                      time = rep(0:1, 6),
-                      key = c("event", "region", "time"))
-  fullr[, llr := log(rep(1:6, each = 2) / 2)]
-  setkeyv(fullr, c("event", "region", "severity"))
-    
+                      time = rep(0:1, 6))
+  setkeyv(fullr, c("region", "event", "severity"))
+  fullr[, llr := log(c(1,2,1,2,3,4,3,4,5,6,5,6) / 2)]
+      
   # add 2, subtract 1 from logsumexp(llh)
   stllh <- spacetime_llh(fullr, 
                          null_llh = 2, 
