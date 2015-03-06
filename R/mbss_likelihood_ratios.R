@@ -19,14 +19,22 @@ sum_lr_over_time <- function(lq_table) {
 
 #' Computes the full log-likelihood ratios.
 #' 
-#' Computes the full log-likelihood ratios
-#' LLR_S^{k,l}(W) = log(\eqn{P(D | H_1(S,E_k), W, \theta_l^k) / P(D|H_0)})
-#' for all values 1 <= W <= W_max. 
+#' Computes the full log-likelihood ratios; the log-likelihood ratio
+#' for a given region, event, event severity, and time. 
 #' 
-#' @param lq_table A \code{data.table} 
-full_llr <- function(lq_table) {
-  lq_table[, .(time = time, llr = cumsum(lq)), 
-           keyby = .(event, region, severity)]
+#' @param llr_table A \code{data.table} containing the following columns 
+#'        as keys in the given order: \code{region}, \code{event}, \code{time}, 
+#'        and \code{severity}.
+#'        Additionally, the column \code{llr} contains the sum of 
+#'        log-likelihoods ratios over all data streams.
+#' @return A \code{data.table} with key columns
+#'        \code{region}, \code{event}, \code{severity}.
+#'        The column \code{time} is not necessarily a key column,
+#'        but is sorted from current time and backwards.
+#'        The column \code{llr} contains the full log-likelihood ratios.
+full_llr <- function(llr_table) {
+  llr_table[, .(time = time, llr = cumsum(llr)), 
+            by = .(region, event, severity)]
 }
 
 #' Sums the LLRs over all data streams.
@@ -39,7 +47,7 @@ full_llr <- function(lq_table) {
 #'        as keys in the given order: \code{region}, \code{event}, \code{time}, 
 #'        \code{severity}, \code{stream}.
 #'        Additionally, the column \code{llr} contains the sum of 
-#'        log-likelihoods over the locations in the given region.
+#'        log-likelihood ratios over the locations in the given region.
 #' @return A \code{data.table} with the same key columns as the input 
 #'         \code{data.table}, less the column \code{stream}.
 #'         The column \code{llr} now contains the sum

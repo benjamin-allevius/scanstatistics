@@ -22,16 +22,16 @@ test_that("sum_lr_over_time: calculated correctly when no missing values", {
 
 
 test_that("full_llr: cumsum over time correct when no missing values", {
-  d1 <- data.table(time = rep(0:3, 3),
-                   event = rep(1, 12),
-                   severity = rep(1, 12),
-                   region = rep(1:3, each = 4),
-                   lq = c(0:3, 10:13, 100:103),
-                   key = c("time", "event", "severity", "region"))
+  llrs <- data.table(region = rep(1:3, each = 3),
+                     event = rep(1, 9),
+                     time = rep(0:2, 3),
+                     severity = rep(1, 9))
+  setkeyv(llrs, c("region", "event", "time", "severity"))
+  llrs[, llr := 1:9]
   
-  duration_llr <- full_llr(d1)
+  duration_llr <- full_llr(llrs)
   expect_equal(duration_llr[, llr],
-               c(cumsum(0:3), cumsum(10:13), cumsum(100:103)))
+               c(cumsum(1:3), cumsum(4:6), cumsum(7:9)))
 })
 
 
