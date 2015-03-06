@@ -7,20 +7,6 @@ context("MBSS likelihood ratio functions")
 # and another part which also depends on the location i.
 
 
-test_that("sum_lr_over_time: calculated correctly when no missing values", {
-  fullr <- data.table(time = rep(0:3, 3),
-                      event = rep(1, 12),
-                      severity = rep(1, 12),
-                      region = rep(1:3, each = 4), 
-                      lq = log(rep(1:4, 3)))
-  setkeyv(fullr, c("time", "event", "severity", "region"))
-  res <- sum_lr_over_time(fullr)
-  expect_equal(res[, lr_timesum],
-               rep(1 * (1 + 2 * (1 + 3 * (1 + 4))), 
-                   3))
-})
-
-
 test_that("full_llr: cumsum over time correct when no missing values", {
   llrs <- data.table(region = rep(1:3, each = 3),
                      event = rep(1, 9),

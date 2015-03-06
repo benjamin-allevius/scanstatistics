@@ -1,22 +1,6 @@
 
 # Note: we only calculate (log) likelihood ratios for time steps 0 <= t < W_max
 
-# NOT USED: can be used to improve speed if needed
-#' Sum timesums of LR over severities
-sum_lr_timesums_over_severities <- function(lr_timesums) {
-  lr_timesums[, .(lr_sum = sum(lr_timesum)), keyby = .(event, region)]
-}
-
-# NOT USED: can be used to improve speed if needed
-#' Sum LR over time
-sum_lr_over_time <- function(lq_table) {
-  lq_table[, .(lr_timesum = Reduce(function(x, y) x * (1 + y), 
-                                    exp(lq), 
-                                    right = TRUE)),
-            keyby = .(event, region, severity)]
-}
-
-
 #' Computes the full log-likelihood ratios.
 #' 
 #' Computes the full log-likelihood ratios; the log-likelihood ratio
