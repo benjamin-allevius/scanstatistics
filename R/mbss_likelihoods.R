@@ -27,20 +27,19 @@
 #'                        location = rep(c(1,2,3,3), 2), 
 #'                        event = rep(1:2, each = 4),
 #'                        llh = 1:8)
-#' spatial_llh_uniform(lr_input, 
-#'                     null_llh = 1, 
-#'                     L = exp(2),
-#'                     max_duration = exp(-3))
-spatial_llh_uniform <- function(lrsums, 
-                                null_llh, 
-                                L,
-                                max_duration) {
-  lrsums[, llh := llh + null_llh - log(L) - log(max_duration)]
+#' spatial_llh(lr_input, 
+#'             null_llh = 1, 
+#'             L = exp(2),
+#'             max_duration = exp(-3))
+spatial_llh <- function(full_llrs, null_llh, L, max_duration) {
+  full_llrs[, 
+            .(llh =  logsumexp(llr) + null_llh - log(L) - log(max_duration)),
+            keyby = .(event, region)]
 }
 
 #' Compute log-likelihoods log(\eqn{P(D|H_1(S,E_k), W)}).
 #'
-#' Compute log-likelihoods log(\eqn{P(D|H_1(S,E_k), W)})
+#' Compute log-likelihoods log(P\eqn{(D|H_1(S,E_k), W)})
 #' of the data given that an event of type \eqn{E_k} 
 #' with time duration \eqn{W} occurs in spatial region \eqn{S},
 #' for all durations \eqn{1 \le W \le W_{\max}},
@@ -48,33 +47,28 @@ spatial_llh_uniform <- function(lrsums,
 #' Assumes the event severities are uniformly distributed over
 #' \eqn{L} different values; same \eqn{L} for all event types.
 #' 
-#' @param lrsums A \code{data.table} with columns for region,
-#'        location, event, duration, and \code{llh},
-#'        the log of the sum of likelihood ratios.
-#' @param null_llh The log-likelihood of the complete data
+#' @param full_llr A \code{data.table} with columns 
+#'        \code{event, region, severity, time, llr}.
+#'        The column \code{llr} contains the full log-likelihood ratios
+#'        LR\eqn{_S^{k,l}(W)}.
+#' @param null_llh The full log-likelihood (scalar value) 
 #'        under the null hypothesis of no event. 
 #' @param L The number of event severities, or equivalently the
 #'        number of values the impact factor can take on.
-#' @return The input \code{data.table} with the \code{llh} column
-#'         \strong{modified}, now containing the log-likelihoods
-#'         log(\eqn{P(D|H_1(S,E_k), W)}).
-#' @examples
-#' stlr_input <- data.table(region = rep(c(1,2,1,2), 4),
-#'                          location = rep(c(1,2,3,3), 4),
-#'                          event = rep(1:2, 2, each = 4),
-#'                          duration = rep(1:2, each = 8),
-#'                          llh = 1:16)
-#' spacetime_llh(stlr_input, null_llh = 2)
+#'        Assumed to be the same for all event types.
+#' @return A \code{data.table} with columns \code{event, region, time, llh}.
+#'         The column \code{llh} contains the log-likelihoods
+#'         log(P\eqn{(D|H_1(S,E_k), W)}).
 spacetime_llh <- function(full_llr, null_llh, L) {
-  full_llr[, .(st_llh = logsumexp(llr) + null_llh - log(L)), 
+  full_llr[, .(llh = logsumexp(llr) + null_llh - log(L)), 
            keyby = .(event, region, time)]
 }
 
 
-#' Computes log-likelihood log(\eqn{P(D|H_0})).
+#' Computes the full log-likelihood under the null hypothesis of no events.
 #' 
-#' Computes the log-likelihood log(\eqn{P(D|H_0}))
-#' under the null hypotesis of no events.
+#' Computes the log-likelihood log(P\eqn{(D|H_0}))
+#' under the null hypotesis of no events taking place.
 #' 
 #' @param densities A \code{data.table} with column \code{density},
 #'        containing the log-\emph{density} (log-pmf or log-pdf)
