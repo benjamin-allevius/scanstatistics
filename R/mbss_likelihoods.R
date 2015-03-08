@@ -1,8 +1,8 @@
-# Warning: these functions modify their arguments
 
-#' Compute the log-likelihood log(\eqn{P(D|H_1(S,E_k))})
+
+#' Computes the log-likelihood for each spatial region and event type.
 #'
-#' Compute the log-likelihood log(\eqn{P(D|H_1(S,E_k))})
+#' Computes the log-likelihood log(\eqn{P(D|H_1(S,E_k))})
 #' of the data given that an event of type \eqn{E_k} occurs in region 
 #' \eqn{S}, for all such regions and for all event types,
 #' considering events of time duration up to \eqn{W_{\max}}.
@@ -10,36 +10,21 @@
 #' and that the event severity is uniformly distributed 
 #' over its possible values.
 #' 
-#' @param lrsums A \code{data.table} with columns for region,
-#'        location, event, and \code{llh},
-#'        the log of the sum of likelihood ratios.
-#' @param null_llh The log-likelihood for the complete data set under
-#'        the null hypothesis of no event.
-#' @param L The number of different possible event severities,
-#'        or equivalently the number of possible impact factors.
+#' @inheritParams spacetime_llh
 #' @param max_duration The number of time periods of the longest
 #'        event duration considered.
-#' @return The input \code{data.table} with the \code{llh} column
-#'         \strong{modified}, now containing the log-likelihoods
-#'         log(\eqn{P(D|H_1(S,E_k))}).
-#' @examples
-#' lr_input <- data.table(region = rep(c(1,2,1,2), 2),
-#'                        location = rep(c(1,2,3,3), 2), 
-#'                        event = rep(1:2, each = 4),
-#'                        llh = 1:8)
-#' spatial_llh(lr_input, 
-#'             null_llh = 1, 
-#'             L = exp(2),
-#'             max_duration = exp(-3))
-spatial_llh <- function(full_llrs, null_llh, L, max_duration) {
-  full_llrs[, 
-            .(llh =  logsumexp(llr) + null_llh - log(L) - log(max_duration)),
-            keyby = .(event, region)]
+#' @return A \code{data.table} with columns \code{region}, \code{event}, 
+#'         \code{time}, and \code{llh}.
+#'         The column \code{llh} contains the log-likelihoods
+#'          for each region and event type.
+spatial_llh <- function(full_llr, null_llh, L, max_duration) {
+  full_llr[, .(llh =  logsumexp(llr) + null_llh - log(L) - log(max_duration)),
+            keyby = .(region, event)]
 }
 
-#' Compute log-likelihood for each space-time region and event type.
+#' Computes log-likelihood for each space-time region and event type.
 #'
-#' Compute log-likelihoods log(P\eqn{(D|H_1(S,E_k), W)})
+#' Computes the log-likelihoods log(P\eqn{(D|H_1(S,E_k), W)})
 #' of the data given that an event of type \eqn{E_k} 
 #' with time duration \eqn{W} occurs in spatial region \eqn{S},
 #' for each duration \eqn{1 \le W \le W_{\max}},
@@ -60,7 +45,7 @@ spatial_llh <- function(full_llrs, null_llh, L, max_duration) {
 #' @return A \code{data.table} with columns \code{region}, \code{event}, 
 #'         \code{time}, and \code{llh}.
 #'         The column \code{llh} contains the log-likelihoods
-#'         space-time log likelihoods for each region, event type, and time.
+#'         for each region, event type, and time.
 spacetime_llh <- function(full_llr, null_llh, L) {
   full_llr[, .(llh = logsumexp(llr) + null_llh - log(L)), 
            keyby = .(region, event, time)]
