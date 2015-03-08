@@ -1,4 +1,19 @@
 
+#' Computes the log of the marginal probability of the data.
+#' 
+#' Computes the logarithm of the marginal probability of the data,
+#' P\eqn{(D)}.
+#' 
+#' @param null_llh The log-likelihood under the null hypothesis (scalar).
+#' @param null_logprior The logarithm of the prior probability that 
+#'        the null hypothesis of no event is true.
+#' @param alternative_marginal The logarithm of the sum, over all event types
+#'        and regions, of the spatial event likelihoods times 
+#'        their prior probabilities.
+marginal_data_logprobability <- function(null_llh, null_logprior, 
+                                      alternative_marginal) {
+  logsumexp(c(null_llh + null_logprior, alternative_marginal))
+}
 
 #' Log of event-related term of marginal probability of data.
 #' 

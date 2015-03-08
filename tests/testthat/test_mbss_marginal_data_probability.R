@@ -1,5 +1,10 @@
 context("MBSS marginal probability of data")
 
+test_that("marginal_data_logprobability: llh calculated correctly", {
+  expect_equal(marginal_data_logprobability(log(2), log(3), log(4)),
+               log(10))
+})
+
 test_that("data_logprob_if_event: llh calculated correctly", {
   event_llh <- data.table(event = 1:3, llh = 1:3 / 2, key = "event")
   event_logp <- data.table(event = 1:3, event_logprob = 3:1 / 2, key = "event")
