@@ -4,7 +4,7 @@ context("MBSS likelihood functions")
 
 # Spatial log-likelihood with uniform prior ---------------------------
 
-test_that("spatial_llh: value of llh in table has changed correctly", {
+test_that("spatial_llh: llh calculated correctly", {
   fullr <- data.table(event = rep(1, 12),
                       region = rep(1:3, each = 4),
                       severity = rep(1:2, 3, each = 2),
@@ -43,7 +43,7 @@ test_that("spacetime_llh: calculated correctly", {
 
 # Log-likelihood under null hypothesis of no events ---------------------------
 
-test_that("null_llh: sums correctly", {
+test_that("null_llh: calculated correctly", {
   densities <- data.table(stream = rep(c(1,2,1,2), 2),
                           location = rep(c(1,2,3,3), 2),
                           event = rep(1:2, each = 4),
