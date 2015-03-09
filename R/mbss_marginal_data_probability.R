@@ -11,7 +11,7 @@
 #'        and regions, of the spatial event likelihoods times 
 #'        their prior probabilities.
 marginal_data_logprobability <- function(null_llh, null_logprior, 
-                                      alternative_marginal) {
+                                         alternative_marginal) {
   logsumexp(c(null_llh + null_logprior, alternative_marginal))
 }
 
@@ -24,11 +24,11 @@ marginal_data_logprobability <- function(null_llh, null_logprior,
 #' @param event_llh A \code{data.table} with key column \code{event}
 #'        and column \code{llh}, the latter containing the log of the
 #'        sum of spatial event likelihoods over all regions.
-#' @param event_logprior A \code{data.table} containing the logarithms
-#'        of the prior event probabilities.
+#' @param event_logpriors A vector of the logarithms of the prior 
+#'        probabilities of an event, ordered from event type 1 to K.
 #' @param n_regions The total number of regions.
-data_logprob_if_event <- function(event_llh, event_logprior, n_regions) {
-  event_logprior[event_llh][, sum(event_logprob, llh)] - log(n_regions)
+data_logprob_if_event <- function(event_llh, event_logpriors, n_regions) {
+  event_llh[, sum(llh, event_logpriors[event])] - log(n_regions)
 }
 
 

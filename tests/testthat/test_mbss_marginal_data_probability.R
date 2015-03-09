@@ -7,9 +7,8 @@ test_that("marginal_data_logprobability: llh calculated correctly", {
 
 test_that("data_logprob_if_event: llh calculated correctly", {
   event_llh <- data.table(event = 1:3, llh = 1:3 / 2, key = "event")
-  event_logp <- data.table(event = 1:3, event_logprob = 3:1 / 2, key = "event")
   
-  dataprob_event <- data_logprob_if_event(event_llh, event_logp, exp(1))
+  dataprob_event <- data_logprob_if_event(event_llh, 3:1 / 2, exp(1))
   expect_equal(dataprob_event, 5)
 })
 
