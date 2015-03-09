@@ -1,5 +1,15 @@
 context("MBSS posterior probabilities")
 
+test_that("spatial_logposterior: calculated correctly", {
+  st_lps <- data.table(region = rep(1:3, each = 2),
+                       event = rep(1:2, 3),
+                       llh = rep(c(0.5, 2), 3))
+  st_lps[, llh := llh + 1:6]
+  setkeyv(st_lps, c("region", "event"))
+  spatial_logposterior(st_lps, c(0.5, -1), exp(1), 1)
+  expect_equal(st_lps[, posterior_logprob], 1:6 - 1)
+})
+
 test_that("spacetime_logposterior: calculated correctly", {
   st_lps <- data.table(region = rep(1:3, each = 4),
                        event = rep(1:2, 3, each = 2),
