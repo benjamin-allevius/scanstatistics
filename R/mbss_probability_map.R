@@ -1,20 +1,14 @@
 
-#' Compute posterior probability map \eqn{P(H_1(s_i)|D)}
-#' for all spatial locations \eqn{s_i}.
+#' Computes the posterior probability map for all locations.
 #' 
-#' @param event_probability_map A \code{data.table},
-#' containing the probabilities \eqn{P(H_1(s_i,E_k)|D)} for each 
-#' location \eqn{s_i} and event type \eqn{E_k}.
-#' @return A vector of probabilities \eqn{P(H_1(s_i)|D)}.
-#' @examples
-#' epm <- data.table(event = rep(1:2, each = 5),
-#' location = rep(1:5, 2),
-#' probability = 1:10)
-#' probability_map(epm)
-probability_map <- function(event_probability_map) {
-    event_probability_map[, 
-                          list(probability = sum(probability)), 
-                          by = location]
+#' Computes the posterior probability map \eqn{P(H_1(s_i)|D)}
+#' for all locations \eqn{s_i}.
+#' 
+#' @param event_logprob_map A \code{data.table} with columns \code{location},
+#'        \code{event}, and \code{posterior_logprob}.
+probability_map <- function(event_logprob_map) {
+  event_logprob_map[, .(probability = sum(exp(posterior_logprob))), 
+                    by = .(location)]
 }
 
 #' Compute the log-probability map for all event types and spatial locations.
