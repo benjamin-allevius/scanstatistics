@@ -1,5 +1,10 @@
 
 
+# get package names
+get_package_names <- function() {
+  gsub("package:", "", search()[grep("package:", search())])
+}
+
 # May over/underflow
 logsumexp <- function(x) {
   log(sum(exp(x)))
@@ -61,6 +66,8 @@ table_creator <- function(col_list, key = NULL) {
 #'        to code{\link[data.table]{setkey}}.
 #' @examples 
 #' region_table_creator(list(1, 2, 1:2))
+#' region_table_creator(sets::set(sets::set(1L), sets::set(2L), 
+#'                                sets::as.set(1:2)))
 #' region_table_creator(list(1, 2, 1:2), key = "location")
 #' region_table_creator(list(1, 2, 1:2), key = "region")
 #' region_table_creator(list(a = "x", b = "y", c = c("x", "y")))
@@ -99,4 +106,33 @@ region_joiner <- function(locations_etc, regions) {
   merge(x = region_table_creator(regions, key = "location"), 
         y = locations_etc,
         by = "location", allow.cartesian = TRUE)
+}
+
+
+#' Applies a function over all regions containing the locations supplied.
+#' 
+#' Applies the function \code{f} to the data table formed by expanding the
+#' \code{location_table} according to the regions in \code{region_partition}.
+#'
+#' @param f The function to apply.
+#' @param region_partition A \code{list} of \code{list}s. 
+#'        The elements of each sublist are regions, 
+#'        which are \code{vector}s of locations contained in the region.
+#' @param location_table A \code{data.table} with key column \code{location},
+#'        and other which may be used by the supplied function \code{f}.
+region_apply <- function(f, region_partition, location_table) {
+  foreach(regions_in_part = region_partition, 
+          .combine = rbind,
+          #           .packages = c("data.table", "magrittr"),
+          .export = ls(envir = globalenv())) %dopar% {
+            
+            locations <- unique(unlist(regions))
+            
+            region_table <- region_table_creator(regions_in_part, 
+                                                 key = c("location"))
+            
+            merge(location_table[location %in% locations, ],
+                  region_table,
+                  allow.cartesian = TRUE) %>% f
+          }
 }
