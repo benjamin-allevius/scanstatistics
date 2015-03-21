@@ -15,5 +15,6 @@ LinkingTo: Rcpp
 Depends: data.table
 Imports: 
 Suggests: knitr,
-    testthat
+    testthat,
+    sets
 VignetteBuilder: knitr
