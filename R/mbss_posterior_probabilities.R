@@ -3,8 +3,8 @@
 
 #' Calculates the posterior log-probability of an event in a space window.
 #' 
-#' Calculates the posterior log-probability of an event of a given type \eqn{E_k}
-#' for a given spatial region \eqn{S}\eqn{W},
+#' Calculates the posterior log-probability of an event of a 
+#' given type \eqn{E_k} for a given spatial region \eqn{S}\eqn{W},
 #' for all event types and spatial regions.
 #' Assumes a uniform distribution for the region prior probabilities.
 #' This function \strong{modifies} the table passed as the first argument.
@@ -25,8 +25,9 @@ spatial_logposterior <- function(spatial_llh,
 
 #' Calculates the posterior log-probability of an event in a space-time window.
 #' 
-#' Calculates the posterior log-probability of an event of a given type \eqn{E_k}
-#' for a given spatial region \eqn{S} and a given event duration \eqn{W},
+#' Calculates the posterior log-probability of an 
+#' event of a given type \eqn{E_k} for a given spatial 
+#' region \eqn{S} and a given event duration \eqn{W},
 #' for all event types, spatial regions and event durations up to \eqn{W_max}.
 #' Assumes a uniform distribution for the region prior probabilities,
 #' and likewise for the event durations.
