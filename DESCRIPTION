@@ -11,9 +11,10 @@ Author: Benjamin Kjellson
 Maintainer: Benjamin Kjellson <benjak@math.su.se>
 Encoding: UTF-8
 License: GPL (>= 3)
-LinkingTo: Rcpp
-Depends: data.table
-Imports: 
+URL: https://github.com/BenjaK/scanstatistics
+BugReports: https://github.com/BenjaK/scanstatistics/issues
+Depends:
+Imports: data.table
 Suggests: knitr,
     testthat,
     sets
