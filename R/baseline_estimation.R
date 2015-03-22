@@ -17,11 +17,12 @@ kulldorff_baseline <- function(counts) {
   sum_by_loc <- counts[, .(locsum = sum(count)), keyby = .(stream, time)]
   sum_by_both <- counts[, .(totalsum = sum(count)), keyby = "stream"]
   
-  timeprop <- merge(a, c, by = "stream")[, .(prop = timesum / totalsum), 
-                                         keyby = .(stream, location)]
-  baselines <- merge(b, p, by = c("stream"), allow.cartesian = T)[, 
-    .(stream = stream, location = location, time = time, 
-      baseline = locsum * prop)]
+  timeprop <- merge(sum_by_time, sum_by_both, by = "stream")[, 
+                .(prop = timesum / totalsum), keyby = .(stream, location)]
+  baselines <- merge(sum_by_loc, timeprop, 
+                     by = c("stream"), allow.cartesian = TRUE)[, 
+                 .(stream = stream, location = location, time = time, 
+                   baseline = locsum * prop)]
   setkeyv(baselines, c("stream", "location", "time"))
   merge(counts, baselines)
 }
