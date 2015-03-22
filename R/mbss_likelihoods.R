@@ -10,14 +10,14 @@
 #' and that the event severity is uniformly distributed 
 #' over its possible values.
 #' 
-#' @inheritParams spacetime_llh
+#' @inheritParams spacetime_llh_uniform
 #' @param max_duration The number of time periods of the longest
 #'        event duration considered.
 #' @return A \code{data.table} with columns \code{region}, \code{event}, 
 #'         \code{time}, and \code{llh}.
 #'         The column \code{llh} contains the log-likelihoods
-#'          for each region and event type.
-spatial_llh <- function(full_llr, null_llh, L, max_duration) {
+#'         for each region and event type.
+spatial_llh_uniform <- function(full_llr, null_llh, L, max_duration) {
   full_llr[, .(llh =  logsumexp(llr) + null_llh - log(L) - log(max_duration)),
             keyby = .(region, event)]
 }
@@ -46,7 +46,7 @@ spatial_llh <- function(full_llr, null_llh, L, max_duration) {
 #'         \code{time}, and \code{llh}.
 #'         The column \code{llh} contains the log-likelihoods
 #'         for each region, event type, and time.
-spacetime_llh <- function(full_llr, null_llh, L) {
+spacetime_llh_uniform <- function(full_llr, null_llh, L) {
   full_llr[, .(llh = logsumexp(llr) + null_llh - log(L)), 
            keyby = .(region, event, time)]
 }
