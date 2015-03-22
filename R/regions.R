@@ -60,3 +60,71 @@ closest_subsets <- function(v) {
   sets::as.set(lapply(lapply(seq_along(v), function(x) v[seq(x)]), 
                       sets::as.set))
 }
+
+
+flexible_regions <- function(k_nearest, 
+                             adjacency_matrix,
+                             .parallel = FALSE, 
+                             .paropts = NULL) {
+  connected_to <- pryr::partial(connected_to_full,
+                                adjacency_matrix = adjacency_matrix)
+  sets::as.set(dplyr::alply(k_nearest,
+                            .margins = 1,
+                            .fun = connected_neighbors,
+                            .parallel = .parallel,
+                            .paropts = .paropts))
+}
+
+
+connected_neighbors <- function(neighbors) {
+  location <- neighbors[1]
+  its_neighbors <- neighbors[-1]
+  pset <- sets::set_power(sets::as.set(its_neighbors)) - sets::set(sets::set())
+  sets::set_union(sets::set(sets::set(location)),
+                  sets::as.set(lapply(pset, 
+                                      if_connected, 
+                                      location = location)))
+}
+
+# If the location and its neighbors, not including itself, are connected,
+# then return the set of the location and its neighbors,
+# else return the empty set
+if_connected <- function(distinct_neighbors, location) {
+  if (is_connected(distinct_neighbors, location)) {
+    return(sets::set_union(sets::set(location),
+                           distinct_neighbors))
+  } else {
+    return(sets::set())
+  }
+}
+
+# is the set of the location and its neighbors connected?
+is_connected <- function(neighbor_locations, location) {
+  S_0 <- sets::set(location)
+  S_1 <- neighbor_locations
+  while (TRUE) {
+    connected_elements <- connected_to(S_0, S_1)
+    S_0 <- set_union(S_0, connected_elements)
+    if (sets::set_is_empty(S_0)) {
+      return(FALSE)
+    }
+    S_1 <- S1 - connected_elements
+    if (sets::set_is_empty(S_1)) {
+      return(TRUE)
+    }
+  }
+}
+
+# returns a set of the elements in S_1 connected any of the elements in S_0,
+# according to the adjacency_matrix
+# Element (i,j) of the adjacency_matrix is TRUE if i is adjacent to j
+# with no elements being ajacent to themselves (so element (i,i) is FALSE)
+# assumes locations are integers
+connected_to_full <- function(S_0, S_1, adjacency_matrix) {
+  connected <- sets::set()
+  for (s1 in S_1) {
+    if (any(S_0 %in% which(adjacency_matrix[s1, ]))) {
+      connected <- sets::set_union(connected, s1)
+    }
+  }
+}
