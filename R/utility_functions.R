@@ -103,9 +103,8 @@ region_table_creator <- function(regions, key = NULL) {
 #' locs_etc <- table_creator(list(location = 1:2, time = 0:2, stream = 1:2))
 #' region_joiner(locs_etc, list(1, 2, 1:2))
 region_joiner <- function(locations_etc, regions) {
-  merge(x = region_table_creator(regions, key = "location"), 
-        y = locations_etc,
-        by = "location", allow.cartesian = TRUE)
+  region_table_creator(regions, key = "location")[
+    locations_etc, allow.cartesian = TRUE]
 }
 
 
@@ -118,6 +117,7 @@ region_joiner <- function(locations_etc, regions) {
 #' @param region_partition A \code{list} of \code{list}s. 
 #'        The elements of each sublist are regions, 
 #'        which are \code{vector}s of locations contained in the region.
+#'        Remember, \code{\link[sets]{set}}s are lists.
 #' @param location_table A \code{data.table} with key column \code{location},
 #'        and other which may be used by the supplied function \code{f}.
 region_apply <- function(f, region_partition, location_table) {
