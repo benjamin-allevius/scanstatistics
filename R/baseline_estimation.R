@@ -10,19 +10,18 @@
 #'        \code{stream, location, time, count}, keyed by the first three
 #'        columns in that order.
 #' @return A \code{data.table} with columns 
-#'        \code{stream, location, time, baseline}. Only \code{stream} will be
-#'        a key column, but the table will implicity be ordered on
-#'        \code{location} and \code{time} in the same way as the input table.
+#'        \code{stream, location, time, count, baseline}. 
+#'        Key columns are \code{stream, location, time} in that order.
 kulldorff_baseline <- function(counts) {
-  merge(counts[, .(locsum = sum(count)), keyby = .(stream, time)], 
-        merge(counts[, .(timesum = sum(count)), 
-                     keyby = .(stream, location)], 
-              counts[, .(totalsum = sum(count)), 
-                     keyby = "stream"], 
-              by = "stream")[, 
-                             .(timeprop = timesum / totalsum), 
-                             keyby = .(stream, location)], 
-        by = c("stream"), allow.cartesian = T)[, 
-          .(stream = stream, location = location, time = time, 
-            baseline = locsum * timeprop)]
+  sum_by_time <- counts[, .(timesum = sum(count)), keyby = .(stream, location)]
+  sum_by_loc <- counts[, .(locsum = sum(count)), keyby = .(stream, time)]
+  sum_by_both <- counts[, .(totalsum = sum(count)), keyby = "stream"]
+  
+  timeprop <- merge(a, c, by = "stream")[, .(prop = timesum / totalsum), 
+                                         keyby = .(stream, location)]
+  baselines <- merge(b, p, by = c("stream"), allow.cartesian = T)[, 
+    .(stream = stream, location = location, time = time, 
+      baseline = locsum * prop)]
+  setkeyv(baselines, c("stream", "location", "time"))
+  merge(counts, baselines)
 }
