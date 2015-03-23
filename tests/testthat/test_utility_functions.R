@@ -1,4 +1,4 @@
-context("utility functions")
+context("Utility functions")
 
 test_that("key is returned if present", {
   DT <- data.table(x = 1:3, y = 1:3, key = "x")
