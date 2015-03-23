@@ -1,23 +1,49 @@
 context("MBSS posterior probabilities")
 
+
+test_that("data_to_nulldata_logratio: calculated correctly", {
+  sllr <- data.table(region = rep(1:3, each = 2),
+                     event = rep(1:2, 3), 
+                     llr = 1:6)
+  pH0 <- 2
+  n_regions <- 3
+  event_logpriors <- c(-1, 1)
+  s1 <- log(sum(exp(c(1, 3, 5))))
+  s2 <- log(sum(exp(c(2, 4, 6))))
+  e1 <- event_logpriors[1] + s1
+  e2 <- event_logpriors[2] + s2
+  expected <- log(pH0 + exp(-log(n_regions) + log(sum(exp(c(e1, e2))))))
+  actual <- data_to_nulldata_logratio(sllr, event_logpriors, pH0, n_regions)
+  expect_equal(actual, expected)
+})
+
 test_that("spatial_logposterior: calculated correctly", {
   lps <- data.table(region = rep(1:3, each = 2),
-                       event = rep(1:2, 3),
-                       llh = rep(c(0.5, 2), 3))
-  lps[, llh := llh + 1:6]
+                    event = rep(1:2, 3),
+                    llr = rep(c(0.5, 2), 3))
+  lps[, llr := llr + 1:6]
   setkeyv(lps, c("region", "event"))
   spatial_logposterior(lps, c(0.5, -1), exp(1), 1)
   expect_equal(lps[, posterior_logprob], 1:6 - 1)
 })
 
 test_that("spacetime_logposterior: calculated correctly", {
-  st_lps <- data.table(region = rep(1:3, each = 4),
-                       event = rep(1:2, 3, each = 2),
-                       time = rep(0:1, 6), 
-                       llh = rep(c(0.5, 2), 3, each = 2))
-  st_lps[, llh := llh + 1:12]
-  setkeyv(st_lps, c("region", "event", "time"))
+  stllrs <- data.table(region = rep(1:2, each = 4),
+                       event = rep(1:2, 2, each = 2),
+                       time = rep(0:1, 4), 
+                       llr = 1:8)
+  setkeyv(stllrs, c("region", "event", "time"))
   
-  spacetime_logposterior(st_lps, c(0.5, -1), exp(1), exp(2), 3)
-  expect_equal(st_lps[, posterior_logprob], 1:12 - 5)
+  event_logpriors <- c(-1, 1)
+  degl <- matrix(1:4, ncol = 2)
+  expn_reg <- exp(1)
+  data_logratio <- 1
+  
+  expected <- c(-1, 1, 5, 7, 3, 5, 9, 11)
+  actual <- spacetime_logposterior(stllrs, 
+                                   event_logpriors, 
+                                   degl, 
+                                   expn_reg, 
+                                   data_logratio)
+  expect_equal(actual[, posterior_logprob], expected)
 })
