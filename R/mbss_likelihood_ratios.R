@@ -44,17 +44,18 @@ spacetime_llr <- function(event_llrs) {
 #' Computes the log-likelihood ratio for each spatial region \eqn{S} and
 #' event type \eqn{E_k}.
 #' 
-#' @param st_llrs A \code{data.table} with columns 
+#' @param spacetime_llrs A \code{data.table} with columns 
 #'        \code{region, event, time, llr}. The first three columns are 
 #'        key columns in the given order, and column \code{llr} contains
 #'        the space-time log-likelihood ratios.
-#' @param dur_given_event_lprobs A numeric matrix or data frame containing
+#' @param dur_given_event_logprobs A numeric matrix or data frame containing
 #'        the conditonal log-probabilities of the duration of an event
 #'        given the event type. Rows correspond to event durations and 
 #'        columns correspond to events, so element \eqn{(i,j)} gives the
 #'        log of the probability that the duration is \eqn{i},
 #'        given that the event is of type \eqn{j}.
-spatial_llr <- function(st_llrs, dur_given_event_lprobs) {
-  st_llrs[, .(llr = logsumexp(llr + dur_given_event_lprobs[time + 1, event])), 
-          by = .(region, event)]
+spatial_llr <- function(spacetime_llrs, dur_given_event_logprobs) {
+  spacetime_llrs[, 
+    .(llr = logsumexp(llr + dur_given_event_logprobs[time + 1, event])), 
+    by = .(region, event)]
 }
