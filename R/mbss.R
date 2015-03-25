@@ -7,7 +7,7 @@ MBSS <- function(event_loglikelihood_ratios,
                  event_priors,
                  duration_condpriors) {
   # Input checking -------------------------------------------------------------
-  if (!is.data.table(loglikelihood_ratios)) {
+  if (!is.data.table(event_loglikelihood_ratios)) {
     stop("The log-likelihood ratios must be supplied as a data.table.")
   }
   if (!all(names(event_loglikelihood_ratios) %in% 
@@ -18,8 +18,8 @@ MBSS <- function(event_loglikelihood_ratios,
   if (any(is.na(event_loglikelihood_ratios))) {
     stop("No support for missing values yet.")
   }
-  if (length(null_prior) != 1 || !is.numeric(null_prior) || null_prior >= 0 ||
-        null_prior <= 1) {
+  if (length(null_prior) != 1 || !is.numeric(null_prior) || null_prior < 0 ||
+        null_prior > 1) {
     stop("Prior null hypothesis probability must be a single numeric value ",
          "between 0 and 1.")
   }
@@ -27,7 +27,7 @@ MBSS <- function(event_loglikelihood_ratios,
     stop("Prior probabilities for events or no events must sum to 1.")
   }
   if (!all.equal(rep(1, length(event_priors)), 
-                 rowSums(duration_condpriors))) {
+                 colSums(duration_condpriors))) {
     stop("Conditional probabilities for event durations given event type ",
          "must sum to the event priors.")
   }
@@ -42,6 +42,7 @@ MBSS <- function(event_loglikelihood_ratios,
   
   # Assume everything is correct below
   
+  setkeyv(event_loglikelihood_ratios, c("location"))
   
   spacetime_output <- 
     event_loglikelihood_ratios %>%
@@ -73,6 +74,9 @@ MBSS <- function(event_loglikelihood_ratios,
   
   event_pmap <- event_probability_map(event_logpmap)
   pmap <- probability_map(event_logpmap)
+
+  spacetime_output[, posterior_prob := exp(posterior_logprob)]
+  null_posterior <- exp(null_loglikelihood) * null_prior / marginal_prob_of_data
   
   structure(list(event_loglikelihood_ratios = event_loglikelihood_ratios,
                  max_duration = max_duration,
@@ -84,6 +88,7 @@ MBSS <- function(event_loglikelihood_ratios,
                  duration_condpriors = duration_condpriors,
                  marginal_prob_of_data = marginal_prob_of_data,
                  posteriors = spacetime_output,
+                 null_posterior = null_posterior,
                  event_probability_map = event_pmap,
                  probability_map = pmap), 
             class = "MBSS")
