@@ -1,9 +1,24 @@
 
+#' Computes the full log-likelihood under the null hypothesis of no events.
+#' 
+#' Computes the log-likelihood log(P\eqn{(D|H_0}))
+#' under the null hypotesis of no events taking place.
+#' 
+#' @param densities A \code{data.table} with column \code{density},
+#'        containing the log-\emph{density} (log-pmf or log-pdf)
+#'        for each observation in the data.
+#'        Other columns should thus preferably be \code{location},
+#'        \code{time}, and \code{stream}.
+#' @return The log-likelihood log(\eqn{P(D|H_0})), a scalar value.
+null_llh <- function(densities) {
+  densities[, sum(density)]
+}
+
 
 #' Computes the log-likelihood for each spatial region and event type.
 #'
 #' Computes the log-likelihood log(\eqn{P(D|H_1(S,E_k))})
-#' of the data given that an event of type \eqn{E_k} occurs in region 
+#' given that an event of type \eqn{E_k} occurs in region 
 #' \eqn{S}, for all such regions and for all event types,
 #' considering events of time duration up to \eqn{W_{\max}}.
 #' This function assumes that the event duration is uniformly distributed,
@@ -25,7 +40,7 @@ spatial_llh_uniform <- function(full_llr, null_llh, L, max_duration) {
 #' Computes log-likelihood for each space-time region and event type.
 #'
 #' Computes the log-likelihoods log(P\eqn{(D|H_1(S,E_k), W)})
-#' of the data given that an event of type \eqn{E_k} 
+#' given that an event of type \eqn{E_k} 
 #' with time duration \eqn{W} occurs in spatial region \eqn{S},
 #' for each duration \eqn{1 \le W \le W_{\max}},
 #' each event type, and each region.
@@ -49,20 +64,4 @@ spatial_llh_uniform <- function(full_llr, null_llh, L, max_duration) {
 spacetime_llh_uniform <- function(full_llr, null_llh, L) {
   full_llr[, .(llh = logsumexp(llr) + null_llh - log(L)), 
            keyby = .(region, event, time)]
-}
-
-
-#' Computes the full log-likelihood under the null hypothesis of no events.
-#' 
-#' Computes the log-likelihood log(P\eqn{(D|H_0}))
-#' under the null hypotesis of no events taking place.
-#' 
-#' @param densities A \code{data.table} with column \code{density},
-#'        containing the log-\emph{density} (log-pmf or log-pdf)
-#'        for each observation in the data.
-#'        Other columns should thus preferably be \code{location},
-#'        \code{time}, and \code{stream}.
-#' @return The log-likelihood log(\eqn{P(D|H_0})), a scalar value.
-null_llh <- function(densities) {
-  densities[, sum(density)]
 }
