@@ -83,6 +83,6 @@ data_to_nulldata_logratio <- function(spatial_llrs,
 #' @param data_logratio Output from \code{\link{data_to_nulldata_logratio}}.
 #' @param null_logprob The logarithm of the probability of the data under the
 #'        null hypothesis of no events.
-marginal_logprob_of_data <- function(data_logratio, null_logprob) {
-  data_logratio + null_logprob
+marginal_logprob_of_data <- function(data_logratio, null_llh) {
+  data_logratio + null_llh
 }
