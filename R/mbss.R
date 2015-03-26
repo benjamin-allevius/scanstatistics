@@ -1,4 +1,11 @@
+# TODO: documentation
+# Change input to densities instead of likelihood ratios
+# Work out how to convert back to actual times 
+# - pass in observed times and counts?
 
+#   if (any(grepl("POSIX", class(event_loglikelihood_ratios$time)))) {
+#     actual_times <- 
+#   }
 
 MBSS <- function(event_loglikelihood_ratios,
                  null_loglikelihood,
@@ -31,34 +38,28 @@ MBSS <- function(event_loglikelihood_ratios,
     stop("Conditional probabilities for event durations given event type ",
          "must sum to the event priors.")
   }
-  
-  # 
+  # Proceed with calculations --------------------------------------------------
   n_regions <- length(regions)
   max_duration <- length(unique(event_loglikelihood_ratios[, time]))
   
-#   if (any(grepl("POSIX", class(event_loglikelihood_ratios$time)))) {
-#     actual_times <- 
-#   }
-  
-  # Assume everything is correct below
-  
   setkeyv(event_loglikelihood_ratios, c("location"))
   
+  # Calculate log-likelihood ratios for all events, regions, and durations
   spacetime_output <- 
     event_loglikelihood_ratios %>%
     region_joiner(regions = regions) %>%
     spacetime_llr
   
+  # Calculate the marginal probability of the data
   data_logratio <- 
     spacetime_output %>%
     spatial_llr(dur_given_event_logprobs = log(duration_condpriors)) %>%
     data_to_nulldata_logratio(event_logpriors = log(event_priors),
                               null_prior = null_prior,
                               n_regions = n_regions)
-  
   marginal_prob_of_data <- exp(data_logratio + null_loglikelihood)
 
-  # Modify spacetime_output: add colum for posterior probability
+  # Add a column to \code{spacetime_output} for posterior probability
   spacetime_logposterior(spacetime_output,
                          event_logpriors = log(event_priors),
                          dur_given_event_logprobs = log(duration_condpriors),
@@ -67,16 +68,26 @@ MBSS <- function(event_loglikelihood_ratios,
 
   setkeyv(spacetime_output, c("region", "event"))
 
+  # Calculate probability maps
   event_logpmap <- 
     spacetime_output %>%
     event_logprobability_map(
       region_table = region_table_creator(regions, key = "region"))
-  
+
   event_pmap <- event_probability_map(event_logpmap)
   pmap <- probability_map(event_logpmap)
 
+  # Calculate the posterior probabilities
   spacetime_output[, posterior_prob := exp(posterior_logprob)]
   null_posterior <- exp(null_loglikelihood) * null_prior / marginal_prob_of_data
+  event_duration_joint <- posterior_duration_event_jdist(spacetime_output)
+  event_posteriors <- posterior_event_probabilities(event_duration_joint)
+  duration_condposteriors <- posterior_duration_givn_event(event_duration_joint)
+
+  if (!all.equal(1, null_posterior + 
+                    event_posteriors[, sum(event_posterior)])) {
+    warning("Posterior probabilities don't sum to 1.")
+  }
   
   structure(list(event_loglikelihood_ratios = event_loglikelihood_ratios,
                  max_duration = max_duration,
@@ -89,6 +100,8 @@ MBSS <- function(event_loglikelihood_ratios,
                  marginal_prob_of_data = marginal_prob_of_data,
                  posteriors = spacetime_output,
                  null_posterior = null_posterior,
+                 event_posteriors = event_posteriors,
+                 duration_condposteriors = duration_condposteriors,
                  event_probability_map = event_pmap,
                  probability_map = pmap), 
             class = "MBSS")
