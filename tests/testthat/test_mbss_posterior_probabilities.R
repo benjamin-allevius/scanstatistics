@@ -1,6 +1,36 @@
 context("MBSS posterior probabilities")
 
 
+test_that("posterior_event_probabilities: calculated correctly", {
+  jd <- data.table(event = rep(1:2, each = 2),
+                   time = rep(0:1, 2),
+                   duration_event_posterior = 1:4)
+  expected <- c(c(1, 2) / 3, c(3, 4) / 7)
+  actual <- posterior_duration_givn_event(jd)[, duration_condposterior]
+  expect_equal(actual, expected)
+})
+
+test_that("posterior_duration_event_jdist: calculated correctly", {
+  st <- data.table(region = rep(1:2, each = 4),
+                                event = rep(1:2, 2, each = 2),
+                                time = rep(0:1, 4))
+  setkeyv(st, c("event", "time"))
+  st[, posterior_logprob := log(1:8)]
+  
+  actual <- posterior_duration_event_jdist(st)[, duration_event_posterior]
+  expected <- c(1+2, 3+4, 5+6, 7+8)
+  expect_equal(actual, expected)
+})
+
+test_that("posterior_event_probabilities: calculated correctly", {
+  pl <- data.table(event = rep(1:2, each = 2),
+                   time = rep(0:1, 2),
+                   duration_event_posterior = 1:4)
+  actual <- posterior_event_probabilities(pl)[, event_posterior]
+  expected <- c(1+2, 3+4)
+  expect_equal(actual, expected)
+})
+
 test_that("data_to_nulldata_logratio: calculated correctly", {
   sllr <- data.table(region = rep(1:3, each = 2),
                      event = rep(1:2, 3), 
