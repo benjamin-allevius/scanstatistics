@@ -84,8 +84,8 @@ MBSS <- function(event_loglikelihood_ratios,
   event_posteriors <- posterior_event_probabilities(event_duration_joint)
   duration_condposteriors <- posterior_duration_givn_event(event_duration_joint)
 
-  if (!all.equal(1, null_posterior + 
-                    event_posteriors[, sum(event_posterior)])) {
+  total_posterior <- null_posterior + event_posteriors[, sum(event_posterior)]
+  if (!all.equal(1, total_posterior)) {
     warning("Posterior probabilities don't sum to 1.")
   }
   
