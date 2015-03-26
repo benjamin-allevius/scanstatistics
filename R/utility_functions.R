@@ -6,12 +6,12 @@ get_package_names <- function() {
 }
 
 # May over/underflow
-logsumexp <- function(x) {
+logsumexp_unstable <- function(x) {
   log(sum(exp(x)))
 }
 
 # log-sum-exp trick: avoids arithmetic underflow and overflow
-logsumexp_stable <- function(x) {
+logsumexp <- function(x) {
     A <- max(x)
     A + log(sum(exp(x - A)))
 }
