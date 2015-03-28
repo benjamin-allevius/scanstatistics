@@ -84,27 +84,28 @@ region_table_creator <- function(regions, key = NULL) {
              key = key)
 }
 
-#' Add a column for \code{region} to a \code{data.table} containing 
-#' \code{location}s.
+#' Creates a new \code{data.table} from a table containing locations,
+#' adding a column for region.
 #' 
 #' Takes a \code{data.table} with containing column \code{location} and 
-#' preferably other columns, and creates a new \code{data.table} with 
+#' possibly other columns, and creates a new \code{data.table} with 
 #' a column for region added to the columns in the supplied table, 
 #' according to the regions in the supplied list of regions.
+#' The key colums of the resulting \code{data.table} can be specified.
 #' 
 #' @param locations_etc A \code{data.table} with column \code{location}
 #'        and other columns (but none for \code{region}).
 #' @param regions A list of regions, elements being vectors of locations.
-#' @param key Character vector of one or more column names which is passed 
-#'        to code{\link[data.table]{setkey}}.
+#' @param keys Character vector of one or more column names; these columns
+#'        are set as key columns in the output \code{data.table}.
 #' @return A new \code{data.table} with a column for \code{region} added
 #'         to the supplied table of locations etc. (not modified).
 #' @examples
 #' locs_etc <- table_creator(list(location = 1:2, time = 0:2, stream = 1:2))
-#' region_joiner(locs_etc, list(1, 2, 1:2))
-region_joiner <- function(locations_etc, regions) {
+#' region_joiner(locs_etc, list(1, 2, 1:2), keys = c("time", "region"))
+region_joiner <- function(locations_etc, regions, keys = c("region")) {
   region_table_creator(regions, key = "location")[
-    locations_etc, allow.cartesian = TRUE]
+    locations_etc, allow.cartesian = TRUE][, .SD, keyby = keys]
 }
 
 
