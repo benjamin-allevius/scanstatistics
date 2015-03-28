@@ -42,7 +42,7 @@ first_keys_are_equal <- function(data_table, keys) {
 #' @param col_list A named list of the variables you want 
 #'        in your \code{data.table}.
 #' @param key Character vector of one or more column names which is passed 
-#'        to code{\link[data.table]{setkey}}.
+#'        to \code{\link[data.table]{setkey}}.
 #' @return A \code{data.table} with all combinations of the variables
 #'         supplied in \code{col_list}.
 #' @examples
@@ -107,7 +107,6 @@ region_joiner <- function(locations_etc, regions, keys = c("region")) {
   region_table_creator(regions, key = "location")[
     locations_etc, allow.cartesian = TRUE][, .SD, keyby = keys]
 }
-
 
 #' Applies a function over all regions containing the locations supplied.
 #' 
