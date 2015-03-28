@@ -3,7 +3,7 @@ context("MBSS posterior probabilities")
 
 test_that("posterior_event_probabilities: calculated correctly", {
   jd <- data.table(event = rep(1:2, each = 2),
-                   time = rep(0:1, 2),
+                   duration = rep(1:2, 2),
                    duration_event_posterior = 1:4)
   expected <- c(c(1, 2) / 3, c(3, 4) / 7)
   actual <- posterior_duration_givn_event(jd)[, duration_condposterior]
@@ -13,8 +13,8 @@ test_that("posterior_event_probabilities: calculated correctly", {
 test_that("posterior_duration_event_jdist: calculated correctly", {
   st <- data.table(region = rep(1:2, each = 4),
                                 event = rep(1:2, 2, each = 2),
-                                time = rep(0:1, 4))
-  setkeyv(st, c("event", "time"))
+                                duration = rep(1:2, 4))
+  setkeyv(st, c("event", "duration"))
   st[, posterior_logprob := log(1:8)]
   
   actual <- posterior_duration_event_jdist(st)[, duration_event_posterior]
@@ -24,7 +24,7 @@ test_that("posterior_duration_event_jdist: calculated correctly", {
 
 test_that("posterior_event_probabilities: calculated correctly", {
   pl <- data.table(event = rep(1:2, each = 2),
-                   time = rep(0:1, 2),
+                   duration = rep(1:2, 2),
                    duration_event_posterior = 1:4)
   actual <- posterior_event_probabilities(pl)[, event_posterior]
   expected <- c(1+2, 3+4)
@@ -60,9 +60,9 @@ test_that("spatial_logposterior: calculated correctly", {
 test_that("spacetime_logposterior: calculated correctly", {
   stllrs <- data.table(region = rep(1:2, each = 4),
                        event = rep(1:2, 2, each = 2),
-                       time = rep(0:1, 4), 
+                       duration = rep(1:2, 4), 
                        llr = 1:8)
-  setkeyv(stllrs, c("region", "event", "time"))
+  setkeyv(stllrs, c("region", "event", "duration"))
   
   event_logpriors <- c(-1, 1)
   degl <- matrix(1:4, ncol = 2)

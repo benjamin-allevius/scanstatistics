@@ -8,8 +8,8 @@ test_that("spatial_llh_uniform: llh calculated correctly", {
   fullr <- data.table(event = rep(1, 12),
                       region = rep(1:3, each = 4),
                       severity = rep(1:2, 3, each = 2),
-                      time = rep(0:1, 6),
-                      key = c("event", "region", "time"))
+                      duration = rep(1:2, 6),
+                      key = c("event", "region", "duration"))
   fullr[, llr := log(rep(1:3, each = 4) / 4)]
   
   # add 2, subtract 1, subtract 1 from logsumexp(llh)
@@ -22,13 +22,13 @@ test_that("spatial_llh_uniform: llh calculated correctly", {
 })
 
 
-# Space-time log-likelihood with uniform prior ---------------------------
+# Space-duration log-likelihood with uniform prior ---------------------------
 
 test_that("spacetime_llh_uniform: calculated correctly", {
   fullr <- data.table(region = rep(1:3, each = 4),
                       event = rep(1, 12),
                       severity = rep(1:2, 3, each = 2),
-                      time = rep(0:1, 6))
+                      duration = rep(1:2, 6))
   setkeyv(fullr, c("region", "event", "severity"))
   fullr[, llr := log(c(1,2,1,2,3,4,3,4,5,6,5,6) / 2)]
       

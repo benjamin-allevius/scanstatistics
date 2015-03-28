@@ -25,7 +25,8 @@ test_that("event_logprobability_map: calculated correctly", {
                     posterior_logprob = log(c(0.5, 0.5, 2.5, 2.5, 0.5, 1.5)))
   setkeyv(lps, c("region", "event"))
   
-  regions <- data.table(location = rep(1:2, 2), region = c(1:3, 3),
+  regions <- data.table(location = rep(1:2, 2), 
+                        region = c(1:3, 3),
                         key = "region")
   
   actual <- event_logprobability_map(lps, regions)[, posterior_logprob]

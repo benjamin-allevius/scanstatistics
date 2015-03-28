@@ -47,14 +47,14 @@ spacetime_logposterior <- function(spacetime_llrs,
                                    n_regions,
                                    data_logratio) {
   spacetime_llrs[, posterior_logprob := llr + event_logpriors[event] + 
-                   dur_given_event_logprobs[time + 1, event] - 
+                   dur_given_event_logprobs[duration, event] - 
                    log(n_regions) - data_logratio,
-                 by = .(region, event, time)]
+                 by = .(region, event, duration)]
 }
 
 
-#' Calculates the log of ratio: marginal probability of data to 
-#' probability of data under null.
+#' Log of the ratio [marginal probability of data] to 
+#' [probability of data under null].
 #' 
 #' @param spatial_llrs A \code{data.table} with columns \code{region, event}
 #'        and \code{llr}, the latter containing the log-likelihood ratios
@@ -104,24 +104,31 @@ posterior_event_probabilities <- function(dur_event_pjdist) {
 #' Calculates the posterior joint distribution of event type and duration.
 #' 
 #' @param spacetime_logposteriors A \code{data.table} containing at least the
-#'        columns \code{event}, \code{time}, and \code{posterior_logprob}.
+#'        columns \code{event}, \code{duration}, and \code{posterior_logprob}.
 #'        The latter contains the log of the posterior probability of the 
-#'        given event type and duration (time+1), and given whatever else is 
+#'        given event type and duration, and given whatever else is 
 #'        on the same row, in the remaining columns.
 #' @return A \code{data.table} containing the columns \code{event},
-#'         \code{time}, and \code{duration_event_posterior}.
+#'         \code{duration}, and \code{duration_event_posterior}.
 #'         The latter contains the joint pmf of the event type and event 
 #'         duration.
 posterior_duration_event_jdist <- function(spacetime_logposteriors) {
   spacetime_logposteriors[, 
     .(duration_event_posterior = exp(logsumexp(posterior_logprob))), 
-    by = .(event, time)]
+    by = .(event, duration)]
 }
 
 #' Posterior conditional distribution of event duration given event type.
+#' 
+#' Given the posterior joint distribution of the event type and event duration,
+#' calculates the posterior conditional distribution of the event duration
+#' given the event type.
+#' 
+#' @param dur_event_pjdist A \code{data.table} containing the posterior
+#'        joint distribution of the event duration and the event type.
 posterior_duration_givn_event <- function(dur_event_pjdist) {
   dur_event_pjdist[, 
-    .(duration = time + 1, 
+    .(duration = duration, 
       duration_condposterior = 
         duration_event_posterior / sum(duration_event_posterior)), 
     by = .(event)]
