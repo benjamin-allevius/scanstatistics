@@ -137,3 +137,22 @@ region_apply <- function(f, region_partition, location_table) {
                   allow.cartesian = TRUE) %>% f
           }
 }
+
+#' Add a column \code{duration} to a \code{data.table} with column \code{time}.
+#' 
+#' Adds a column \code{duration} to a \code{data.table} with column \code{time},
+#' the most recent time given a duration of 1, the second most recent time 
+#' given a duration of 2, and so on. This function \strong{modifies} the input
+#' table.
+#' 
+#' @param d A \code{data.table} containing at least a column \code{time},
+#'        which is sortable. For example, could be POSIXct dates.
+#' @return The input \code{data.table}, with a column \code{duration} added.
+add_duration <- function(d) {
+  td <- times_and_durations(d)
+  # Can't test directly for POSIXct equality in current version of data.table.
+  # Workaround from https://github.com/Rdatatable/data.table/issues/1008
+  dur_from_time <- function(t) td[time >= t & time <= t, duration]
+  d[, duration := dur_from_time(time), by = .(time)]
+}
+}
