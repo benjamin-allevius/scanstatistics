@@ -155,4 +155,19 @@ add_duration <- function(d) {
   dur_from_time <- function(t) td[time >= t & time <= t, duration]
   d[, duration := dur_from_time(time), by = .(time)]
 }
+
+#' Creates a \code{data.table} with columns \code{time} and \code{duration}.
+#' 
+#' Creates a \code{data.table} with columns \code{time} and \code{duration},
+#' in which the column \code{time} corresponds to the (unique) times in the 
+#' input table. In the output, the most recent time given a duration of 1, 
+#' the second most recent time given a duration of 2, and so on.
+#' 
+#' @param d A \code{data.table} containing at least a column \code{time},
+#'        which is sortable. For example, could be POSIXct dates.
+#' @return A new \code{data.table}, containing columns \code{time} (key column)
+#'         and \code{duration}.
+times_and_durations <- function(d) {
+  times <- sort(unique(d[, time]))
+  data.table(time = times, duration = rev(seq_along(times)), key = "time")
 }
