@@ -3,27 +3,24 @@
 # Work out how to convert back to actual times 
 # - pass in observed times and counts?
 
-#   if (any(grepl("POSIX", class(event_loglikelihood_ratios$time)))) {
-#     actual_times <- 
-#   }
-
-MBSS <- function(event_loglikelihood_ratios,
-                 null_loglikelihood,
+MBSS <- function(counts_and_logdensities,
                  regions,
                  null_prior,
                  event_priors,
                  duration_condpriors) {
   # Input checking -------------------------------------------------------------
-  if (!is.data.table(event_loglikelihood_ratios)) {
+  if (!is.data.table(counts_and_logdensities)) {
     stop("The log-likelihood ratios must be supplied as a data.table.")
   }
-  if (!all(names(event_loglikelihood_ratios) %in% 
-            c("event", "stream", "location", "time", "llr"))) {
+  if (!all(names(counts_and_logdensities) %in% 
+            c("event", "stream", "location", "time", "count", 
+              "null_logdensity", "event_logdensity"))) {
     stop("The data.table containing the log-likelihood ratios must ",
-         "contain the columns 'stream', 'location', 'time', 'llr'.")
+         "contain the columns 'event', 'stream', 'location', 'time', 'count', ",
+         "'null_logdensity', 'event_logdensity'.")
   }
-  if (any(is.na(event_loglikelihood_ratios))) {
-    stop("No support for missing values yet.")
+  if (any(is.na(counts_and_logdensities))) {
+    stop("No support for missing values yet. Consider imputation methods.")
   }
   if (length(null_prior) != 1 || !is.numeric(null_prior) || null_prior < 0 ||
         null_prior > 1) {
@@ -39,15 +36,21 @@ MBSS <- function(event_loglikelihood_ratios,
          "must sum to the event priors.")
   }
   # Proceed with calculations --------------------------------------------------
+  times_durations <- times_and_durations(counts_and_logdensities)
   n_regions <- length(regions)
-  max_duration <- length(unique(event_loglikelihood_ratios[, time]))
+  max_duration <- max(times_durations[, duration])
   
-  setkeyv(event_loglikelihood_ratios, c("location"))
-  
+  null_loglikelihood <- 
+    counts_and_logdensities[event == counts_and_logdensities[1, event],
+                            sum(null_logdensity)]
+
   # Calculate log-likelihood ratios for all events, regions, and durations
+  keys_used_for_stllr <- c("region", "event", "duration", "stream", "location")
   spacetime_output <- 
-    event_loglikelihood_ratios %>%
-    region_joiner(regions = regions) %>%
+    counts_and_logdensities[, .(llr = event_logdensity - null_logdensity),
+      keyby = .(location, event, stream, time)] %>%
+    add_duration %>%
+    region_joiner(regions = regions, keys = keys_used_for_stllr) %>%
     spacetime_llr
   
   # Calculate the marginal probability of the data
@@ -57,7 +60,8 @@ MBSS <- function(event_loglikelihood_ratios,
     data_to_nulldata_logratio(event_logpriors = log(event_priors),
                               null_prior = null_prior,
                               n_regions = n_regions)
-  marginal_prob_of_data <- exp(data_logratio + null_loglikelihood)
+  
+  marginal_logprob_of_data <- data_logratio + null_loglikelihood
 
   # Add a column to \code{spacetime_output} for posterior probability
   spacetime_logposterior(spacetime_output,
@@ -65,8 +69,6 @@ MBSS <- function(event_loglikelihood_ratios,
                          dur_given_event_logprobs = log(duration_condpriors),
                          n_regions = n_regions,
                          data_logratio = data_logratio)
-
-  setkeyv(spacetime_output, c("region", "event"))
 
   # Calculate probability maps
   event_logpmap <- 
@@ -79,7 +81,8 @@ MBSS <- function(event_loglikelihood_ratios,
 
   # Calculate the posterior probabilities
   spacetime_output[, posterior_prob := exp(posterior_logprob)]
-  null_posterior <- exp(null_loglikelihood) * null_prior / marginal_prob_of_data
+  null_posterior <- exp(null_loglikelihood + 
+                          log(null_prior) - marginal_logprob_of_data)
   event_duration_joint <- posterior_duration_event_jdist(spacetime_output)
   event_posteriors <- posterior_event_probabilities(event_duration_joint)
   duration_condposteriors <- posterior_duration_givn_event(event_duration_joint)
@@ -89,7 +92,7 @@ MBSS <- function(event_loglikelihood_ratios,
     warning("Posterior probabilities don't sum to 1.")
   }
   
-  structure(list(event_loglikelihood_ratios = event_loglikelihood_ratios,
+  structure(list(counts_and_logdensities = counts_and_logdensities,
                  max_duration = max_duration,
                  n_regions = n_regions,
                  regions = regions,
