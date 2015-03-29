@@ -48,6 +48,36 @@ test_that("regions_upto_k: returns correct sets", {
 
 # Flexible region shape (Tango 2005) -------------------------------------------
 
+test_that("flexible_regions: works", {
+  A <- matrix(c(0,1,0,0,0,0,
+                1,0,1,0,0,0,
+                0,1,0,0,0,0,
+                0,0,0,0,1,0,
+                0,0,0,1,0,0,
+                0,0,0,0,0,0), 
+              nrow = 6, byrow = TRUE)
+  A <- A == 1
+  kn <- matrix(as.integer(
+               c(1,2,3,4,5,6,
+                 2,1,3,4,5,6,
+                 3,2,1,4,5,6,
+                 4,5,1,6,3,2,
+                 5,4,6,1,3,2,
+                 6,5,4,1,3,2)),
+               nrow = 6, byrow = TRUE)
+  expect_equal(flexible_regions(kn, A),
+               sets::set(sets::set(1L),
+                         sets::set(2L),
+                         sets::set(3L),
+                         sets::set(4L),
+                         sets::set(5L),
+                         sets::set(6L),
+                         sets::set(1L, 2L),
+                         sets::set(2L, 3L),
+                         sets::set(4L, 5L),
+                         sets::set(1L, 2L, 3L)))
+})
+
 test_that("connected_neighbors: works", {
   A <- matrix(c(0,1,0,0,0,0,
                 1,0,1,0,0,0,

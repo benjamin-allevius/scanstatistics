@@ -61,18 +61,32 @@ closest_subsets <- function(v) {
                       sets::as.set))
 }
 
-
+#' Computes the flexibly shaped regions as in Tango (2005).
+#' 
+#' Given a matrix of \eqn{k} nearest neighbors and an adjacency matrix
+#' for the locations involved, produces the set of flexibly shaped regions
+#' (sets of locations). The regions in these sets are all connected,
+#' in the sense that any location in the region can be reached from another
+#' by traveling through adjacent locations within the region.
+#' 
+#' @param k_nearest A matrix of the \eqn{k} nearest neighbors for each location.
+#'        Each row corresponds to a location, with the first element of each row
+#'        being the location itself. Locations should preferably be given
+#'        as integers.
+#' @inheritParams connected_to_full
+#' @inheritParams plyr::alply
 flexible_regions <- function(k_nearest, 
                              adjacency_matrix,
                              .parallel = FALSE, 
                              .paropts = NULL) {
   connected_to <- pryr::partial(connected_to_full,
                                 adjacency_matrix = adjacency_matrix)
-  sets::as.set(plyr::alply(k_nearest,
-                           .margins = 1,
-                           .fun = connected_neighbors,
-                           .parallel = .parallel,
-                           .paropts = .paropts))
+  Reduce(sets::set_union,
+         sets::as.set(plyr::alply(k_nearest,
+                                  .margins = 1,
+                                  .fun = connected_neighbors,
+                                  .parallel = .parallel,
+                                  .paropts = .paropts)))
 }
 
 #' Returns the connected sets for a location and its \eqn{k} nearest neighbors,
