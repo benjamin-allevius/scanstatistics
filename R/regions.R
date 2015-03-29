@@ -75,15 +75,24 @@ flexible_regions <- function(k_nearest,
                            .paropts = .paropts))
 }
 
-
+#' Returns the connected sets for a location and its \eqn{k} nearest neighbors,
+#' including itself.
+#' 
+#' Returns a \code{set} of \code{set}s, each set of the latter type containing
+#' the location itself and zero or more of its neighbors, if they are connected.
+#' 
+#' @param neighbors A vector of neighbors to a location, the first element
+#'        of the vector being the specific location, and the other elements
+#'        its other nearest neighbors. Locations should preferably be integers.
 connected_neighbors <- function(neighbors) {
   location <- neighbors[1]
   its_neighbors <- neighbors[-1]
   pset <- sets::set_power(sets::as.set(its_neighbors)) - sets::set(sets::set())
-  sets::set_union(sets::set(sets::set(location)),
-                  sets::as.set(lapply(pset, 
-                                      if_connected, 
-                                      location = location)))
+  sets::set_union(
+    sets::set(sets::set(location)),
+      sets::as.set(lapply(pset, 
+                          if_connected, 
+                          location = location))) - sets::set(sets::set())
 }
 
 

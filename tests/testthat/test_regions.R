@@ -46,6 +46,42 @@ test_that("regions_upto_k: returns correct sets", {
   expect_equal(regions_upto_k(nn[, 1:2]), regs)
 })
 
+# Flexible region shape (Tango 2005) -------------------------------------------
+
+test_that("connected_neighbors: works", {
+  A <- matrix(c(0,1,0,0,0,0,
+                1,0,1,0,0,0,
+                0,1,0,0,0,0,
+                0,0,0,0,1,0,
+                0,0,0,1,0,0,
+                0,0,0,0,0,0), 
+              nrow = 6, byrow = TRUE)
+  A <- A == 1
+  connected_to <- pryr::partial(connected_to_full,
+                                adjacency_matrix = A)
+  
+  expect_equal(connected_neighbors(1:6), 
+               sets::set(sets::set(1L), 
+                         sets::set(1L, 2L),
+                         sets::set(1L, 2L, 3L)))
+  expect_equal(connected_neighbors(c(2:6, 1L)), 
+               sets::set(sets::set(2L), 
+                         sets::set(1L, 2L),
+                         sets::set(2L, 3L),
+                         sets::set(1L, 2L, 3L)))
+  expect_equal(connected_neighbors(c(3:6, 1:2)), 
+               sets::set(sets::set(3L), 
+                         sets::set(2L, 3L),
+                         sets::set(1L, 2L, 3L)))
+  expect_equal(connected_neighbors(c(4:6, 1:3)), 
+               sets::set(sets::set(4L), 
+                         sets::set(4L, 5L)))
+  expect_equal(connected_neighbors(c(5:6, 1:4)), 
+               sets::set(sets::set(5L), 
+                         sets::set(4L, 5L)))
+  expect_equal(connected_neighbors(c(6L, 1:5)), 
+               sets::set(sets::set(6L)))
+})
 
 test_that("if_connected: works", {
   A <- matrix(c(0,1,0,0,0,
