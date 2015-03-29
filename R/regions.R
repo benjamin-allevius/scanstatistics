@@ -68,11 +68,11 @@ flexible_regions <- function(k_nearest,
                              .paropts = NULL) {
   connected_to <- pryr::partial(connected_to_full,
                                 adjacency_matrix = adjacency_matrix)
-  sets::as.set(dplyr::alply(k_nearest,
-                            .margins = 1,
-                            .fun = connected_neighbors,
-                            .parallel = .parallel,
-                            .paropts = .paropts))
+  sets::as.set(plyr::alply(k_nearest,
+                           .margins = 1,
+                           .fun = connected_neighbors,
+                           .parallel = .parallel,
+                           .paropts = .paropts))
 }
 
 
@@ -100,31 +100,31 @@ if_connected <- function(distinct_neighbors, location) {
 
 # is the set of the location and its neighbors connected?
 is_connected <- function(neighbor_locations, location) {
-  S_0 <- sets::set(location)
-  S_1 <- neighbor_locations
+  Z_0 <- sets::set(location)
+  Z_1 <- neighbor_locations
   while (TRUE) {
-    connected_elements <- connected_to(S_0, S_1)
-    S_0 <- set_union(S_0, connected_elements)
-    if (sets::set_is_empty(S_0)) {
+    Z_0 <- connected_to(Z_0, Z_1)
+    if (sets::set_is_empty(Z_0)) {
       return(FALSE)
     }
-    S_1 <- S1 - connected_elements
-    if (sets::set_is_empty(S_1)) {
+    Z_1 <- Z_1 - Z_0
+    if (sets::set_is_empty(Z_1)) {
       return(TRUE)
     }
   }
 }
 
-# returns a set of the elements in S_1 connected any of the elements in S_0,
+# returns a set of the elements in Z_1 connected any of the elements in Z_0,
 # according to the adjacency_matrix
 # Element (i,j) of the adjacency_matrix is TRUE if i is adjacent to j
 # with no elements being ajacent to themselves (so element (i,i) is FALSE)
 # assumes locations are integers
-connected_to_full <- function(S_0, S_1, adjacency_matrix) {
+connected_to_full <- function(Z_0, Z_1, adjacency_matrix) {
   connected <- sets::set()
-  for (s1 in S_1) {
-    if (any(S_0 %in% which(adjacency_matrix[s1, ]))) {
-      connected <- sets::set_union(connected, s1)
+  for (loc in Z_1) {
+    if (any(Z_0 %in% which(adjacency_matrix[loc, ]))) {
+      connected <- sets::set_union(connected, loc)
     }
   }
+  return(connected)
 }

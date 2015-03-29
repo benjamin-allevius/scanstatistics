@@ -45,3 +45,47 @@ test_that("regions_upto_k: returns correct sets", {
                     sets::as.set(c(5L, 3L)))
   expect_equal(regions_upto_k(nn[, 1:2]), regs)
 })
+
+
+test_that("is_connected: works", {
+  A <- matrix(c(0,1,0,0,0,
+                1,0,1,0,0,
+                0,1,0,0,0,
+                0,0,0,0,1,
+                0,0,0,1,0), 
+              nrow = 5, byrow = TRUE)
+  A <- A == 1
+  connected_to <- pryr::partial(connected_to_full,
+                                adjacency_matrix = A)
+  expect_true(is_connected(sets::set(2L), 1L))
+  expect_true(is_connected(sets::set(2L, 3L), 1L))
+  expect_false(is_connected(sets::set(4L), 1L))
+  expect_false(is_connected(sets::set(2L, 4L), 1L))
+})
+
+
+
+test_that("connected_to_full: works", {
+  A <- matrix(c(0,1,0,0,0,
+                1,0,1,0,0,
+                0,1,0,0,0,
+                0,0,0,0,1,
+                0,0,0,1,0), 
+              nrow = 5, byrow = TRUE)
+  A <- A == 1
+  z0a <- sets::as.set(1L)
+  z1a <- sets::as.set(2L)
+  actual_a <- connected_to_full(z0a, z1a, A)
+  
+  z0b <- sets::as.set(1L)
+  z1b <- sets::set(4L, 5L)
+  actual_b <- connected_to_full(z0b, z1b, A)
+  
+  z0c <- sets::as.set(2L)
+  z1c <- sets::set(1L, 3L)
+  actual_c <- connected_to_full(z0c, z1c, A)
+  
+  expect_equal(actual_a, sets::set(2L))
+  expect_equal(actual_b, sets::set())
+  expect_equal(actual_c, sets::set(1L, 3L))
+})
