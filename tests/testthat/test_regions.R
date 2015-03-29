@@ -47,6 +47,24 @@ test_that("regions_upto_k: returns correct sets", {
 })
 
 
+test_that("if_connected: works", {
+  A <- matrix(c(0,1,0,0,0,
+                1,0,1,0,0,
+                0,1,0,0,0,
+                0,0,0,0,1,
+                0,0,0,1,0), 
+              nrow = 5, byrow = TRUE)
+  A <- A == 1
+  connected_to <- pryr::partial(connected_to_full,
+                                adjacency_matrix = A)
+  
+  expect_equal(if_connected(sets::set(2L), 1L), sets::set(1L, 2L))
+  expect_equal(if_connected(sets::set(2L, 3L), 1L), sets::set(1L, 2L, 3L))
+  expect_equal(if_connected(sets::set(4L), 1L), sets::set())
+  expect_equal(if_connected(sets::set(2L, 4L), 1L), sets::set())
+})
+
+
 test_that("is_connected: works", {
   A <- matrix(c(0,1,0,0,0,
                 1,0,1,0,0,

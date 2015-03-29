@@ -86,9 +86,19 @@ connected_neighbors <- function(neighbors) {
                                       location = location)))
 }
 
-# If the location and its neighbors, not including itself, are connected,
-# then return the set of the location and its neighbors,
-# else return the empty set
+
+#' Return a set of the location and its neighbors if they are connected,
+#' else return the empty set.
+#' 
+#' If the location and its neighbors, not including itself, are connected,
+#' then return the set containing the location and its neighbors;
+#' otherwise, return the empty set
+#' 
+#' @param distinct_neighbors A \code{set} containing the neighboring locations
+#'        to the given location, not including the location itself.
+#' @param location A location, preferably given as an integer.
+#' @return A \code{set} of the given location and the neighbors if they are
+#'         connected, else returns the empty set.
 if_connected <- function(distinct_neighbors, location) {
   if (is_connected(distinct_neighbors, location)) {
     return(sets::set_union(sets::set(location),
@@ -98,7 +108,14 @@ if_connected <- function(distinct_neighbors, location) {
   }
 }
 
-# is the set of the location and its neighbors connected?
+
+#' Returns TRUE if the neighboring locations are connected to the given 
+#' location, FALSE if not.
+#' 
+#' @param neighbor_locations A \code{set} of neighboring locations to the given
+#'        location; these neighbors do not include the given location itself.
+#' @param location A location, preferably given as an integer.
+#' @return Boolean: is the neighbors connected to the given location?
 is_connected <- function(neighbor_locations, location) {
   Z_0 <- sets::set(location)
   Z_1 <- neighbor_locations
@@ -114,11 +131,18 @@ is_connected <- function(neighbor_locations, location) {
   }
 }
 
-# returns a set of the elements in Z_1 connected any of the elements in Z_0,
-# according to the adjacency_matrix
-# Element (i,j) of the adjacency_matrix is TRUE if i is adjacent to j
-# with no elements being ajacent to themselves (so element (i,i) is FALSE)
-# assumes locations are integers
+#' Return those elements in the second set which are connected to those in the
+#' first.
+#' 
+#' Return those elements in the second set \eqn{Z_1} which are connected to 
+#' those in the first set \eqn{Z_0}, according to the adjacency matrix.
+#' 
+#' @param Z_0 A set of locations, given as integers.
+#' @param Z_1 A set of locations, given as integers.
+#' @param adjacency_matrix A boolean matrix, with element \eqn{(i,j)} set 
+#'        to TRUE if location \eqn{j} is adjacent to location \eqn{i}.
+#' @return A set, possibly empty, containing those locations in \eqn{Z_1}
+#'         that are connected to any of the locations in \eqn{Z_0}.
 connected_to_full <- function(Z_0, Z_1, adjacency_matrix) {
   connected <- sets::set()
   for (loc in Z_1) {
