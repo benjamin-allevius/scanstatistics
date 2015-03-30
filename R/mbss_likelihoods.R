@@ -25,7 +25,7 @@ null_llh <- function(densities) {
 #' and that the event severity is uniformly distributed 
 #' over its possible values.
 #' 
-#' @inheritParams spaceduration_llh_uniform
+#' @inheritParams spacetime_llh_uniform
 #' @param max_duration The number of duration periods of the longest
 #'        event duration considered.
 #' @return A \code{data.table} with columns \code{region}, \code{event}, 
