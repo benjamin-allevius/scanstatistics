@@ -7,14 +7,14 @@ MBSS <- function(counts_and_logdensities,
                  regions,
                  null_prior,
                  event_priors,
-                 duration_condpriors) {
+                 duration_condpriors = "uniform") {
   # Input checking -------------------------------------------------------------
   if (!is.data.table(counts_and_logdensities)) {
     stop("The log-likelihood ratios must be supplied as a data.table.")
   }
-  if (!all(names(counts_and_logdensities) %in% 
-            c("event", "stream", "location", "time", "count", 
-              "null_logdensity", "event_logdensity"))) {
+  if (!all(c("event", "stream", "location", "time", "count", 
+             "null_logdensity", "event_logdensity") %in% 
+             names(counts_and_logdensities))) {
     stop("The data.table containing the log-likelihood ratios must ",
          "contain the columns 'event', 'stream', 'location', 'time', 'count', ",
          "'null_logdensity', 'event_logdensity'.")
@@ -30,7 +30,14 @@ MBSS <- function(counts_and_logdensities,
   if (!all.equal(1, null_prior + sum(event_priors))) {
     stop("Prior probabilities for events or no events must sum to 1.")
   }
-  if (!all.equal(rep(1, length(event_priors)), 
+  if (is.character(duration_condpriors) && 
+        (length(duration_condpriors) !=1 ||
+           duration_condpriors != "uniform")) {
+    stop("Specify conditional probabilities for event durations given event ",
+         "type either as the string 'uniform' or as a matrix.")
+  }
+  if (!is.character(duration_condpriors) && 
+      !all.equal(rep(1, length(event_priors)), 
                  colSums(duration_condpriors))) {
     stop("Conditional probabilities for event durations given event type ",
          "must sum to the event priors.")
@@ -38,7 +45,15 @@ MBSS <- function(counts_and_logdensities,
   # Proceed with calculations --------------------------------------------------
   times_durations <- times_and_durations(counts_and_logdensities)
   n_regions <- length(regions)
+  n_events <- length(event_priors)
   max_duration <- max(times_durations[, duration])
+  
+  
+  if (is.character(duration_condpriors)) {
+    duration_condpriors <- matrix(1 / max_duration, 
+                                  nrow = max_duration,
+                                  ncol = n_events)
+  }
   
   null_loglikelihood <- 
     counts_and_logdensities[event == counts_and_logdensities[1, event],
