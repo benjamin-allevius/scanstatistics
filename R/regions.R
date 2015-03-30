@@ -73,18 +73,17 @@ closest_subsets <- function(v) {
 #'        Each row corresponds to a location, with the first element of each row
 #'        being the location itself. Locations should preferably be given
 #'        as integers.
-#' @inheritParams connected_to_full
+#' @inheritParams connected_to
 #' @inheritParams plyr::alply
 flexible_regions <- function(k_nearest, 
                              adjacency_matrix,
                              .parallel = FALSE, 
                              .paropts = NULL) {
-  connected_to <- pryr::partial(connected_to_full,
-                                adjacency_matrix = adjacency_matrix)
   Reduce(sets::set_union,
          sets::as.set(plyr::alply(k_nearest,
                                   .margins = 1,
                                   .fun = connected_neighbors,
+                                  adjacency_matrix = adjacency_matrix,
                                   .parallel = .parallel,
                                   .paropts = .paropts)))
 }
@@ -98,15 +97,18 @@ flexible_regions <- function(k_nearest,
 #' @param neighbors A vector of neighbors to a location, the first element
 #'        of the vector being the specific location, and the other elements
 #'        its other nearest neighbors. Locations should preferably be integers.
-connected_neighbors <- function(neighbors) {
+#' @inheritParams connected_to
+connected_neighbors <- function(neighbors, adjacency_matrix) {
   location <- neighbors[1]
   its_neighbors <- neighbors[-1]
   pset <- sets::set_power(sets::as.set(its_neighbors)) - sets::set(sets::set())
   sets::set_union(
     sets::set(sets::set(location)),
-      sets::as.set(lapply(pset, 
-                          if_connected, 
-                          location = location))) - sets::set(sets::set())
+      sets::as.set(
+        lapply(pset, 
+               if_connected, 
+               location = location,
+               adjacency_matrix = adjacency_matrix))) - sets::set(sets::set())
 }
 
 
@@ -120,10 +122,11 @@ connected_neighbors <- function(neighbors) {
 #' @param distinct_neighbors A \code{set} containing the neighboring locations
 #'        to the given location, not including the location itself.
 #' @param location A location, preferably given as an integer.
+#' @inheritParams connected_to
 #' @return A \code{set} of the given location and the neighbors if they are
 #'         connected, else returns the empty set.
-if_connected <- function(distinct_neighbors, location) {
-  if (is_connected(distinct_neighbors, location)) {
+if_connected <- function(distinct_neighbors, location, adjacency_matrix) {
+  if (is_connected(distinct_neighbors, location, adjacency_matrix)) {
     return(sets::set_union(sets::set(location),
                            distinct_neighbors))
   } else {
@@ -139,11 +142,11 @@ if_connected <- function(distinct_neighbors, location) {
 #'        location; these neighbors do not include the given location itself.
 #' @param location A location, preferably given as an integer.
 #' @return Boolean: is the neighbors connected to the given location?
-is_connected <- function(neighbor_locations, location) {
+is_connected <- function(neighbor_locations, location, adjacency_matrix) {
   Z_0 <- sets::set(location)
   Z_1 <- neighbor_locations
   while (TRUE) {
-    Z_0 <- connected_to(Z_0, Z_1)
+    Z_0 <- connected_to(Z_0, Z_1, adjacency_matrix)
     if (sets::set_is_empty(Z_0)) {
       return(FALSE)
     }
@@ -166,7 +169,7 @@ is_connected <- function(neighbor_locations, location) {
 #'        to TRUE if location \eqn{j} is adjacent to location \eqn{i}.
 #' @return A set, possibly empty, containing those locations in \eqn{Z_1}
 #'         that are connected to any of the locations in \eqn{Z_0}.
-connected_to_full <- function(Z_0, Z_1, adjacency_matrix) {
+connected_to <- function(Z_0, Z_1, adjacency_matrix) {
   connected <- sets::set()
   for (loc in Z_1) {
     if (any(Z_0 %in% which(adjacency_matrix[loc, ]))) {

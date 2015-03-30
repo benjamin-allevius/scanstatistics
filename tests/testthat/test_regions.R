@@ -87,29 +87,27 @@ test_that("connected_neighbors: works", {
                 0,0,0,0,0,0), 
               nrow = 6, byrow = TRUE)
   A <- A == 1
-  connected_to <- pryr::partial(connected_to_full,
-                                adjacency_matrix = A)
   
-  expect_equal(connected_neighbors(1:6), 
+  expect_equal(connected_neighbors(1:6, A), 
                sets::set(sets::set(1L), 
                          sets::set(1L, 2L),
                          sets::set(1L, 2L, 3L)))
-  expect_equal(connected_neighbors(c(2:6, 1L)), 
+  expect_equal(connected_neighbors(c(2:6, 1L), A), 
                sets::set(sets::set(2L), 
                          sets::set(1L, 2L),
                          sets::set(2L, 3L),
                          sets::set(1L, 2L, 3L)))
-  expect_equal(connected_neighbors(c(3:6, 1:2)), 
+  expect_equal(connected_neighbors(c(3:6, 1:2), A), 
                sets::set(sets::set(3L), 
                          sets::set(2L, 3L),
                          sets::set(1L, 2L, 3L)))
-  expect_equal(connected_neighbors(c(4:6, 1:3)), 
+  expect_equal(connected_neighbors(c(4:6, 1:3), A), 
                sets::set(sets::set(4L), 
                          sets::set(4L, 5L)))
-  expect_equal(connected_neighbors(c(5:6, 1:4)), 
+  expect_equal(connected_neighbors(c(5:6, 1:4), A), 
                sets::set(sets::set(5L), 
                          sets::set(4L, 5L)))
-  expect_equal(connected_neighbors(c(6L, 1:5)), 
+  expect_equal(connected_neighbors(c(6L, 1:5), A), 
                sets::set(sets::set(6L)))
 })
 
@@ -121,13 +119,11 @@ test_that("if_connected: works", {
                 0,0,0,1,0), 
               nrow = 5, byrow = TRUE)
   A <- A == 1
-  connected_to <- pryr::partial(connected_to_full,
-                                adjacency_matrix = A)
   
-  expect_equal(if_connected(sets::set(2L), 1L), sets::set(1L, 2L))
-  expect_equal(if_connected(sets::set(2L, 3L), 1L), sets::set(1L, 2L, 3L))
-  expect_equal(if_connected(sets::set(4L), 1L), sets::set())
-  expect_equal(if_connected(sets::set(2L, 4L), 1L), sets::set())
+  expect_equal(if_connected(sets::set(2L), 1L, A), sets::set(1L, 2L))
+  expect_equal(if_connected(sets::set(2L, 3L), 1L, A), sets::set(1L, 2L, 3L))
+  expect_equal(if_connected(sets::set(4L), 1L, A), sets::set())
+  expect_equal(if_connected(sets::set(2L, 4L), 1L, A), sets::set())
 })
 
 
@@ -139,17 +135,15 @@ test_that("is_connected: works", {
                 0,0,0,1,0), 
               nrow = 5, byrow = TRUE)
   A <- A == 1
-  connected_to <- pryr::partial(connected_to_full,
-                                adjacency_matrix = A)
-  expect_true(is_connected(sets::set(2L), 1L))
-  expect_true(is_connected(sets::set(2L, 3L), 1L))
-  expect_false(is_connected(sets::set(4L), 1L))
-  expect_false(is_connected(sets::set(2L, 4L), 1L))
+  expect_true(is_connected(sets::set(2L), 1L, A))
+  expect_true(is_connected(sets::set(2L, 3L), 1L, A))
+  expect_false(is_connected(sets::set(4L), 1L, A))
+  expect_false(is_connected(sets::set(2L, 4L), 1L, A))
 })
 
 
 
-test_that("connected_to_full: works", {
+test_that("connected_to: works", {
   A <- matrix(c(0,1,0,0,0,
                 1,0,1,0,0,
                 0,1,0,0,0,
@@ -159,15 +153,15 @@ test_that("connected_to_full: works", {
   A <- A == 1
   z0a <- sets::as.set(1L)
   z1a <- sets::as.set(2L)
-  actual_a <- connected_to_full(z0a, z1a, A)
+  actual_a <- connected_to(z0a, z1a, A)
   
   z0b <- sets::as.set(1L)
   z1b <- sets::set(4L, 5L)
-  actual_b <- connected_to_full(z0b, z1b, A)
+  actual_b <- connected_to(z0b, z1b, A)
   
   z0c <- sets::as.set(2L)
   z1c <- sets::set(1L, 3L)
-  actual_c <- connected_to_full(z0c, z1c, A)
+  actual_c <- connected_to(z0c, z1c, A)
   
   expect_equal(actual_a, sets::set(2L))
   expect_equal(actual_b, sets::set())
