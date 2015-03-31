@@ -8,22 +8,22 @@ times <- seq(as.POSIXct("2015-03-27 11:00:00 CET"),
 locations <- 1:2
 streams <- 1:2
 events <- 1:2
-counts_and_logdensities <- table_creator(list(time = times, 
-                                              location = locations,
-                                              stream = streams,
-                                              event = events))
+loglikelihoods <- table_creator(list(time = times, 
+                                     location = locations,
+                                     stream = streams,
+                                     event = events))
 # Time-dependent rate
-null_rate <- counts_and_logdensities[event == 1, 
+null_rate <- loglikelihoods[event == 1, 
   5*stream + location + 
     4*sin((lubridate::hour(time) + lubridate::minute(time)/4) / (2*pi*24))]
 
 # Fill with null and event likelihoods
-counts_and_logdensities[, 
+loglikelihoods[, 
   count := rep(rpois(length(null_rate), lambda = null_rate), 2)]
-counts_and_logdensities[, 
-  null_logdensity := dpois(count, lambda = rep(null_rate, 2), log = TRUE)]
-counts_and_logdensities[, 
-  event_logdensity := dpois(count, lambda = null_rate + rep(1:2, each = 20), 
+loglikelihoods[, 
+  null_loglikelihood := dpois(count, lambda = rep(null_rate, 2), log = TRUE)]
+loglikelihoods[, 
+  event_loglikelihood := dpois(count, lambda = null_rate + rep(1:2, each = 20), 
                             log = TRUE)]
 
 null_prior <- 0.9
@@ -36,7 +36,7 @@ regions <- sets::set(sets::as.set(1L), sets::as.set(2L), sets::as.set(1:2))
 # Tests ------------------------------------------------------------------------
 
 test_that("MBSS: works for valid input", {
-  m <- MBSS(counts_and_logdensities, 
+  m <- MBSS(loglikelihoods, 
             regions, 
             null_prior, 
             event_priors, 
@@ -46,7 +46,7 @@ test_that("MBSS: works for valid input", {
 })
 
 test_that("MBSS: works for valid input (uniform duration)", {
-  m <- MBSS(counts_and_logdensities, 
+  m <- MBSS(loglikelihoods, 
             regions, 
             null_prior, 
             event_priors, 
@@ -56,7 +56,7 @@ test_that("MBSS: works for valid input (uniform duration)", {
 })
 
 test_that("MBSS: throws error when wrong column name", {
-  cal <- copy(counts_and_logdensities)
+  cal <- copy(loglikelihoods)
   setnames(cal, "time", "invalid")
   expect_error(MBSS(cal, 
                     regions, 
@@ -67,7 +67,7 @@ test_that("MBSS: throws error when wrong column name", {
 })
 
 test_that("MBSS: throws error when wrong column name", {
-  cal <- copy(counts_and_logdensities)
+  cal <- copy(loglikelihoods)
   setnames(cal, "time", "invalid")
   expect_error(MBSS(cal, 
                     regions, 
@@ -78,12 +78,13 @@ test_that("MBSS: throws error when wrong column name", {
 })
 
 test_that("MBSS: throws error when NA present", {
-  cal <- copy(counts_and_logdensities)
-  cal[1, ]
+  cal <- copy(loglikelihoods)
+  cal[1, null_loglikelihood := NA]
   expect_error(MBSS(cal, 
                     regions, 
                     null_prior, 
                     event_priors, 
-                    "uniform"))
+                    "uniform"),
+               regexp = "No support for missing values yet.")
   
 })
