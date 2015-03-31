@@ -17,5 +17,7 @@ Depends: data.table, magrittr
 Imports: 
 Suggests: knitr,
     testthat,
-    sets
+    sets,
+    tidyr,
+    reshape2
 VignetteBuilder: knitr
