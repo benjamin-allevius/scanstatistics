@@ -118,16 +118,18 @@ MBSS <- function(loglikelihoods,
     stop("Specify conditional probabilities for event durations given event ",
          "type either as the string 'uniform' or as a matrix.")
   }
-  if (!is.character(duration_condpriors) && 
-      !all.equal(rep(1, length(event_priors)), 
-                 unname(colSums(duration_condpriors)))) {
-    stop("Conditional probabilities for event durations given event type ",
-         "must sum to 1.")
+  n1 <- length(unique(loglikelihoods[, event])) - 1
+  n2 <- length(event_priors)
+  n3 <- ifelse(!is.character(duration_condpriors), 
+               ncol(duration_condpriors), n2)
+  if (n1 != n2 || n1 != n3 || n2 != n3) {
+    stop("The number of event types must be the same.")
   }
   if (!is.character(duration_condpriors) && 
-        ncol(duration_condpriors) != length(event_priors)) {
-    stop("The number of event prior probabilities must equal the ",
-         "number of events found in the event duration priors.")
+      !isTRUE(all.equal(rep(1, length(event_priors)), 
+                 unname(colSums(duration_condpriors))))) {
+    stop("Conditional probabilities for event durations given event type ",
+         "must sum to 1.")
   }
   # No errors; proceed with definitions-----------------------------------------
   
