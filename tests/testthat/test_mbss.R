@@ -63,36 +63,71 @@ test_that("MBSS: works for valid input (uniform duration)", {
   expect_equal(totalprob, 1)
 })
 
-test_that("MBSS: throws error when wrong column name", {
+test_that("MBSS: works for valid input; events as strings", {
   cal <- copy(loglikelihoods)
-  setnames(cal, "time", "invalid")
-  expect_error(MBSS(cal, 
-                    regions, 
-                    null_prior, 
-                    event_priors, 
-                    "uniform"))
-  
+  cal[, event := rep(c("null", "e1", "e2"), each = 20)]
+  event_priors <- c(e1 = 2, e2 = 5)
+  duration_condpriors <- as.data.frame(duration_condpriors)
+  names(duration_condpriors) <- names(event_priors)
+  m <- MBSS(cal, 
+            regions, 
+            null_prior, 
+            event_priors, 
+            duration_condpriors)
+  totalprob <- m$null_posterior + m$event_posteriors[, sum(event_posterior)]
+  expect_equal(totalprob, 1)
+})
+
+test_that("MBSS: works for valid input; events as strings, uniform duration", {
+  cal <- copy(loglikelihoods)
+  cal[, event := rep(c("null", "e1", "e2"), each = 20)]
+  event_priors <- data.frame(e1 = 2, e2 = 5)
+  m <- MBSS(cal, 
+            regions, 
+            null_prior, 
+            event_priors, 
+            "uniform")
+  totalprob <- m$null_posterior + m$event_posteriors[, sum(event_posterior)]
+  expect_equal(totalprob, 1)
+})
+
+# Tests: invalid input ---------------------------------------------------------
+
+test_that("MBSS: throws error when input not data.table", {
+  cal <- copy(loglikelihoods)
+  class(cal) <- "data.frame"
+  expect_error(MBSS(cal, regions, null_prior, event_priors, "uniform"),
+               regexp = "The log-likelihoods must be supplied as a data.table.")
 })
 
 test_that("MBSS: throws error when wrong column name", {
   cal <- copy(loglikelihoods)
   setnames(cal, "time", "invalid")
-  expect_error(MBSS(cal, 
-                    regions, 
-                    null_prior, 
-                    event_priors, 
-                    "uniform"))
-  
+  expect_error(MBSS(cal, regions, null_prior, event_priors, "uniform"),
+               regexp = "The data.table containing")
+})
+
+test_that("MBSS: detects positive log-likelihood", {
+  cal <- copy(loglikelihoods)
+  cal[1, loglikelihood := 2]
+  expect_error(MBSS(cal, regions, null_prior, event_priors, "uniform"),
+               regexp = "Log-likelihoods should be")
 })
 
 test_that("MBSS: throws error when NA present", {
   cal <- copy(loglikelihoods)
   cal[1, null_loglikelihood := NA]
-  expect_error(MBSS(cal, 
-                    regions, 
-                    null_prior, 
-                    event_priors, 
-                    "uniform"),
+  expect_error(MBSS(cal, regions, null_prior, event_priors, "uniform"),
                regexp = "No support for missing values yet.")
-  
+})
+
+test_that("MBSS: throws error when null_prior incorrectly specified", {
+  expect_error(MBSS(loglikelihoods, regions, 2, event_priors, "uniform"),
+               regexp = "Prior null hypothesis probability")
+  expect_error(MBSS(loglikelihoods, regions, -1, event_priors, "uniform"),
+               regexp = "Prior null hypothesis probability")
+  expect_error(MBSS(loglikelihoods, regions, "2", event_priors, "uniform"),
+               regexp = "Prior null hypothesis probability")
+  expect_error(MBSS(loglikelihoods, regions, c(1,1)/2, event_priors, "uniform"),
+               regexp = "Prior null hypothesis probability")
 })
