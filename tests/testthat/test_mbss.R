@@ -131,3 +131,38 @@ test_that("MBSS: throws error when null_prior incorrectly specified", {
   expect_error(MBSS(loglikelihoods, regions, c(1,1)/2, event_priors, "uniform"),
                regexp = "Prior null hypothesis probability")
 })
+
+test_that("MBSS: throws error when any event prior is negative", {
+  expect_error(MBSS(loglikelihoods, regions, null_prior, c(-1,1), "uniform"),
+               regexp = "Event priors must be positive numers")
+})
+
+test_that("MBSS: throws error when uniform duration misspecified", {
+  expect_error(MBSS(loglikelihoods, regions, null_prior, event_priors, 
+                    "yniform"),
+               regexp = "Specify conditional probabilities for event durations")
+  expect_error(MBSS(loglikelihoods, regions, null_prior, event_priors, 
+                    c("uniform", "uniform")),
+               regexp = "Specify conditional probabilities for event durations")
+})
+
+test_that("MBSS: throws error when any duration priors misspecified", {
+  duration_condpriors <- matrix(c(1:n_times, rev(1:n_times)), 
+                                ncol = length(events) - 1)
+  expect_error(MBSS(loglikelihoods, regions, null_prior, event_priors, 
+                    duration_condpriors),
+               regexp = "Conditional probabilities for event durations given")
+})
+
+test_that("MBSS: throws error when any event lengths don't match", {
+  expect_error(MBSS(loglikelihoods, regions, null_prior, 1, 
+                    duration_condpriors),
+               regexp = "The number of event types must be the same.")
+  expect_error(MBSS(loglikelihoods[event != 1], regions, null_prior, 
+                    event_priors, duration_condpriors),
+               regexp = "The number of event types must be the same.")
+  expect_error(MBSS(loglikelihoods, regions, null_prior, 
+                    event_priors, 
+                    cbind(duration_condpriors, duration_condpriors)),
+               regexp = "The number of event types must be the same.")
+})
