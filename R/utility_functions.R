@@ -211,3 +211,19 @@ add_llr <- function(loglikelihoods, null_name) {
      llr = loglikelihood - loglikelihoods[event == null_name, loglikelihood])][,
     .SD, keyby = keys]
 }
+
+#' Get the set with the given index from an implicitly ordered set.
+#' 
+#' @param set_of_sets A \code{set} of \code{set}s. The elements of the outer
+#'        set should be ordered, e.g. as it is when the elemets of the sets
+#'        within it are integers.
+#' @param index The index of the set you wish to be returned.
+get_set <- function(set_of_sets, index) {
+  i <- 1
+  for (s in set_of_sets) {
+    if (i == index) {
+      return(s)
+    }
+    i <- i + 1
+  }
+}
