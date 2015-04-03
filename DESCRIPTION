@@ -13,11 +13,14 @@ Encoding: UTF-8
 License: GPL (>= 3)
 URL: https://github.com/BenjaK/scanstatistics
 BugReports: https://github.com/BenjaK/scanstatistics/issues
-Depends: data.table, magrittr
-Imports: 
+Depends: data.table
+Imports: magrittr
 Suggests: knitr,
     testthat,
     sets,
     tidyr,
-    reshape2
+    reshape2,
+    plyr,
+    foreach,
+    doParallel
 VignetteBuilder: knitr
