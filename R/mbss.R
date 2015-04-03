@@ -212,29 +212,29 @@ get_duration_condposteriors <- function(MBSS_obj, duration_column = TRUE) {
   }
 }
 
-#' Get the k most probable region-event type-duration combinations.
+#' Get the k most probable region-event-duration combinations.
 #' 
 #' Extracts the k most probable combinations of region, event type and event
-#' duration. One can also specify a restriction to a subset of the event,
-#' and/or a subset of the durations.
-get_k_most_probable <- function(MBSS_obj, 
-                                k = 10, 
-                                events = "all", 
-                                durations = "all") {
-  if (is.character(events) && events == "all" && 
-      is.character(durations) && durations == "all") {
-    MBSS_obj$posteriors[order(-posterior_prob), 
-      .(region, event, duration, posterior_prob)][seq(k)]
-  } else if (is.character(durations) && durations == "all") {
-    MBSS_obj$posteriors[event %in% events,
-      .(region, event, duration, posterior_prob)][
-      order(-posterior_prob)][seq(k)]
-  } else if (is.character(events) && events == "all") {
-    MBSS_obj$posteriors[duration %in% durations,
-      .(region, event, duration, posterior_prob)][order(-posterior_prob)][seq(k)]
-  } else {
-    MBSS_obj$posteriors[event %in% events & duration %in% durations,
-      .(region, event, duration, posterior_prob)][
-      order(-posterior_prob)][seq(k)]
+#' duration from an MBSS object. One can also specify a restriction to a 
+#' subset of the different event types, and a subset of the durations.
+#' @param MBSS_obj An object of class "MBSS".
+#' @param k An integer specifying how many of the most probable 
+#'        region-event-duration combinations to output.
+#' @param events Either a subset of all event types, or the string "all".
+#'        Specifies which event types should be included in the output.
+#' @param durations Either a subset of all event durations, or the string 
+#'        "all". Specifies which event durations should be included in the 
+#'        output.
+k_most_probable <- function(MBSS_obj, 
+                            k = 10, 
+                            events = "all", 
+                            durations = "all") {
+  if (is.character(events) && events == "all") {
+    events <- MBSS_obj$event_posteriors[, event]
+  } 
+  if (is.character(durations) && durations == "all") {
+    durations <- seq(MBSS_obj$max_duration)
   }
+  MBSS_obj$posteriors[event %in% events & duration %in% durations,
+    .(region, event, duration, posterior_prob)][order(-posterior_prob)][seq(k)]
 }
