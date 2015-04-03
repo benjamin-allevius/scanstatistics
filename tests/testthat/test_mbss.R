@@ -7,33 +7,41 @@ times <- seq(as.POSIXct("2015-03-27 11:00:00 CET"),
              length.out = n_times, by = "15 mins")
 locations <- 1:2
 streams <- 1:2
-events <- 1:2
+events <- 0:2
 loglikelihoods <- table_creator(list(time = times, 
                                      location = locations,
                                      stream = streams,
                                      event = events))
 # Time-dependent rate
-null_rate <- loglikelihoods[event == 1, 
+null_rate <- loglikelihoods[event == 0, 
   5*stream + location + 
-    4*sin((lubridate::hour(time) + lubridate::minute(time)/4) / (2*pi*24))]
+    8*sin((lubridate::hour(time) + lubridate::minute(time)/4) / (2*pi*24))]
 
 # Fill with null and event likelihoods
-loglikelihoods[, 
-  count := rep(rpois(length(null_rate), lambda = null_rate), 2)]
-loglikelihoods[, 
-  null_loglikelihood := dpois(count, lambda = rep(null_rate, 2), log = TRUE)]
-loglikelihoods[, 
-  event_loglikelihood := dpois(count, lambda = null_rate + rep(1:2, each = 20), 
-                            log = TRUE)]
+counts <- rpois(length(null_rate), lambda = null_rate)
+counts[(length(counts) - 2):length(counts)] <- 22
+
+# Fill with null and event likelihoods
+loglikelihoods[, loglikelihood := NaN]
+
+# Null log-likelihoods
+loglikelihoods[event == 0, 
+               loglikelihood := dpois(counts, lambda = null_rate, log = TRUE)]
+
+# Event log-likelihoods
+loglikelihoods[event == 1, 
+               loglikelihood := dpois(counts, lambda = null_rate + 5, log = TRUE)]
+loglikelihoods[event == 2, 
+               loglikelihood := dpois(counts, lambda = null_rate + 10, log = TRUE)]
 
 null_prior <- 0.9
-event_priors <- c(0.03, 0.07)
+event_priors <- c(0.02, 0.05)
 duration_condpriors <- matrix(c(1:n_times, rev(1:n_times)) / sum(1:n_times), 
-                              ncol = length(events))
+                              ncol = length(events) - 1)
 
 regions <- sets::set(sets::as.set(1L), sets::as.set(2L), sets::as.set(1:2))
 
-# Tests ------------------------------------------------------------------------
+# Tests: valid input -----------------------------------------------------------
 
 test_that("MBSS: works for valid input", {
   m <- MBSS(loglikelihoods, 
