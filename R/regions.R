@@ -141,6 +141,7 @@ if_connected <- function(distinct_neighbors, location, adjacency_matrix) {
 #' @param neighbor_locations A \code{set} of neighboring locations to the given
 #'        location; these neighbors do not include the given location itself.
 #' @param location A location, preferably given as an integer.
+#' @inheritParams connected_to
 #' @return Boolean: is the neighbors connected to the given location?
 is_connected <- function(neighbor_locations, location, adjacency_matrix) {
   Z_0 <- sets::set(location)
