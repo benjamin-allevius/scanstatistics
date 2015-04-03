@@ -81,7 +81,7 @@ data_to_nulldata_logratio <- function(spatial_llrs,
 #' Computes the logarithm of the marginal probability of the data.
 #' 
 #' @param data_logratio Output from \code{\link{data_to_nulldata_logratio}}.
-#' @param null_logprob The logarithm of the probability of the data under the
+#' @param null_llh The logarithm of the probability of the data under the
 #'        null hypothesis of no events.
 marginal_logprob_of_data <- function(data_logratio, null_llh) {
   data_logratio + null_llh
@@ -89,13 +89,13 @@ marginal_logprob_of_data <- function(data_logratio, null_llh) {
 
 #' Calculates the posterior event probabilities.
 #' 
-#' @param logposteriors A \code{data.table} containing at least the columns
+#' @param dur_event_pjdist A \code{data.table} containing at least the columns
 #'        \code{event} and \code{posterior_logprob}, the latter containing
 #'        the log of the posterior probability of the given event type (and 
 #'        given whatever else is on the same row, in the other columns).
-#' @param A \code{data.table} with columns \code{event} and 
-#'        \code{event_posterior}, the latter containing the posterior 
-#'        probability of the given event type.
+#' @return A \code{data.table} with columns \code{event} and 
+#'         \code{event_posterior}, the latter containing the posterior 
+#'         probability of the given event type.
 posterior_event_probabilities <- function(dur_event_pjdist) {
   dur_event_pjdist[, .(event_posterior = sum(duration_event_posterior)), 
                    by = .(event)]
