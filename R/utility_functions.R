@@ -20,7 +20,11 @@ haskeys <- function(data_table, keys) {
   keys %in% getkeys(data_table)
 }
 
-# Get the keys from a data.table
+#' Get the keys from a data.table.
+#' 
+#' @param data_table A \code{data.table}.
+#' @return NULL if the supplied \code{data.table} has no keys,
+#'         else a character vector containing the keys.
 getkeys <- function(data_table) {
   attributes(data_table)$sorted
 }
@@ -46,8 +50,10 @@ first_keys_are_equal <- function(data_table, keys) {
 #' @return A \code{data.table} with all combinations of the variables
 #'         supplied in \code{col_list}.
 #' @examples
+#' \dontrun{
 #' cols <- list(location = 1:2, time = 0:2, stream = 1:2)
 #' table_creator(cols)
+#' }
 table_creator <- function(col_list, key = NULL) {
   data.table(do.call(expand.grid, col_list),
              key = key)
@@ -63,21 +69,20 @@ table_creator <- function(col_list, key = NULL) {
 #' 
 #' @param regions A list of regions, elements being vectors of locations.
 #' @param key Character vector of one or more column names which is passed 
-#'        to code{\link[data.table]{setkey}}.
+#'        to \code{\link[data.table]{setkey}}.
 #' @examples 
+#' \dontrun{
 #' region_table_creator(list(1, 2, 1:2))
-#' region_table_creator(sets::set(sets::set(1L), sets::set(2L), 
-#'                                sets::as.set(1:2)))
+#' region_table_creator(sets::set(sets::set(1L), sets::set(2L), sets::as.set(1:2)))
 #' region_table_creator(list(1, 2, 1:2), key = "location")
 #' region_table_creator(list(1, 2, 1:2), key = "region")
 #' region_table_creator(list(a = "x", b = "y", c = c("x", "y")))
+#' }
 region_table_creator <- function(regions, key = NULL) {
-  
   region_names <- names(regions)
   if (is.null(region_names)) {
     region_names <- seq_along(regions)
   }
-  
   data.table(location = unlist(regions, use.names = FALSE),
              region = rep(region_names, 
                           vapply(regions, length, integer(1))),
@@ -101,8 +106,10 @@ region_table_creator <- function(regions, key = NULL) {
 #' @return A new \code{data.table} with a column for \code{region} added
 #'         to the supplied table of locations etc. (not modified).
 #' @examples
+#' \dontrun{
 #' locs_etc <- table_creator(list(location = 1:2, time = 0:2, stream = 1:2))
 #' region_joiner(locs_etc, list(1, 2, 1:2), keys = c("time", "region"))
+#' }
 region_joiner <- function(locations_etc, regions, keys = c("region")) {
   region_table_creator(regions, key = "location")[
     locations_etc, allow.cartesian = TRUE][, .SD, keyby = keys]
@@ -126,7 +133,7 @@ region_apply <- function(f, region_partition, location_table) {
           #           .packages = c("data.table", "magrittr"),
           .export = ls(envir = globalenv())) %dopar% {
             
-            locations <- unique(unlist(regions))
+            locations <- unique(unlist(regions_in_part))
             
             region_table <- region_table_creator(regions_in_part, 
                                                  key = c("location"))
@@ -167,6 +174,40 @@ add_duration <- function(d) {
 #' @return A new \code{data.table}, containing columns \code{time} (key column)
 #'         and \code{duration}.
 times_and_durations <- function(d) {
-  times <- sort(unique(d[, time]))
+  times <- sort(unique(d[, time]), decreasing = FALSE)
   data.table(time = times, duration = rev(seq_along(times)), key = "time")
+}
+
+#' Calculate the log-likelihood ratios from given log-likelihoods.
+#' 
+#' From a \code{data.table} containing the log-likelihoods for all event types,
+#' and for the null hypothesis of no event, calculates the log-likelihood ratios
+#' by subtracting null log-likelihoods from the event log-likelihoods,
+#' for each location, stream, and time.
+#' 
+#' @param loglikelihoods A \code{data.table} containing at least the columns 
+#'        \code{event, location, stream, time} and \code{loglikelihood}.
+#'        The first four columns must be key columns, in that order.
+#'        The column \code{event} contains all event types (given e.g. as 
+#'        integers or strings) and also the null hypothesis, as specified
+#'        by the argument \code{null_name}.
+#' @param null_name The identifier for the null hypothesis in the column
+#'        \code{event} of the input argument \code{loglikelihoods}.
+#'        E.g. \code{0L} if event types are specified as integers,
+#'        or \code{"null"} if event types are specified as strings.
+#' @return A \code{data.table} with key columns \code{location, event, stream,
+#'         time}, and a column \code{llr} containing the log-likelihood ratios
+#'         for each event type.
+add_llr <- function(loglikelihoods, null_name) {
+  input_keys <- c("event", "location", "stream", "time")
+  if (any(getkeys(loglikelihoods)[1:4] != input_keys)) {
+    stop("The key columns of the input table have to be ",
+         "'event', 'location', 'stream', 'time'.")
+  }
+  keys <- c("location", "event", "stream", "time")
+  loglikelihoods[
+    event != null_name, 
+    .(location = location, event = event, stream = stream, time = time, 
+     llr = loglikelihood - loglikelihoods[event == null_name, loglikelihood])][,
+    .SD, keyby = keys]
 }
