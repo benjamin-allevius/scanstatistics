@@ -47,26 +47,39 @@ globalVariables(c(# Variables used unquoted inside functions
 #' 
 #' @param loglikelihoods A \code{data.table} in long format,
 #'        containing at least the columns
-#'        \code{event, stream, location, time, null_loglikelihood} and
-#'        \code{event_loglikelihood}. The column \code{null_loglikelihood}
-#'        contains the predicted log-likelihood for each observation 
-#'        (i.e.\ the observation made for a particular data stream, 
-#'        at a particular location, at a particular time) 
-#'        under the null hypothesis of no event. These values will be duplicated
-#'        across the different event types.
-#'        The column \code{event_loglikelihood} contains the predicted 
-#'        log-likelihood for each observation given that an event of the 
-#'        specified type occurs.
-#' @param regions A \code{set} of regions, each region itself a set containing
-#'        one or more locations of those found in the table 
-#'        \code{loglikelihoods}.
+#'        \code{event, stream, location, time} and \code{loglikelihood}. 
+#'        See details below for full specification.
+#' @param regions A \code{list} or \code{set} of regions, 
+#'        each region itself a set containing
+#'        one or more locations of those found in \code{loglikelihoods}.
 #' @param null_prior The prior probability that no event has taken place.
-#' @param event_priors The prior probabilities of each event, given as a vector.
+#' @param event_priors The prior probabilities of each event type, or numbers 
+#'        that express how often the events occur compared to each other.
+#'        For example, \code{c(0.02, 0.05)} and \code{c(2, 5)} express the
+#'        same thing, given the \code{null_prior}. If event types are given as 
+#'        strings, should be a named vector or \code{data.frame} with
+#'        the different events as columns.
 #' @param duration_condpriors The prior conditional probabilities of the event
 #'        durations, given the event types. Either the string 'uniform',
 #'        meaning that the event durations are uniformly distributed for all
 #'        event types, or a matrix in which the row numbers correspond to the
 #'        event duration, and the columns to the different events.
+#'        If events types are given as strings, make it a \code{data.frame} with
+#'        the events types as column names instead.
+#' @details 
+#' More details on the input arguments:
+#' \itemize{
+#'  \item{\code{loglikelihoods}: }
+#'       {The column \code{event} contains identifiers (integer or character) 
+#'        for both the null hypothesis of no event and for the event types
+#'        under the alternative hypothesis. If integer, the null hypothesis
+#'        should be specified as \code{0L}, and if character, 
+#'        should be specified as \code{"null"}.
+#'        The column \code{loglikelihood} contains the predicted log-likelihood 
+#'        for each observation and each event type (including the null).}
+#' }
+#' @importFrom magrittr %>%
+#' @export
 MBSS <- function(loglikelihoods,
                  regions,
                  null_prior,
@@ -76,23 +89,28 @@ MBSS <- function(loglikelihoods,
   if (!is.data.table(loglikelihoods)) {
     stop("The log-likelihoods must be supplied as a data.table.")
   }
-  if (!all(c("event", "stream", "location", "time", 
-             "null_loglikelihood", "event_loglikelihood") %in% 
+  if (!all(c("event", "stream", "location", "time", "loglikelihood") %in% 
              names(loglikelihoods))) {
-    stop("The data.table containing the log-likelihood must ",
-         "contain the columns 'event', 'stream', 'location', 'time', ",
-         "'null_loglikelihood', 'event_loglikelihood'.")
+    stop("The data.table containing the log-likelihoods must contain the ",
+         "columns 'event', 'stream', 'location', 'time', 'loglikelihood'.")
   }
   if (any(is.na(loglikelihoods))) {
     stop("No support for missing values yet. Consider imputation methods.")
+  }
+  if (any(loglikelihoods[, loglikelihood > 0])) {
+    stop("Log-likelihoods should be non-positive numbers. ",
+         "Did you really take the logarithm?")
   }
   if (length(null_prior) != 1 || !is.numeric(null_prior) || null_prior < 0 ||
         null_prior > 1) {
     stop("Prior null hypothesis probability must be a single numeric value ",
          "between 0 and 1.")
   }
-  if (!all.equal(1, null_prior + sum(event_priors))) {
-    stop("Prior probabilities for events or no events must sum to 1.")
+  if (any(event_priors <= 0)) {
+    stop("Event priors must be positive numers, given either as probabilities ",
+         "that together with the prior null hypothesis probability sum to 1, ",
+         "or as numbers that express how often each event occurs compared ",
+         "to the others.")
   }
   if (is.character(duration_condpriors) && 
         (length(duration_condpriors) !=1 ||
@@ -102,36 +120,51 @@ MBSS <- function(loglikelihoods,
   }
   if (!is.character(duration_condpriors) && 
       !all.equal(rep(1, length(event_priors)), 
-                 colSums(duration_condpriors))) {
+                 unname(colSums(duration_condpriors)))) {
     stop("Conditional probabilities for event durations given event type ",
-         "must sum to the event priors.")
+         "must sum to 1.")
   }
   if (!is.character(duration_condpriors) && 
         ncol(duration_condpriors) != length(event_priors)) {
     stop("The number of event prior probabilities must equal the ",
          "number of events found in the event duration priors.")
   }
-  # Proceed with calculations --------------------------------------------------
+  # No errors; proceed with definitions-----------------------------------------
+  
+  events_are_strings <- typeof(loglikelihoods$event) == "character"
+  if (events_are_strings) {
+    event_names <- names(event_priors)
+  }
+  null_name <- ifelse(events_are_strings, "null", 0)
+  
+  # Normalize event priors to sum to 1 together with the null prior
+  event_priors <- (1 - null_prior) * event_priors / sum(event_priors)
+  
   times_durations <- times_and_durations(loglikelihoods)
   n_regions <- length(regions)
   n_events <- length(event_priors)
   max_duration <- max(times_durations[, duration])
   
-  
+  # If duration_condpriors is "uniform", create the appropriate matrix
   if (is.character(duration_condpriors)) {
     duration_condpriors <- matrix(1 / max_duration, 
                                   nrow = max_duration,
                                   ncol = n_events)
+    if (events_are_strings) {
+      duration_condpriors <- as.data.frame(duration_condpriors)
+      names(duration_condpriors) <- event_names
+    }
   }
   
-  null_loglikelihood <- loglikelihoods[event == loglikelihoods[1, event],  
-                                       sum(null_loglikelihood)]
+  null_loglikelihood <- loglikelihoods[event == null_name, sum(loglikelihood)]
 
+  # Set columns in correct order for adding log-likelihood ratios (add_llr)
+  setkeyv(loglikelihoods, c("event", "location", "stream", "time"))
+  
   # Calculate log-likelihood ratios for all events, regions, and durations
   keys_used_for_stllr <- c("region", "event", "duration", "stream", "location")
   spacetime_output <- 
-    loglikelihoods[, .(llr = event_loglikelihood - null_loglikelihood),
-      keyby = .(location, event, stream, time)] %>%
+    add_llr(loglikelihoods, null_name) %>%
     add_duration %>%
     region_joiner(regions = regions, keys = keys_used_for_stllr) %>%
     spacetime_llr
@@ -196,7 +229,7 @@ MBSS <- function(loglikelihoods,
 #' Extract the posterior conditional event duration probabilities from an MBSS
 #' object.
 #' 
-#' @param MBSS_object An object of class "MBSS".
+#' @param MBSS_obj An object of class "MBSS".
 #' @param duration_column A logical scalar. Should the output matrix
 #'        contain a column for the event duration (elements being integers
 #'        equal to the row numbers)?
