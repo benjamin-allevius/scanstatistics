@@ -113,3 +113,16 @@ score_minimal_stream_subset <- function(scores) {
          .(score = sum(score), included_streams = list(stream)), 
          by = .(region, duration)]
 }
+
+
+#' Calculate the scores according to the Naive Kulldorff method.
+#' @importFrom magrittr %>%
+naive_kulldorff_poisson <- function(counts, regions) {
+  counts %>%
+    aggregate_CB_poisson %>%
+    region_joiner(regions = regions, 
+                  keys = c("region", "duration", "stream")) %>%
+    aggregate_again %>%
+    score_EBP %>%
+    score_minimal_stream_subset
+}
