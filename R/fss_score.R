@@ -31,3 +31,18 @@ aggregate_CB_gaussian <- function(counts) {
              aggregate_baseline = cumsum(baseline^2 / variance)),
          by = .(location, stream)]
 }
+
+#' Calculate the aggregate counts and baselines for the EBE scan statistic
+#' over all event durations.
+#' 
+#' Calculate the aggregate counts \eqn{C_{i,m}} and aggregate baselines 
+#' \eqn{B_{i,m}} for the expectation-based Exponential (EBE) scan statistic, for 
+#' each location \eqn{i} and data stream \eqn{m}. I.e. the cumulative sum over
+#' the event duration, from shortest to longest, is calculated.
+#' 
+#' @inheritParams aggregate_CB_poisson
+aggregate_CB_exponential <- function(counts) {
+  counts[, .(duration = duration,
+             aggregate_count = cumsum(count / baseline),
+             aggregate_baseline = duration), 
+         by = .(location, stream)]
