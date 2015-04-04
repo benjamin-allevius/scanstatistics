@@ -67,3 +67,15 @@ aggregate_again <- function(aggregates) {
                  aggregate_baseline = sum(aggregate_baseline)),
              by = .(region, duration, stream)]
 }
+
+
+#' Calculates the score for the expectation-based Poisson scan statistic.
+#' 
+#' Calculates the score for the expectation-based Poisson scan statistic, given
+#' scalar aggregate counts and baselines.
+#' 
+#' @param c A scalar; an aggregate count.
+#' @param b A scalar; an aggregate baseline.
+score_fun_EBP <- function(c, b) {
+  ifelse(c > b, c * (log(c) - log(b) - 1) + b, 0)
+}
