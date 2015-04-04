@@ -46,3 +46,24 @@ aggregate_CB_exponential <- function(counts) {
              aggregate_count = cumsum(count / baseline),
              aggregate_baseline = duration), 
          by = .(location, stream)]
+}
+
+#' Calculate the count and baseline aggregates over each region-stream-duration
+#' combination.
+#' 
+#' Take the already calculated aggregates for each location, stream and duration
+#' and sum them over all locations in each region.
+#' 
+#' @param aggregates A \code{data.table} containing columns \code{region, 
+#'        duration, stream, location, aggregate_count, aggregate_baseline}.
+#'        The latter two columns contain the aggregate counts and baselines
+#'        as produced by the functions \code{aggregate_CB_X}, where \code{X} is
+#'        e.g. \code{poisson} or \code{gaussian}.
+#' @return A \code{data.table} with the same columns except \code{location}; the
+#'         aggregate quantities have now been summed over all locations in each
+#'         region, for each region, duration, and data stream.
+aggregate_again <- function(aggregates) {
+  aggregates[, .(aggregate_count = sum(aggregate_count),
+                 aggregate_baseline = sum(aggregate_baseline)),
+             by = .(region, duration, stream)]
+}
