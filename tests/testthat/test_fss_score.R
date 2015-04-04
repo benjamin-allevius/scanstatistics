@@ -37,5 +37,16 @@ test_that("aggregate_CB_exponential: works as intended", {
 })
 
 
+test_that("aggregate_again: works as intended", {
+  aggreg <- data.table(region = rep(3L, 8),
+                       duration = rep(1:2, each = 4),
+                       stream = rep(1:2, 2, each = 2),
+                       location = rep(1:2, 4),
+                       aggregate_count = 1:8,
+                       aggregate_baseline = 1:8)
 
+  ag <- aggregate_again(aggreg)
+  expect_equal(ag[, aggregate_count], c(3, 7, 11, 15))
+  expect_equal(ag[, aggregate_baseline], c(3, 7, 11, 15))
+})
 
