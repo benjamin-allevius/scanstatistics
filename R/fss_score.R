@@ -79,3 +79,18 @@ aggregate_again <- function(aggregates) {
 score_fun_EBP <- function(c, b) {
   ifelse(c > b, c * (log(c) - log(b) - 1) + b, 0)
 }
+
+#' Calculates the expectation-based Poisson score for each region, stream, and
+#' duration combination.
+#' 
+#' Given the aggegate counts and baselines for each region-stream-duration 
+#' combination, calculates the expectation-based Poisson score function value.
+#' 
+#' @param aggregates A \code{data.table} with columns \code{region, duration, 
+#'        stream, aggregate_count, aggregate_baseline}.
+#' @return A \code{data.table} with columns \code{region, duration, 
+#'         stream, score}.
+score_EBP <- function(aggregates) {
+  aggregates[, .(score = score_fun_EBP(aggregate_count, aggregate_baseline)),
+             by = .(region, duration, stream)]
+}
