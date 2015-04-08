@@ -40,6 +40,35 @@ score_minimal_stream_subset <- function(scores) {
          .(score = sum(score), included_streams = list(stream)), 
          by = .(region, duration)]
 }
+
+#' Calculates the FSS scores for all stream-region-duration combinations.
+#' 
+#' Calculates the FSS scores for all stream-region-duration combinations,
+#' according to the distribution used in the supplied functions.
+#' @param counts A \code{data.table} with columns \code{region, duration, 
+#'        stream, count, baseline}, and possibly others.
+#' @param regions A \code{list} or \code{set} of regions, 
+#'        each region itself a set containing
+#'        one or more locations of those found in \code{counts}.
+#' @param aggregate_CB A function for calculating the aggregate counts and 
+#'        baselines over all event durations for a given expectation-based 
+#'        scan statistic.
+#' @param score_EB A function for calculating the score for score for each 
+#'        region, stream, and duration combination, according to the given
+#'        expectation-based scan statistic.
+#' @return A \code{data.table} with columns \code{region, duration, score,
+#'         included_streams}.
+naive_kulldorff_general <- function(counts, regions, 
+                                    aggregate_CB, score_EB) {
+  counts %>%
+    aggregate_CB %>%
+    region_joiner(regions = regions, 
+                  keys = c("region", "duration", "stream")) %>%
+    aggregate_again %>%
+    score_EB %>%
+    score_minimal_stream_subset
+}
+
 # Expectation-based Poisson ----------------------------------------------------
 
 #' Calculate the aggregate counts and baselines for the EBP scan statistic
