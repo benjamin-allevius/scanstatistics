@@ -127,7 +127,8 @@ MBSS <- function(loglikelihoods,
   # Calculate log-likelihood ratios for all events, regions, and durations
   keys_used_for_stllr <- c("region", "event", "duration", "stream", "location")
   spacetime_output <- 
-    add_llr(loglikelihoods, null_name) %>%
+    loglikelihoods %>%
+    add_llr(null_name = null_name) %>%
     add_duration %>%
     region_joiner(regions = regions, keys = keys_used_for_stllr) %>%
     spacetime_llr
