@@ -2,14 +2,15 @@ context("FSS score functions")
 
 
 test_that("aggregate_CB_poisson: works as intended", {
-  counts <- data.table(location = rep(1:2, each = 4),
-                       stream = rep(1:2, 2, each = 2),
-                       duration = rep(1:2, 4))
-  counts[, count := 1:8]
-  counts[, baseline := 1:8]
+  counts <- data.table(location = rep(1:2, each = 6),
+                       stream = rep(1:2, 2, each = 3),
+                       duration = rep(1:3, 4))
+  counts[, count := 1:12]
+  counts[, baseline := 1:12]
   CBim <- aggregate_CB_poisson(counts)
-  expect_equal(CBim[, aggregate_count], c(1, 3, 3, 7, 5, 11, 7, 15))
-  expect_equal(CBim[, aggregate_baseline], c(1, 3, 3, 7, 5, 11, 7, 15))
+  expected <- c(1, 1+2, 3+3, 4, 4+5, 9+6, 7, 7+8, 15+9, 10, 10+11, 21+12)
+  expect_equal(CBim[, aggregate_count], expected)
+  expect_equal(CBim[, aggregate_baseline], expected)
 })
 
 
