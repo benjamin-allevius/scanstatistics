@@ -17,29 +17,24 @@ test_that("no keys outputs NULL", {
 })
 
 
-test_that("first key correct", {
+test_that("first_keys_match: first key correct", {
   DT <- data.table(x = 1:3, y = 1:3, key = c("x", "y"))
-  expect_true(first_keys_are_equal(DT, "x"))
+  expect_true(first_keys_match(DT, "x"))
 })
 
-test_that("first few keys correct", {
-  DT <- data.table(x = 1:3, y = 1:3, key = c("x", "y"))
-  expect_true(first_keys_are_equal(DT, "x"))
-})
-
-test_that("all keys correct", {
+test_that("first_keys_match: all keys correct", {
   DT <- data.table(x = 1:3, y = 1:3, z = 1:3, key = c("x", "y"))
-  expect_true(first_keys_are_equal(DT, c("x", "y")))
+  expect_true(first_keys_match(DT, c("x", "y")))
 })
 
 test_that("FALSE if no keys", {
   DT <- data.table(x = 1:3, y = 1:3)
-  expect_false(first_keys_are_equal(DT, c("x", "y")))
+  expect_false(first_keys_match(DT, c("x", "y")))
 })
 
 test_that("FALSE if checking too many keys", {
   DT <- data.table(x = 1:3, y = 1:3, key = c("x", "y"))
-  expect_false(first_keys_are_equal(DT, c("x", "y", "z")))
+  expect_false(first_keys_match(DT, c("x", "y", "z")))
 })
 
 # Convenience ------------------------------------------------------------------

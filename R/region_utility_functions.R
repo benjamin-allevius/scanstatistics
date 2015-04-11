@@ -73,11 +73,11 @@ partition_regions <- function(regions, n_parts = min(10L, length(regions))) {
 #'    }
 #' @param f A function to apply after expanding \code{location_table} by the
 #'    regions in a given element of \code{region_partition$partition}.
-#' @param key A character vector to set the key columns of the expanded 
+#' @param keys A character vector to set the key columns of the expanded 
 #'    region-location table by before applying the function \code{f}.
 #' @return A \code{data.table}, containing the results of applying the supplied
 #'    function over all regions.
-region_apply <- function(location_table, region_partition, f, key = NULL) {
+region_apply <- function(location_table, region_partition, f, keys = NULL) {
   foreach(regions_in_part = region_partition$partition, 
           offset = region_partition$offsets,
           .combine = rbind,
@@ -92,7 +92,7 @@ region_apply <- function(location_table, region_partition, f, key = NULL) {
                   region_table,
                   by = "location",
                   allow.cartesian = TRUE) %>% {
-                    setkeyv(., key)
+                    setkeyv(., keys)
                     .
                   } %>% f
           }
@@ -120,7 +120,7 @@ region_apply <- function(location_table, region_partition, f, key = NULL) {
 #' region_joiner(locs_etc, list(1, 2, 1:2), keys = c("time", "region"))
 #' }
 region_joiner <- function(locations_etc, regions, keys = c("region")) {
-  region_table_creator(regions, key = "location")[
+  region_table_creator(regions, keys = "location")[
     locations_etc, allow.cartesian = TRUE][, .SD, keyby = keys]
 }
 
@@ -144,7 +144,7 @@ region_joiner <- function(locations_etc, regions, keys = c("region")) {
 #' region_table_creator(list(1L, 2L, 1:2), key = "region")
 #' region_table_creator(list(a = "x", b = "y", c = c("x", "y")))
 #' }
-region_table_creator <- function(regions, key = NULL, offset = 0L) {
+region_table_creator <- function(regions, keys = NULL, offset = 0L) {
   region_names <- names(regions)
   if (is.null(region_names)) {
     region_names <- seq_along(regions) + offset
@@ -152,5 +152,5 @@ region_table_creator <- function(regions, key = NULL, offset = 0L) {
   data.table(location = unlist(regions, use.names = FALSE),
              region = rep(region_names, 
                           vapply(regions, length, integer(1))),
-             key = key)
+             key = keys)
 }
