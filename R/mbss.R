@@ -194,6 +194,18 @@ MBSS <- function(loglikelihoods,
             class = "MBSS")
 }
 
+#' Calculate the posterior event probability for each region and event type.
+#' 
+#' Calculate the posterior probability for each region and event type, 
+#' marginalizing over the event durations.
+#' @inheritParams k_most_probable
+#' @return A \code{data.table} with columns \code{region, event} and 
+#'    \code{posterior_prob}.
+spatial_posteriors <- function(MBSS_obj) {
+  MBSS_obj$posteriors[, .(posterior_prob = exp(logsumexp(posterior_logprob))),
+                      by = .(region, event)]
+}
+
 
 #' Extract the posterior conditional event duration probabilities from an MBSS
 #' object.
