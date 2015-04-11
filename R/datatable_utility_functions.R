@@ -26,9 +26,6 @@ table_creator <- function(col_list, keys = NULL) {
 #' @param data_table A \code{data.table}.
 #' @param keys A character vector.
 #' @return \code{TRUE} if keys match, \code{FALSE} otherwise.
-#' @example
-#' DT <- data.table(a = 1:2, b = 2:3, keys = c("a", "b"))
-#' first_keys_are_equal(DT, "a") == TRUE
 first_keys_match <- function(data_table, keys) {
   table_keys <- getkeys(data_table)
   if (is.null(table_keys) || length(keys) > length(table_keys)) {
