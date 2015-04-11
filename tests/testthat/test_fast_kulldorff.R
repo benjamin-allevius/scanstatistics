@@ -27,3 +27,19 @@ test_that("fast_kulldorff_maxregion: works as intended", {
   expect_equal(res[, score], expected)
   expect_equal(res[1, included_locations], list(c(2L, 3L, 5L)))
 })
+
+test_that("relative_risk_mle: works as intended", {
+  ags <- data.table(location = rep(1:3, each = 3),
+                    stream = rep(1:3, 3),
+                    duration = rep(2, 9), 
+                    key = "stream")
+  ags[, aggregate_count := 1:9]
+  ags[, aggregate_baseline := 9:1]
+  cs <- c(2+3, 5+6, 8+9)
+  bs <- c(8+7, 5+4, 2+1)
+  rrs <- cs / bs
+  expected <- c(1, rrs[2:3])
+  res <- relative_risk_mle(ags, c(2L, 3L))
+  expect_equal(unname(res), expected)
+  expect_true(all(as.integer(names(res)) == 1:3))
+})
