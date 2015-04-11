@@ -30,11 +30,16 @@ event_llr <- function(llrs_given_effects) {
 #' event type \eqn{E_k}, and event duration \eqn{W}.
 #' 
 #' @param event_llrs A \code{data.table} with columns 
-#'        \code{region, event, duration, stream, location}, and \code{llr}.
-#'        The first 5 of these should preferably be key columns in the given
-#'        order. The column \code{llr} contains the log-likelihood ratios.
+#'    \code{region, event, duration, stream, location}, and \code{llr}. The 
+#'    first 5 of these should preferably be key columns in the given order. The 
+#'    column \code{duration} \strong{must} be a key column, so that durations 
+#'    are sorted in ascending order. The column \code{llr} contains the 
+#'    log-likelihood ratios.
 #' @return A \code{data.table} with columns \code{region, event, duration, llr}.
 spacetime_llr <- function(event_llrs) {
+  if ("duration" %notin% getkeys(event_llrs)) {
+    stop("The data.table must have 'duration' as a key column.")
+  }
   event_llrs[, .(llr = sum(exp(llr))), by = .(region, event, duration)][,
     .(duration = duration, llr = log(cumsum(llr))), by = .(region, event)]
 } 
