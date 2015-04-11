@@ -16,3 +16,14 @@ test_that("fast_kulldorff_priority: works as intended", {
   expect_equal(res[, priority], expected)
   expect_equal(res[1, included_streams], list(1:2))
 })
+
+test_that("fast_kulldorff_maxregion: works as intended", {
+  pri <- data.table(location = 1:5,
+                    duration = rep(2, 5),
+                    priority = c(-0.5, 0.5, 2, 0, 3.4),
+                    included_streams = list(1:2, 1:2, 1:2, 1:2, 1:2))
+  expected <- 0.5 + 2 + 3.4
+  res <- fast_kulldorff_maxregion(pri)
+  expect_equal(res[, score], expected)
+  expect_equal(res[1, included_locations], list(c(2L, 3L, 5L)))
+})

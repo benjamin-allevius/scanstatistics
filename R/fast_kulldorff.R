@@ -21,3 +21,9 @@ fast_kulldorff_priority <- function(aggregates,
              by = .(location, duration)]
 }
 
+fast_kulldorff_maxregion <- function(fk_priorities) {
+  fk_priorities[priority > 0,
+                .(score = sum(priority),
+                  included_streams = included_streams,
+                  included_locations = list(location))][which.max(score)]
+}
