@@ -29,13 +29,15 @@ logsumexp <- function(x) {
 #' table.
 #' @param d A \code{data.table} containing at least a column \code{time},
 #'    which is sortable. For example, could be POSIXct dates.
+#' @param keys A character vector for the columns you wish the output table to 
+#'    be keyed by.
 #' @return The input \code{data.table}, with a column \code{duration} added.
-add_duration <- function(d) {
+add_duration <- function(d, keys = NULL) {
   td <- times_and_durations(d)
   # Can't test directly for POSIXct equality in current version of data.table.
   # Workaround from https://github.com/Rdatatable/data.table/issues/1008
   dur_from_time <- function(t) td[time >= t & time <= t, duration]
-  d[, duration := dur_from_time(time), by = .(time)]
+  d[, duration := dur_from_time(time), by = .(time)][, .SD, keyby = keys]
 }
 
 #' Creates a \code{data.table} with columns \code{time} and \code{duration}.
