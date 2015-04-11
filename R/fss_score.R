@@ -85,7 +85,7 @@ naive_kulldorff_general <- function(counts,
     aggregate_CB %>%
     region_apply(region_partition = region_partition,
                  f = aggregate_again,
-                 key = c("region", "duration", "stream"))
+                 key = c("region", "duration", "stream")) %>%
     score_EB(score_function = score_function) %>%
     score_minimal_stream_subset
 }
@@ -121,9 +121,9 @@ score_fun_EBP <- function(c, b) {
 #' Calculates the EBP multivariate scan statistic by the naive Kulldorff method.
 #' 
 #' This function calculates the multivariate scan statistic by the naive 
-#' Kulldorff method, using expectation-based Poisson score function.
+#' Kulldorff method, using the expectation-based Poisson score function.
 #' @inheritParams naive_kulldorff_general
-naive_kulldorff_poisson <- function(counts, regions) {
+naive_kulldorff_poisson <- function(counts, regions, region_partition) {
   naive_kulldorff_general(
     counts, regions, region_partition, aggregate_CB_poisson, score_fun_EBP)
 }
@@ -156,6 +156,15 @@ score_fun_EBG <- function(c, b) {
   ifelse(c > b, (c - b)^2 / (2 * b), 0)
 }
 
+#' Calculates the EBG multivariate scan statistic by the naive Kulldorff method.
+#' 
+#' This function calculates the multivariate scan statistic by the naive 
+#' Kulldorff method, using the expectation-based Gaussian score function.
+#' @inheritParams naive_kulldorff_general
+naive_kulldorff_gaussian <- function(counts, regions, region_partition) {
+  naive_kulldorff_general(
+    counts, regions, region_partition, aggregate_CB_gaussian, score_fun_EBG)
+}
 
 # Expectation-based Exponential ------------------------------------------------
 
@@ -172,4 +181,24 @@ aggregate_CB_exponential <- function(counts) {
              aggregate_count = cumsum(count / baseline),
              aggregate_baseline = duration), 
          by = .(location, stream)]
+}
+
+#' Calculates the score for the expectation-based exponential scan statistic.
+#' 
+#' Calculates the score for the expectation-based exponential scan statistic, 
+#' given scalar aggregate counts and baselines.
+#' @param c A scalar; an aggregate count.
+#' @param b A scalar; an aggregate baseline.
+score_fun_EBE <- function(c, b) {
+  ifelse(c > b, b * (log(b / c) - 1) + c, 0)
+}
+
+#' Calculates the EBE multivariate scan statistic by the naive Kulldorff method.
+#' 
+#' This function calculates the multivariate scan statistic by the naive 
+#' Kulldorff method, using the expectation-based exponential score function.
+#' @inheritParams naive_kulldorff_general
+naive_kulldorff_exponential <- function(counts, regions, region_partition) {
+  naive_kulldorff_general(
+    counts, regions, region_partition, aggregate_CB_exponential, score_fun_EBE)
 }
