@@ -24,6 +24,11 @@
 #'    or a matrix in which the row numbers correspond to the event duration, and 
 #'    the columns to the different events. If events types are given as strings, make it a \code{data.frame} with
 #'    the events types as column names instead.
+#' @param n_partitions Integer parameter that specifies how many parts, 
+#'    approximately equal in size in the number of locations, the set of all
+#'    regions should be partitioned into to avoid memory issues. The more 
+#'    regions, and size of these regions, the larger this parameter should be.
+#'    Can be left as \code{"auto"} (default) to be figured out for itself.
 #' @details 
 #'    More details on the input arguments:
 #'    \itemize{
@@ -42,7 +47,8 @@ MBSS <- function(loglikelihoods,
                  regions,
                  null_prior,
                  event_priors,
-                 duration_condpriors = "uniform") {
+                 duration_condpriors = "uniform",
+                 n_partitions = "auto") {
   # Input checking -------------------------------------------------------------
   if (!is.data.table(loglikelihoods)) {
     stop("The log-likelihoods must be supplied as a data.table.")
@@ -90,7 +96,7 @@ MBSS <- function(loglikelihoods,
          "must sum to 1.")
   }
   # No errors; proceed with definitions-----------------------------------------
-  
+
   events_are_strings <- typeof(loglikelihoods$event) == "character"
   if (events_are_strings) {
     event_names <- names(event_priors)
@@ -117,6 +123,13 @@ MBSS <- function(loglikelihoods,
   }
   
   null_loglikelihood <- loglikelihoods[event == null_name, sum(loglikelihood)]
+  
+  if (n_partitions == "auto") {
+    n_partitions <- min(length(regions), 
+                        floor(log(sum(vapply(regions, length, integer(1))))))
+  }
+  
+  region_partition <- partition_regions(regions, n_parts = n_partitions)
 
   # Set columns in correct order for adding log-likelihood ratios (add_llr)
   setkeyv(loglikelihoods, c("event", "location", "stream", "time"))
@@ -126,9 +139,12 @@ MBSS <- function(loglikelihoods,
   spacetime_output <- 
     loglikelihoods %>%
     add_llr(null_name = null_name) %>%
-    add_duration %>%
-    region_joiner(regions = regions, keys = keys_used_for_stllr) %>%
-    spacetime_llr
+    add_duration(keys = c("location", "stream", "duration", "event")) %>%
+    region_apply(region_partition = region_partition, 
+                 f = spacetime_llr, 
+                 keys = keys_used_for_stllr)
+#     region_joiner(regions = regions, keys = keys_used_for_stllr) %>%
+#     spacetime_llr
   
   # Calculate the marginal probability of the data
   data_logratio <- 
@@ -155,7 +171,7 @@ MBSS <- function(loglikelihoods,
   event_logpmap <- 
     spacetime_output %>%
     event_logprobability_map(
-      region_table = region_table_creator(regions, key = "region"))
+      region_table = region_table_creator(regions, keys = "region"))
 
   event_pmap <- event_probability_map(event_logpmap)
   pmap <- probability_map(event_logpmap)
