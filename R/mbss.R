@@ -143,12 +143,16 @@ MBSS <- function(loglikelihoods,
   
   marginal_logprob_of_data <- data_logratio + null_loglikelihood
 
-  # Add a column to \code{spacetime_output} for posterior probability
+  # Calculate posterior event log-probabilities for all space-time windows
+  # Adds a column to \code{spacetime_output} for posterior probability
   spacetime_logposterior(spacetime_output,
                          event_logpriors = log(event_priors),
                          dur_given_event_logprobs = log(duration_condpriors),
                          n_regions = n_regions,
                          data_logratio = data_logratio)
+  
+  # Calculate posterior event probabilities for all spatial windows
+  spatial_posterior <- 1
 
   # Calculate probability maps
   event_logpmap <- 
@@ -171,7 +175,7 @@ MBSS <- function(loglikelihoods,
   if (!all.equal(1, total_posterior)) {
     warning("Posterior probabilities don't sum to 1.")
   }
-  
+  setkey(spacetime_output, "posterior_prob")
   structure(list(loglikelihoods = loglikelihoods,
                  max_duration = max_duration,
                  time_and_durations = times_durations,
@@ -189,6 +193,7 @@ MBSS <- function(loglikelihoods,
                  probability_map = pmap), 
             class = "MBSS")
 }
+
 
 #' Extract the posterior conditional event duration probabilities from an MBSS
 #' object.
@@ -233,5 +238,5 @@ k_most_probable <- function(MBSS_obj,
     durations <- seq(MBSS_obj$max_duration)
   }
   MBSS_obj$posteriors[event %in% events & duration %in% durations,
-    .(region, event, duration, posterior_prob)][order(-posterior_prob)][seq(k)]
+    .(region, event, duration, posterior_prob)][.N + 1 - seq(k)]
 }
