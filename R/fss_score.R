@@ -39,6 +39,23 @@ score_minimal_stream_subset <- function(scores) {
          by = .(region, duration)]
 }
 
+#' Calculates the expectation-based score for each region, stream, and duration 
+#' combination.
+#' 
+#' Given the aggegate counts and baselines for each region-stream-duration 
+#' combination, calculates the expectation-based score function value, with the
+#' given score function.
+#' @param aggregates A \code{data.table} with columns \code{region, duration, 
+#'    stream, aggregate_count, aggregate_baseline}.
+#' @param score_function A two-parameter scalar input, single scalar output
+#'    score function.
+#' @return A \code{data.table} with columns \code{region, duration, stream, 
+#'    score}.
+score_EB <- function(aggregates, score_function) {
+  aggregates[, .(score = score_function(aggregate_count, aggregate_baseline)),
+             by = .(region, duration, stream)]
+}
+
 #' Calculates the multivariate scan statistic by the naive Kulldorff method.
 #' 
 #' Calculates the multivariate scan statistic by the naive Kulldorff method, for 
@@ -63,13 +80,13 @@ naive_kulldorff_general <- function(counts,
                                     regions, 
                                     region_partition,
                                     aggregate_CB, 
-                                    score_EB) {
+                                    score_function) {
   counts %>%
     aggregate_CB %>%
     region_apply(region_partition = region_partition,
                  f = aggregate_again,
                  key = c("region", "duration", "stream"))
-    score_EB %>%
+    score_EB(score_function = score_function) %>%
     score_minimal_stream_subset
 }
 
@@ -101,20 +118,6 @@ score_fun_EBP <- function(c, b) {
   ifelse(c > b, c * (log(c / b) - 1) + b, 0)
 }
 
-#' Calculates the expectation-based Poisson score for each region, stream, and
-#' duration combination.
-#' 
-#' Given the aggegate counts and baselines for each region-stream-duration 
-#' combination, calculates the expectation-based Poisson score function value.
-#' @param aggregates A \code{data.table} with columns \code{region, duration, 
-#'    stream, aggregate_count, aggregate_baseline}.
-#' @return A \code{data.table} with columns \code{region, duration, stream, 
-#'    score}.
-score_EBP <- function(aggregates) {
-  aggregates[, .(score = score_fun_EBP(aggregate_count, aggregate_baseline)),
-             by = .(region, duration, stream)]
-}
-
 #' Calculates the EBP multivariate scan statistic by the naive Kulldorff method.
 #' 
 #' This function calculates the multivariate scan statistic by the naive 
@@ -122,7 +125,7 @@ score_EBP <- function(aggregates) {
 #' @inheritParams naive_kulldorff_general
 naive_kulldorff_poisson <- function(counts, regions) {
   naive_kulldorff_general(
-    counts, regions, aggregate_CB_poisson, score_EBP)
+    counts, regions, region_partition, aggregate_CB_poisson, score_fun_EBP)
 }
 
 
@@ -143,6 +146,16 @@ aggregate_CB_gaussian <- function(counts) {
          by = .(location, stream)]
 }
 
+#' Calculates the score for the expectation-based Gaussian scan statistic.
+#' 
+#' Calculates the score for the expectation-based Gaussian scan statistic, given
+#' scalar aggregate counts and baselines.
+#' @param c A scalar; an aggregate count.
+#' @param b A scalar; an aggregate baseline.
+score_fun_EBG <- function(c, b) {
+  ifelse(c > b, (c - b)^2 / (2 * b), 0)
+}
+
 
 # Expectation-based Exponential ------------------------------------------------
 
@@ -160,5 +173,3 @@ aggregate_CB_exponential <- function(counts) {
              aggregate_baseline = duration), 
          by = .(location, stream)]
 }
-
-
