@@ -1,12 +1,11 @@
-
-
 # General functions ------------------------------------------------------------
 
 #' Calculate the count and baseline aggregates over each region-stream-duration
 #' combination.
 #' 
 #' Take the already calculated aggregates for each location, stream and duration
-#' and sum them over all locations in each region. 
+#' and sum them over all locations in each region. This is the quantity denoted
+#' \eqn{C^m(S,W)}.
 #' @param aggregates A \code{data.table} containing columns \code{region, 
 #'    duration, stream, location, aggregate_count, aggregate_baseline}. The 
 #'    latter two columns contain the aggregate counts and baselines as produced 
@@ -20,7 +19,6 @@ aggregate_again <- function(aggregates) {
                  aggregate_baseline = sum(aggregate_baseline)),
              by = .(region, duration, stream)]
 }
-
 
 #' Calculates the expectation-based score for each region, stream, and duration 
 #' combination.
@@ -39,17 +37,16 @@ score_EB <- function(aggregates, score_function) {
              by = .(region, duration, stream)]
 }
 
-
-
 # Expectation-based Poisson ----------------------------------------------------
 
 #' Calculate the aggregate counts and baselines for the EBP scan statistic
 #' over all event durations.
 #' 
-#' Calculate the aggregate counts \eqn{C_{i,m}} and aggregate baselines 
-#' \eqn{B_{i,m}} for the expectation-based Poisson (EBP) scan statistic, for 
-#' each location \eqn{i} and data stream \eqn{m}. I.e. the cumulative sum over
-#' the event duration, from shortest to longest, is calculated.
+#' Calculate the aggregate counts \eqn{C_{i,m}(W)} and aggregate baselines 
+#' \eqn{B_{i,m}(W)} for the expectation-based Poisson (EBP) scan statistic, for 
+#' each location \eqn{i}, data stream \eqn{m}, and event duration \eqn{W}. In 
+#' essence, the cumulative sum over the event duration, from shortest to 
+#' longest, is calculated.
 #' @param counts A \code{data.table} with columns \code{location, stream, 
 #'    duration, count, baseline}.
 aggregate_CB_poisson <- function(counts) {
@@ -68,8 +65,6 @@ aggregate_CB_poisson <- function(counts) {
 score_fun_EBP <- function(c, b) {
   ifelse(c > b, c * (log(c / b) - 1) + b, 0)
 }
-
-
 
 # Expectation-based Gaussian ---------------------------------------------------
 
