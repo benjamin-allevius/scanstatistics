@@ -6,7 +6,7 @@
 #' part are summed over all regions in the part.
 #' @param regions A \code{set} of regions, each region itself being a \code{set}
 #'    containing locations.
-#' @param n_part An integer; the number of parts to split the \code{regions}
+#' @param n_parts An integer; the number of parts to split the \code{regions}
 #'    into.
 #' @return A list with two elements:
 #'    \itemize{
@@ -81,8 +81,7 @@ region_apply <- function(location_table, region_partition, f, keys = NULL) {
   foreach(regions_in_part = region_partition$partition, 
           offset = region_partition$offsets,
           .combine = rbind,
-          .packages = c("data.table", "magrittr"),
-          .export = ls(as.environment("package:scanstatistics"))) %dopar% {
+          .packages = c("data.table", "magrittr")) %do% {
             
             locations <- unique(unlist(regions_in_part))
             region_table <- region_table_creator(regions_in_part, 
@@ -131,7 +130,7 @@ region_joiner <- function(locations_etc, regions, keys = c("region")) {
 #' will have these names for the regions. Else, the regions are labeled
 #' by integers from 1 to the length of the region list.
 #' @param regions A list of regions, elements being vectors of locations.
-#' @param key Character vector of one or more column names which is passed 
+#' @param keys Character vector of one or more column names which is passed 
 #'    to \code{\link[data.table]{setkey}}.
 #' @param offset An integer to offset the region numbering by, in case names are
 #'    not used for the regions, and you want the region count to start at
