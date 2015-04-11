@@ -120,7 +120,7 @@ score_EBP <- function(aggregates) {
 #' 
 #' This function calculates the multivariate scan statistic by the naive 
 #' Kulldorff method, using expectation-based Poisson score function.
-#' @importFrom naive_kulldorff_general
+#' @inheritParams naive_kulldorff_general
 naive_kulldorff_poisson <- function(counts, regions) {
   naive_kulldorff_general(
     counts, regions, aggregate_CB_poisson, score_EBP)
