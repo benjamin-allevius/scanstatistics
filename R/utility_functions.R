@@ -122,28 +122,42 @@ region_joiner <- function(locations_etc, regions, keys = c("region")) {
 #' 
 #' Applies the function \code{f} to the data table formed by expanding the
 #' \code{location_table} according to the regions in \code{region_partition}.
-#'
-#' @param f The function to apply.
-#' @param region_partition A \code{list} of \code{list}s. 
-#'        The elements of each sublist are regions, 
-#'        which are \code{vector}s of locations contained in the region.
-#'        Remember, \code{\link[sets]{set}}s are lists.
 #' @param location_table A \code{data.table} with key column \code{location},
-#'        and other which may be used by the supplied function \code{f}.
-region_apply <- function(f, region_partition, location_table) {
-  foreach(regions_in_part = region_partition, 
+#'    and others which may be used by the supplied function.
+#' @param region_partition A list as outputted by 
+#'    \code{\link{partition_regions}}. Has two elements:
+#'    \itemize{
+#'      \item{partition} A list, each element of which is a \code{set} 
+#'        containing one or more regions (\code{set} containing locations).
+#'      \item{offsets} An integer vector containing offset numbers to the
+#'         region numbering. For example, the first region in 
+#'         \code{partition[i]} will have will be region number 
+#'         \code{offset[i] + 1}.
+#'    }
+#' @param f A function to apply after expanding \code{location_table} by the
+#'    regions in a given element of \code{region_partition$partition}.
+#' @param key A character vector to set the key columns of the expanded 
+#'    region-location table by before applying the function \code{f}.
+#' @return A \code{data.table}, containing the results of applying the supplied
+#'    function over all regions.
+region_apply <- function(location_table, region_partition, f, key = NULL) {
+  foreach(regions_in_part = region_partition$partition, 
+          offset = region_partition$offsets,
           .combine = rbind,
-          #           .packages = c("data.table", "magrittr"),
-          .export = ls(envir = globalenv())) %dopar% {
+          .packages = c("data.table", "magrittr"),
+          .export = ls(as.environment("package:scanstatistics"))) %dopar% {
             
             locations <- unique(unlist(regions_in_part))
-            
             region_table <- region_table_creator(regions_in_part, 
-                                                 key = c("location"))
-            
+                                                 key = c("location"), 
+                                                 offset = offset)
             merge(location_table[location %in% locations, ],
                   region_table,
-                  allow.cartesian = TRUE) %>% f
+                  by = "location",
+                  allow.cartesian = TRUE) %>% {
+                    setkeyv(., key)
+                    .
+                  } %>% f
           }
 }
 
@@ -241,7 +255,7 @@ get_set <- function(set_of_sets, index) {
 #'        containing locations.
 #' @param n_part An integer; the number of parts to split the \code{regions}
 #'        into.
-#' @return A list containing with two elements:
+#' @return A list with two elements:
 #'         \itemize{
 #'         \item{partition} A list, each element of which is a \code{set} 
 #'         containing one or more regions (\code{set} containing locations).
@@ -267,8 +281,6 @@ partition_regions <- function(regions, n_parts = min(10L, length(regions))) {
   n_locations <- vapply(regions, length, integer(1))
   cs <- cumsum(n_locations)
   total_n <- sum(n_locations)
-  
-  # Can't partition set of regions into more elements than it has
   
   # Get breakpoints for where to partition regions
   ranges <- integer(n_parts)
