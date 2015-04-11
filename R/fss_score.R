@@ -41,10 +41,11 @@ score_minimal_stream_subset <- function(scores) {
          by = .(region, duration)]
 }
 
-#' Calculates the FSS scores for all stream-region-duration combinations.
+#' Calculates the multivariate scan statistic by the naive Kulldorff method.
 #' 
-#' Calculates the FSS scores for all stream-region-duration combinations,
-#' according to the distribution used in the supplied functions.
+#' Calculates the multivariate scan statistic by the naive Kulldorff method, for 
+#' all stream-region-duration combinations, according to the distribution used 
+#' in the supplied functions.
 #' @param counts A \code{data.table} with columns \code{region, duration, 
 #'        stream, count, baseline}, and possibly others.
 #' @param regions A \code{list} or \code{set} of regions, 
@@ -58,6 +59,7 @@ score_minimal_stream_subset <- function(scores) {
 #'        expectation-based scan statistic.
 #' @return A \code{data.table} with columns \code{region, duration, score,
 #'         included_streams}.
+#' @importFrom magrittr %>%
 naive_kulldorff_general <- function(counts, regions, 
                                     aggregate_CB, score_EB) {
   counts %>%
@@ -96,7 +98,7 @@ aggregate_CB_poisson <- function(counts) {
 #' @param c A scalar; an aggregate count.
 #' @param b A scalar; an aggregate baseline.
 score_fun_EBP <- function(c, b) {
-  ifelse(c > b, c * (log(c) - log(b) - 1) + b, 0)
+  ifelse(c > b, c * (log(c / b) - 1) + b, 0)
 }
 
 #' Calculates the expectation-based Poisson score for each region, stream, and
@@ -114,16 +116,14 @@ score_EBP <- function(aggregates) {
              by = .(region, duration, stream)]
 }
 
-#' Calculate the scores according to the Naive Kulldorff method.
-#' @importFrom magrittr %>%
+#' Calculates the EBP multivariate scan statistic by the naive Kulldorff method.
+#' 
+#' This function calculates the multivariate scan statistic by the naive 
+#' Kulldorff method, using expectation-based Poisson score function.
+#' @importFrom naive_kulldorff_general
 naive_kulldorff_poisson <- function(counts, regions) {
-  counts %>%
-    aggregate_CB_poisson %>%
-    region_joiner(regions = regions, 
-                  keys = c("region", "duration", "stream")) %>%
-    aggregate_again %>%
-    score_EBP %>%
-    score_minimal_stream_subset
+  naive_kulldorff_general(
+    counts, regions, aggregate_CB_poisson, score_EBP)
 }
 
 
