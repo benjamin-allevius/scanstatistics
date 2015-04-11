@@ -84,7 +84,7 @@ table_creator <- function(col_list, key = NULL) {
 region_table_creator <- function(regions, key = NULL, offset = 0L) {
   region_names <- names(regions)
   if (is.null(region_names)) {
-    region_names <- seq_along(regions)
+    region_names <- seq_along(regions) + offset
   }
   data.table(location = unlist(regions, use.names = FALSE),
              region = rep(region_names, 
@@ -229,4 +229,63 @@ get_set <- function(set_of_sets, index) {
     }
     i <- i + 1
   }
+}
+
+
+#' Partition a set of regions.
+#' 
+#' Partition a set of regions such that each part contains about the same
+#' number of locations, when the number of locations in each region for the
+#' part are summed over all regions in the part.
+#' @param regions A \code{set} of regions, each region itself being a \code{set}
+#'        containing locations.
+#' @param n_part An integer; the number of parts to split the \code{regions}
+#'        into.
+#' @return A list containing with two elements:
+#'         \itemize{
+#'         \item{partition} A list, each element of which is a \code{set} 
+#'         containing one or more regions (\code{set} containing locations).
+#'         \item{offsets} An integer vector containing offset numbers to the
+#'         region numbering. For example, the first region in 
+#'         \code{partition[i]} will have will be region number 
+#'         \code{offset[i] + 1}.
+#'         }
+partition_regions <- function(regions, n_parts = min(10L, length(regions))) {
+  if (n_parts < 1 || n_parts %% 1 != 0) {
+    stop("n_parts has to be a positive integer.")
+  }
+  if (n_parts > length(regions)) {
+    stop("Can't partition set of all regions into more parts than the total ",
+         "number of regions in it.")
+  }
+  n_parts <- as.integer(n_parts)
+  
+  # Turn into list in order to be able to access ranges of elements by index
+  regs <- as.list(regions)  
+  
+  # Decide partition by looking at cumulative sum of number of locations
+  n_locations <- vapply(regions, length, integer(1))
+  cs <- cumsum(n_locations)
+  total_n <- sum(n_locations)
+  
+  # Can't partition set of regions into more elements than it has
+  
+  # Get breakpoints for where to partition regions
+  ranges <- integer(n_parts)
+  for (r in seq(n_parts - 1)) {
+    ranges[r] <- sum(cs <= floor(total_n / n_parts) * r)
+  }
+  ranges[n_parts] <- length(regions)
+  
+  # offsets keep track of the region numbers
+  offsets <- c(0L, ranges[-n_parts])
+  
+  region_partition <- list()
+  os <- 0L
+  for (r in ranges) {
+    region_partition <- c(region_partition, 
+                          sets::set(sets::as.set(regs[(os + 1L):r])))
+    os <- r
+  }
+  list(partition = region_partition, offsets = offsets)
 }
