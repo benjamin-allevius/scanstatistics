@@ -86,7 +86,7 @@ region_apply <- function(location_table, region_partition, f, keys = NULL) {
             
             locations <- unique(unlist(regions_in_part))
             region_table <- region_table_creator(regions_in_part, 
-                                                 key = c("location"), 
+                                                 keys = c("location"), 
                                                  offset = offset)
             merge(location_table[location %in% locations, ],
                   region_table,
@@ -139,9 +139,10 @@ region_joiner <- function(locations_etc, regions, keys = c("region")) {
 #' @examples 
 #' \dontrun{
 #' region_table_creator(list(1L, 2L, 1:2))
-#' region_table_creator(sets::set(sets::set(1L), sets::set(2L), sets::as.set(1:2)))
-#' region_table_creator(list(1L, 2L, 1:2), key = "location")
-#' region_table_creator(list(1L, 2L, 1:2), key = "region")
+#' region_table_creator(sets::set(sets::set(1L), 
+#'                      sets::set(2L), sets::as.set(1:2)))
+#' region_table_creator(list(1L, 2L, 1:2), keys = "location")
+#' region_table_creator(list(1L, 2L, 1:2), keys = "region")
 #' region_table_creator(list(a = "x", b = "y", c = c("x", "y")))
 #' }
 region_table_creator <- function(regions, keys = NULL, offset = 0L) {

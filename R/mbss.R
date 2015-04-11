@@ -5,40 +5,37 @@
 #' Assumes that the prior probability of a region being affected by a given
 #' event is uniform over all regions, and that events are mutually exclusive
 #' and affect only a single region.
-#' 
 #' @param loglikelihoods A \code{data.table} in long format,
-#'        containing at least the columns
-#'        \code{event, stream, location, time} and \code{loglikelihood}. 
-#'        See details below for full specification.
+#'    containing at least the columns \code{event, stream, location, time} and 
+#'    \code{loglikelihood}. See details below for full specification.
 #' @param regions A \code{list} or \code{set} of regions, 
-#'        each region itself a set containing
-#'        one or more locations of those found in \code{loglikelihoods}.
+#'    each region itself a set containing one or more locations of those found 
+#'    in \code{loglikelihoods}.
 #' @param null_prior The prior probability that no event has taken place.
 #' @param event_priors The prior probabilities of each event type, or numbers 
-#'        that express how often the events occur compared to each other.
-#'        For example, \code{c(0.02, 0.05)} and \code{c(2, 5)} express the
-#'        same thing, given the \code{null_prior}. If event types are given as 
-#'        strings, should be a named vector or \code{data.frame} with
-#'        the different events as columns.
+#'    that express how often the events occur compared to each other. For 
+#'    example, \code{c(0.02, 0.05)} and \code{c(2, 5)} express the same thing, 
+#'    given the \code{null_prior}. If event types are given as strings, should 
+#'    be a named vector or \code{data.frame} with the different events as 
+#'    columns.
 #' @param duration_condpriors The prior conditional probabilities of the event
-#'        durations, given the event types. Either the string 'uniform',
-#'        meaning that the event durations are uniformly distributed for all
-#'        event types, or a matrix in which the row numbers correspond to the
-#'        event duration, and the columns to the different events.
-#'        If events types are given as strings, make it a \code{data.frame} with
-#'        the events types as column names instead.
+#'    durations, given the event types. Either the string 'uniform', meaning 
+#'    that the event durations are uniformly distributed for all event types, 
+#'    or a matrix in which the row numbers correspond to the event duration, and 
+#'    the columns to the different events. If events types are given as strings, make it a \code{data.frame} with
+#'    the events types as column names instead.
 #' @details 
-#' More details on the input arguments:
-#' \itemize{
-#'  \item{\code{loglikelihoods}: }
-#'       {The column \code{event} contains identifiers (integer or character) 
+#'    More details on the input arguments:
+#'    \itemize{
+#'      \item{loglikelihoods}
+#'        {The column \code{event} contains identifiers (integer or character) 
 #'        for both the null hypothesis of no event and for the event types
 #'        under the alternative hypothesis. If integer, the null hypothesis
 #'        should be specified as \code{0L}, and if character, 
 #'        should be specified as \code{"null"}.
 #'        The column \code{loglikelihood} contains the predicted log-likelihood 
 #'        for each observation and each event type (including the null).}
-#' }
+#'    }
 #' @importFrom magrittr %>%
 #' @export
 MBSS <- function(loglikelihoods,
@@ -212,8 +209,8 @@ spatial_posteriors <- function(MBSS_obj) {
 #' 
 #' @param MBSS_obj An object of class "MBSS".
 #' @param duration_column A logical scalar. Should the output matrix
-#'        contain a column for the event duration (elements being integers
-#'        equal to the row numbers)?
+#'    contain a column for the event duration (elements being integers equal to 
+#'    the row numbers)?
 get_duration_condposteriors <- function(MBSS_obj, duration_column = TRUE) {
   out <- tidyr::spread(MBSS_obj$duration_condposteriors, 
                        key = event, 

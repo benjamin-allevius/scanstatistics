@@ -4,11 +4,10 @@
 #' Computes the log-likelihood log(P\eqn{(D|H_0}))
 #' under the null hypotesis of no events taking place.
 #' 
-#' @param densities A \code{data.table} with column \code{density},
-#'        containing the log-\emph{density} (log-pmf or log-pdf)
-#'        for each observation in the data.
-#'        Other columns should thus preferably be \code{location},
-#'        \code{duration}, and \code{stream}.
+#' @param densities A \code{data.table} with column \code{density}, containing 
+#'    the log-\emph{density} (log-pmf or log-pdf) for each observation in the 
+#'    data. Other columns should thus preferably be \code{location}, 
+#'    \code{duration}, and \code{stream}.
 #' @return The log-likelihood log(\eqn{P(D|H_0})), a scalar value.
 null_llh <- function(densities) {
   densities[, sum(density)]
@@ -24,14 +23,12 @@ null_llh <- function(densities) {
 #' This function assumes that the event duration is uniformly distributed,
 #' and that the event severity is uniformly distributed 
 #' over its possible values.
-#' 
 #' @inheritParams spacetime_llh_uniform
 #' @param max_duration The number of duration periods of the longest
-#'        event duration considered.
+#'    event duration considered.
 #' @return A \code{data.table} with columns \code{region}, \code{event}, 
-#'         \code{duration}, and \code{llh}.
-#'         The column \code{llh} contains the log-likelihoods
-#'         for each region and event type.
+#'    \code{duration}, and \code{llh}. The column \code{llh} contains the 
+#'    log-likelihoods for each region and event type.
 spatial_llh_uniform <- function(full_llr, null_llh, L, max_duration) {
   full_llr[, .(llh =  logsumexp(llr) + null_llh - log(L) - log(max_duration)),
             keyby = .(region, event)]
@@ -46,21 +43,16 @@ spatial_llh_uniform <- function(full_llr, null_llh, L, max_duration) {
 #' each event type, and each region.
 #' Assumes the event severities are uniformly distributed over
 #' \eqn{L} different values; same \eqn{L} for all event types.
-#' 
-#' @param full_llr A \code{data.table} with columns 
-#'        \code{region}, \code{event}, \code{severity}, \code{duration}, 
-#'        and \code{llr}. Keys should preferably be at 
-#'        least \code{region, event}.        
-#'        The column \code{llr} contains the full log-likelihood ratios.
+#' @param full_llr A \code{data.table} with columns \code{region, event, 
+#'    severity, duration, llr}. Keys should preferably be at least \code{region, 
+#'    event}. The column \code{llr} contains the full log-likelihood ratios.
 #' @param null_llh The full log-likelihood (scalar value) 
-#'        under the null hypothesis of no event. 
-#' @param L The number of event severities, or equivalently the
-#'        number of values the impact factor can take on.
-#'        Assumed to be the same for all event types.
-#' @return A \code{data.table} with columns \code{region}, \code{event}, 
-#'         \code{duration}, and \code{llh}.
-#'         The column \code{llh} contains the log-likelihoods
-#'         for each region, event type, and duration.
+#'    under the null hypothesis of no event. 
+#' @param L The number of event severities, or equivalently the number of values 
+#'    the impact factor can take on. Assumed to be the same for all event types.
+#' @return A \code{data.table} with columns \code{region, event, duration, llh}.
+#'    The column \code{llh} contains the log-likelihoods for each region, event 
+#'    type, and duration.
 spacetime_llh_uniform <- function(full_llr, null_llh, L) {
   full_llr[, .(llh = logsumexp(llr) + null_llh - log(L)), 
            keyby = .(region, event, duration)]

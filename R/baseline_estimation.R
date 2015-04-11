@@ -5,12 +5,10 @@
 #' expected count for a given time point and location to be the total count
 #' for that time point multiplied by the proportion of all counts for that 
 #' location.
-#' 
 #' @param counts A \code{data.table} with columns \code{stream, location, time, 
-#'        count}, keyed by the first three columns in that order.
+#'    count}, keyed by the first three columns in that order.
 #' @return A \code{data.table} with columns \code{stream, location, time, count, 
-#'        baseline}. Key columns are \code{stream, location, time} in that 
-#'        order.
+#'    baseline}. Key columns are \code{stream, location, time} in that order.
 kulldorff_baseline <- function(counts) {
   sum_by_time <- counts[, .(timesum = sum(count)), keyby = .(stream, location)]
   sum_by_loc <- counts[, .(locsum = sum(count)), keyby = .(stream, time)]

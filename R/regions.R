@@ -4,7 +4,6 @@
 #' Get the k nearest neighbors for each point, including the point itself.
 #' This function calls \code{\link[stats]{dist}},
 #' so the options for the distance measure used is the same as for that one.
-#' 
 #' @param k The number of nearest neighbors, counting the point itself.
 #' @inheritParams stats::dist
 k_nearest_neighbors <- function(x, 
@@ -28,13 +27,11 @@ k_nearest_neighbors <- function(x,
 #' the point itself, a set containing the point and its nearest neighbor,
 #' and so on, up to the set containing the point and its \eqn{k-1} nearest 
 #' neighbors. The set returned contains no duplicates.
-#' 
-#' @param k_nearest A matrix or data frame with \eqn{k} columns,
-#'        the \eqn{j}th element of the \eqn{i}th row containg the \eqn{j}th
-#'        nearest neighbor of point \eqn{i}, with \eqn{j = 1,\ldots,k}.
-#'        Each point is defined to be its own nearest neighbor,
-#'        so the first column of row \eqn{i} should be (the identifier)
-#'        of point \eqn{i} itself.
+#' @param k_nearest A matrix or data frame with \eqn{k} columns, the \eqn{j}th 
+#'    element of the \eqn{i}th row containg the \eqn{j}th nearest neighbor of 
+#'    point \eqn{i}, with \eqn{j = 1,\ldots,k}. Each point is defined to be its 
+#'    own nearest neighbor, so the first column of row \eqn{i} should be (the 
+#'    identifier) of point \eqn{i} itself.
 #' @inheritParams plyr::alply
 regions_upto_k <- function(k_nearest, .parallel = FALSE, .paropts = NULL) {
   Reduce(sets::set_union, 
@@ -52,10 +49,8 @@ regions_upto_k <- function(k_nearest, .parallel = FALSE, .paropts = NULL) {
 #' Returns a set of the increasing sets of the input vector \code{v},
 #' in the sense that the first set contains the first element of \code{v},
 #' the second set the first and second elements of \code{v}, and so on.
-#' 
 #' @param v A vector. Meant to represent the \eqn{k} nearest neighbors
-#'        of a point, the first element being (an identifier) of the point
-#'        itself.
+#'    of a point, the first element being (an identifier) of the point itself.
 closest_subsets <- function(v) {
   sets::as.set(lapply(lapply(seq_along(v), function(x) v[seq(x)]), 
                       sets::as.set))
@@ -68,11 +63,10 @@ closest_subsets <- function(v) {
 #' (sets of locations). The regions in these sets are all connected,
 #' in the sense that any location in the region can be reached from another
 #' by traveling through adjacent locations within the region.
-#' 
 #' @param k_nearest A matrix of the \eqn{k} nearest neighbors for each location.
-#'        Each row corresponds to a location, with the first element of each row
-#'        being the location itself. Locations should preferably be given
-#'        as integers.
+#'    Each row corresponds to a location, with the first element of each row
+#'    being the location itself. Locations should preferably be given as 
+#'    integers.
 #' @inheritParams connected_to
 #' @inheritParams plyr::alply
 flexible_regions <- function(k_nearest, 
@@ -93,10 +87,9 @@ flexible_regions <- function(k_nearest,
 #' 
 #' Returns a \code{set} of \code{set}s, each set of the latter type containing
 #' the location itself and zero or more of its neighbors, if they are connected.
-#' 
 #' @param neighbors A vector of neighbors to a location, the first element
-#'        of the vector being the specific location, and the other elements
-#'        its other nearest neighbors. Locations should preferably be integers.
+#'    of the vector being the specific location, and the other elements its 
+#'    other nearest neighbors. Locations should preferably be integers.
 #' @inheritParams connected_to
 connected_neighbors <- function(neighbors, adjacency_matrix) {
   location <- neighbors[1]
@@ -118,13 +111,12 @@ connected_neighbors <- function(neighbors, adjacency_matrix) {
 #' If the location and its neighbors, not including itself, are connected,
 #' then return the set containing the location and its neighbors;
 #' otherwise, return the empty set
-#' 
 #' @param distinct_neighbors A \code{set} containing the neighboring locations
-#'        to the given location, not including the location itself.
+#'    to the given location, not including the location itself.
 #' @param location A location, preferably given as an integer.
 #' @inheritParams connected_to
 #' @return A \code{set} of the given location and the neighbors if they are
-#'         connected, else returns the empty set.
+#'    connected, else returns the empty set.
 if_connected <- function(distinct_neighbors, location, adjacency_matrix) {
   if (is_connected(distinct_neighbors, location, adjacency_matrix)) {
     return(sets::set_union(sets::set(location),
@@ -139,7 +131,7 @@ if_connected <- function(distinct_neighbors, location, adjacency_matrix) {
 #' location, FALSE if not.
 #' 
 #' @param neighbor_locations A \code{set} of neighboring locations to the given
-#'        location; these neighbors do not include the given location itself.
+#'    location; these neighbors do not include the given location itself.
 #' @param location A location, preferably given as an integer.
 #' @inheritParams connected_to
 #' @return Boolean: is the neighbors connected to the given location?
@@ -163,11 +155,10 @@ is_connected <- function(neighbor_locations, location, adjacency_matrix) {
 #' 
 #' Return those elements in the second set \eqn{Z_1} which are connected to 
 #' those in the first set \eqn{Z_0}, according to the adjacency matrix.
-#' 
 #' @param Z_0 A set of locations, given as integers.
 #' @param Z_1 A set of locations, given as integers.
 #' @param adjacency_matrix A boolean matrix, with element \eqn{(i,j)} set 
-#'        to TRUE if location \eqn{j} is adjacent to location \eqn{i}.
+#'    to TRUE if location \eqn{j} is adjacent to location \eqn{i}.
 #' @return A set, possibly empty, containing those locations in \eqn{Z_1}
 #'         that are connected to any of the locations in \eqn{Z_0}.
 connected_to <- function(Z_0, Z_1, adjacency_matrix) {

@@ -52,8 +52,10 @@ globalVariables(c(# Variables used unquoted inside functions
   "is.data.table",
   ".",
   ":=",
+  "setkey",
   "setkeyv",
   ".SD",
+  ".N",
   # foreach
   "%dopar%",
   "foreach"),
