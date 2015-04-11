@@ -70,15 +70,18 @@ table_creator <- function(col_list, key = NULL) {
 #' @param regions A list of regions, elements being vectors of locations.
 #' @param key Character vector of one or more column names which is passed 
 #'        to \code{\link[data.table]{setkey}}.
+#' @param offset An integer to offset the region numbering by, in case names are
+#'        not used for the regions, and you want the region count to start at
+#'        \code{offset} + 1.
 #' @examples 
 #' \dontrun{
-#' region_table_creator(list(1, 2, 1:2))
+#' region_table_creator(list(1L, 2L, 1:2))
 #' region_table_creator(sets::set(sets::set(1L), sets::set(2L), sets::as.set(1:2)))
-#' region_table_creator(list(1, 2, 1:2), key = "location")
-#' region_table_creator(list(1, 2, 1:2), key = "region")
+#' region_table_creator(list(1L, 2L, 1:2), key = "location")
+#' region_table_creator(list(1L, 2L, 1:2), key = "region")
 #' region_table_creator(list(a = "x", b = "y", c = c("x", "y")))
 #' }
-region_table_creator <- function(regions, key = NULL) {
+region_table_creator <- function(regions, key = NULL, offset = 0L) {
   region_names <- names(regions)
   if (is.null(region_names)) {
     region_names <- seq_along(regions)
