@@ -63,13 +63,13 @@ partition_regions <- function(regions, n_parts = min(10L, length(regions))) {
 #'    and others which may be used by the supplied function.
 #' @param region_partition A list as outputted by 
 #'    \code{\link{partition_regions}}. Has two elements:
-#'    \itemize{
-#'      \item{partition} A list, each element of which is a \code{set} 
-#'        containing one or more regions (\code{set} containing locations).
-#'      \item{offsets} An integer vector containing offset numbers to the
+#'    \describe{
+#'      \item{\code{partition}}{A list, each element of which is a \code{set} 
+#'        containing one or more regions (\code{set} containing locations).}
+#'      \item{\code{offsets}}{An integer vector containing offset numbers to the
 #'         region numbering. For example, the first region in 
 #'         \code{partition[i]} will have will be region number 
-#'         \code{offset[i] + 1}.
+#'         \code{offsets[i] + 1}.}
 #'    }
 #' @param f A function to apply after expanding \code{location_table} by the
 #'    regions in a given element of \code{region_partition$partition}.
