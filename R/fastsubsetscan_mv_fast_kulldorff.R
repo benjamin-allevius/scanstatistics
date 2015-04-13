@@ -28,25 +28,34 @@
 # }
 
 # G_W^D(s_i) for Poisson
-fk_priority_fun_poisson <- function(c, b, q) {
+fk_priority_term_poisson <- function(c, b, q) {
   c * log(q) + b * (1 - q)
 }
 
 # G_W^D(s_i) for Gaussian
-fk_priority_fun_gaussian <- function(c, b, q) {
+fk_priority_term_gaussian <- function(c, b, q) {
   (q - 1) * (c - (q + 1) * b / 2)
 }
 
 
 # duration given, subset of streams given
 # relative_risks is a data.table
+#' Calculates the priority for each location, for a given duration and subset of
+#' streams.
+#' 
+#' For a given duration and set of data streams, this function calculates the 
+#' priority \eqn{G_W^D(s_i)} for each location, using the input relative risks
+#' and priority function.
+#' @inheritParams relative_risk_mle
+#' @param relative_risks A vector of relative risks, one for each data stream.
+#' @param priority_term
 fast_kulldorff_priority <- function(aggregates, 
                                     relative_risks,
-                                    fk_priority_fun) {
+                                    priority_term) {
   aggregates[, 
-    .(priority = sum(fk_priority_fun(aggregate_count,
-                                     aggregate_baseline,
-                                     relative_risks[stream])),
+    .(priority = sum(priority_term(aggregate_count,
+                                   aggregate_baseline,
+                                   relative_risks[stream])),
                  included_streams = list(stream)),
              by = .(location, duration)]
 }
