@@ -31,9 +31,7 @@ score_minimal_stream_subset <- function(scores) {
 #' @param aggregate_CB A function for calculating the aggregate counts and 
 #'    baselines over all event durations for a given expectation-based scan 
 #'    statistic.
-#' @param score_EB A function for calculating the score for score for each 
-#'    region, stream, and duration combination, according to the given
-#'    expectation-based scan statistic.
+#' @inheritParams score_EB
 #' @return A \code{data.table} with columns \code{region, duration, score,
 #'    included_streams}.
 #' @importFrom magrittr %>%
@@ -46,7 +44,7 @@ naive_kulldorff_general <- function(counts,
     aggregate_CB %>%
     region_apply(region_partition = region_partition,
                  f = aggregate_again,
-                 key = c("region", "duration", "stream")) %>%
+                 keys = c("region", "duration", "stream")) %>%
     score_EB(score_function = score_function) %>%
     score_minimal_stream_subset
 }
