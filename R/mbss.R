@@ -143,8 +143,6 @@ MBSS <- function(loglikelihoods,
     region_apply(region_partition = region_partition, 
                  f = spacetime_llr, 
                  keys = keys_used_for_stllr)
-#     region_joiner(regions = regions, keys = keys_used_for_stllr) %>%
-#     spacetime_llr
   
   # Calculate the marginal probability of the data
   data_logratio <- 
@@ -153,11 +151,10 @@ MBSS <- function(loglikelihoods,
     data_to_nulldata_logratio(event_logpriors = log(event_priors),
                               null_prior = null_prior,
                               n_regions = n_regions)
-  
   marginal_logprob_of_data <- data_logratio + null_loglikelihood
 
   # Calculate posterior event log-probabilities for all space-time windows
-  # Adds a column to \code{spacetime_output} for posterior probability
+  # Adds a column to 'spacetime_output' for posterior probability
   spacetime_logposterior(spacetime_output,
                          event_logpriors = log(event_priors),
                          dur_given_event_logprobs = log(duration_condpriors),
@@ -225,8 +222,7 @@ spatial_posteriors <- function(MBSS_obj) {
 #' 
 #' @param MBSS_obj An object of class "MBSS".
 #' @param duration_column A logical scalar. Should the output matrix
-#'    contain a column for the event duration (elements being integers equal to 
-#'    the row numbers)?
+#'    contain a column for the event duration?
 get_duration_condposteriors <- function(MBSS_obj, duration_column = TRUE) {
   out <- tidyr::spread(MBSS_obj$duration_condposteriors, 
                        key = event, 
