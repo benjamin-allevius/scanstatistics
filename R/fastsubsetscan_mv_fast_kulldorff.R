@@ -61,12 +61,24 @@ fast_kulldorff_priority <- function(aggregates,
 #' for a given set of streams \eqn{D} and a given event duration \eqn{W}.
 #' Only those locations \eqn{s_i} which make a positive contribution to the sum,
 #' i.e. those regions \eqn{s_i} for which \eqn{G_W^D(s_i) > 0}, are included.
-#' @param priorities A \code{data.table} 
+#' @param priorities A \code{data.table} with columns \code{location, duration,
+#'    priority, included_streams}. All elements in the colum \code{duration}
+#'    should be the same, and the column \code{included_streams} is a list, in 
+#'    which all elements are also equal.
+#' @return A single-row \code{data.table} with columns \code{included_streams, 
+#'    included_locations, duration, score}. The columns \code{included_streams}
+#'    and \code{duration} have the same elements as in the input (now without
+#'    duplicates). The column \code{included_locations} consists of those 
+#'    locations which form the score-maximizing region. The column \code{score}
+#'    contains the conditional expectation-based score; conditional on the 
+#'    relative risks which entered into the calculations of the input 
+#'    priorities.
 fast_kulldorff_maxregion <- function(priorities) {
   priorities[priority > 0,
-             .(score = sum(priority),
-               included_streams = included_streams,
-               included_locations = list(location))][which.max(score)]
+             .(included_streams = included_streams,
+               included_locations = list(location),
+               duration = duration, 
+               score = sum(priority))][which.max(score)]
 }
 
 #' Compute the relative risk estimates for each stream by maximum likelihood.
@@ -89,7 +101,7 @@ relative_risk_mle <- function(aggregates, locations) {
              by = .(stream, duration)][, 
     .(relative_risk = max(1, aggregate_count / aggregate_baseline)),
     by = .(stream)]
-  rrs <- rr_mle[, relative_risk]
-  names(rrs) <- rr_mle[, stream]
-  rrs
+  relrisks <- rr_mle[, relative_risk]
+  names(relrisks) <- rr_mle[, stream]
+  relrisks
 }
