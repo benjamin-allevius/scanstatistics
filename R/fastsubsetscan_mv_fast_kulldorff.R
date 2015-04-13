@@ -8,7 +8,8 @@
 #     ags <- aggregates[duration == W]
 #     # choose included streams at random
 #     included_streams <- 1
-#     # initialize relative risks at random
+#     # initialize relative risks at random for the included streams;
+#     # set the relative risks to 1 for the excluded streams
 #     relative_risks <- 1
 #     previous_score <- 1
 #     for (i in seq(max_iter)) {
@@ -48,7 +49,11 @@ fk_priority_term_gaussian <- function(c, b, q) {
 #' and priority function.
 #' @inheritParams relative_risk_mle
 #' @param relative_risks A vector of relative risks, one for each data stream.
-#' @param priority_term
+#' @param priority_term A function for the term in the sum over streams for the
+#'    priority function \eqn{G_W^D(s_i)}. This function should take three 
+#'    arguments: an aggregate count, an aggregate baseline, and a relative risk.
+#' @return A \code{data.table} with columns \code{location, duration, priority,
+#'    included_streams}.
 fast_kulldorff_priority <- function(aggregates, 
                                     relative_risks,
                                     priority_term) {
