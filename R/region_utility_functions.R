@@ -77,24 +77,24 @@ partition_regions <- function(regions, n_parts = min(10L, length(regions))) {
 #'    region-location table by before applying the function \code{f}.
 #' @return A \code{data.table}, containing the results of applying the supplied
 #'    function over all regions.
+#' @importFrom foreach %do%
 region_apply <- function(location_table, region_partition, f, keys = NULL) {
-  foreach(regions_in_part = region_partition$partition, 
-          offset = region_partition$offsets,
-          .combine = rbind,
-          .packages = c("data.table", "magrittr")) %do% {
-            
-            locations <- unique(unlist(regions_in_part))
-            region_table <- region_table_creator(regions_in_part, 
-                                                 keys = c("location"), 
-                                                 offset = offset)
-            merge(location_table[location %in% locations, ],
-                  region_table,
-                  by = "location",
-                  allow.cartesian = TRUE) %>% {
-                    setkeyv(., keys)
-                    .
-                  } %>% f
-          }
+  foreach::foreach(regions_in_part = region_partition$partition, 
+                   offset = region_partition$offsets,
+                   .combine = rbind,
+                   .packages = c("data.table", "magrittr")) %do% {
+    locations <- unique(unlist(regions_in_part))
+    region_table <- region_table_creator(regions_in_part, 
+                                         keys = c("location"), 
+                                         offset = offset)
+    merge(location_table[location %in% locations, ],
+          region_table,
+          by = "location",
+          allow.cartesian = TRUE) %>% {
+            setkeyv(., keys)
+            .
+          } %>% f
+  }
 }
 
 
