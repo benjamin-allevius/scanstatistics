@@ -14,13 +14,12 @@ License: GPL (>= 3)
 URL: https://github.com/BenjaK/scanstatistics
 BugReports: https://github.com/BenjaK/scanstatistics/issues
 Depends: data.table
-Imports: magrittr
+Imports: magrittr, foreach
 Suggests: knitr,
     testthat,
     sets,
     tidyr,
     reshape2,
     plyr,
-    foreach,
     doParallel
 VignetteBuilder: knitr
