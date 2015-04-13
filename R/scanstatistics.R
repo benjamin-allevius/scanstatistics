@@ -2,12 +2,11 @@
 #'
 #' The foo package provides three categories of important functions:
 #' foo, bar and baz.
-#' 
 #' @section Foo functions:
 #' The foo functions ...
-#'
 #' @docType package
 #' @name scanstatistics
+#' @import data.table
 NULL
 
 
@@ -18,7 +17,8 @@ NULL
 
 # Hack based on Hadley Wickhams comment: 
 # http://stackoverflow.com/a/12429344/897506
-globalVariables(c(# Variables used unquoted inside functions
+globalVariables(c(
+  # Variables used unquoted inside functions
   "duration", 
   "event",
   "location",
@@ -47,6 +47,9 @@ globalVariables(c(# Variables used unquoted inside functions
   "aggregate_count",
   "aggregate_baseline",
   "score",
+  "priority",
+  "included_streams",
+  "relative_risk",
   # data.table functions
   "data.table",
   "is.data.table",
