@@ -148,8 +148,17 @@ h <- function(aggregates, incl_locations) {
              by = .(stream, duration)]
 }
 
+#' Is the relative error between two numbers is less than the given tolerance?
+#' 
+#' Given two consecutive numbers in a sequence, return \code{TRUE} if the
+#' relative change is positive but less than the given tolerance.
+#' @param current A scalar; the most recent value of the sequence.
+#' @param previous A scalar; the second most recent value of the sequence, or a
+#'    reference value.
+#' @param tol The tolerance, a positive scalar near zero.
 has_converged <- function(current, previous, tol = 0.01) {
-  abs(current - previous) / abs(previous) < tol
+  rel_change <- (current - previous) / abs(previous)
+  rel_change > 0 && rel_change < tol
 }
 
 # term for a given stream in the G_W^D(s_i) sum for Poisson
@@ -212,7 +221,6 @@ fast_kulldorff_priority <- function(aggregates,
 fast_kulldorff_maxregion <- function(priorities) {
   priorities[priority > 0,
              .(included_streams = included_streams,
-               included_locations = list(location),
                region = list(location),
                duration = duration, 
                score = sum(priority))][which.max(score)]
@@ -237,7 +245,6 @@ relative_risk_mle <- function(aggregates, locations) {
                aggregate_baseline = sum(aggregate_baseline)),
              by = .(stream, duration)][, 
     .(relative_risk = max(1, aggregate_count / aggregate_baseline)),
-    by = .(stream)]
     by = .(stream, duration)]
   relrisks <- rr_mle[, relative_risk]
   names(relrisks) <- rr_mle[, stream]
