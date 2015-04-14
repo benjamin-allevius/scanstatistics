@@ -4,7 +4,7 @@
 #                            fk_priority_term_function,
 #                            rel_tolerance = 0.01,
 #                            max_iter = 100) {
-#   foreach(W = unique(aggregates[, duration])) {
+#   foreach::foreach(W = unique(aggregates[, duration])) {
 #     ags <- aggregates[duration == W]
 #     # choose included streams at random
 #     included_streams <- 1
@@ -28,19 +28,103 @@
 #   }
 # }
 
-# G_W^D(s_i) for Poisson
-fk_priority_term_poisson <- function(c, b, q) {
+
+# called for each duration W
+# i.e. pass in aggregates for a single W
+f <- function(aggregates, priority_term) {
+  all_streams <- sort(unique(aggregates[, stream]))
+  n_streams <- length(all_streams)
+  # Decide which streams to include by coin flip
+  stream_included <- rbinom(n_streams, 1, runif(1)) == 1
+  # Make sure at least 1 stream is included
+  if (all(!stream_included)) {
+    stream_included[sample(seq(stream_included), 1)] <- TRUE
+  }
+  incl_streams <- all_streams[stream_included]
+  # Randomly initialize relative risks for included streams
+  rel_risks <- ifelse(stream_included, 
+                      exp(2 * runif(n_streams)), 
+                      rep(1, n_streams))
+  # Iterative maximization step
+  m <- g(aggregates, 
+         all_streams, 
+         incl_streams, 
+         priority_term,
+         rel_risks, 
+         tol, 
+         max_iter)
+  # Region is conditionally optimal given relative risks
+}
+
+# Performs the two-step iterative procedure to find conditionally optimal region
+g <- function(aggregates, 
+              all_streams,
+              incl_streams, 
+              priority_term,
+              rel_risks, 
+              tol, 
+              max_iter) {
+  previous_score <- 1
+  for (i in seq(max_iter)) {
+    # Iterate until score is maximized
+    maxreg <- aggregates[stream %in% incl_streams] %>%
+      fast_kulldorff_priority(relative_risks = rel_risks,
+                              priority_term = priority_term) %>%
+      fast_kulldorff_maxregion
+    
+    rel_risks <- aggregates %>% 
+      relative_risk_mle(locations = maxreg[, included_locations][[1]])
+    
+    if (has_converged(maxreg[, score], previous_score, rel_tolerance)) {
+      return(maxreg)
+    }
+    incl_streams <- all_streams[rel_risks > 1]
+    previous_score <- maxreg[, score]
+  }
+  # Did not converge before maximum number of iterations, but return anyway
+  maxreg
+}
+
+# Calculate scores by only counting streams which make a positive contribution
+# Report score and the included streams
+optimal_score <- function(scores) {
+  scores[score > 0,
+         .(score = sum(score), included_streams = list(stream)),
+         by = .(included_locations, duration)]
+}
+
+# Calculates the score F(C^m(S,W), B^m(S,W)) for all streams m
+score_included_region <- function(d, score_function) {
+  d[,
+    .(score = score_function(aggregate_counts, aggregate_baseline),
+    by = .(included_locations, duration, stream)]
+}
+
+# Aggregate counts C^m(S,W) and baselines B^m(S,W) for single region and 
+# duration, for all streams m
+h <- function(aggregates, incl_locations) {
+  aggregates[location %in% incl_locations,
+             .(included_locations = list(location),
+               aggregate_count = sum(aggregate_count),
+               aggregate_baseline = sum(aggregate_baseline)),
+             by = .(stream, duration)]
+}
+
+has_converged <- function(current, previous, tol = 0.01) {
+  abs(current - previous) / abs(previous) < tol
+}
+
+# term for a given stream in the G_W^D(s_i) sum for Poisson
+priority_term_poisson <- function(c, b, q) {
   c * log(q) + b * (1 - q)
 }
 
-# G_W^D(s_i) for Gaussian
-fk_priority_term_gaussian <- function(c, b, q) {
+# term for a given stream in the G_W^D(s_i) sum for Gaussian
+priority_term_gaussian <- function(c, b, q) {
   (q - 1) * (c - (q + 1) * b / 2)
 }
 
 
-# duration given, subset of streams given
-# relative_risks is a data.table
 #' Calculates the priority for each location, for a given duration and subset of
 #' streams.
 #' 
@@ -58,10 +142,10 @@ fast_kulldorff_priority <- function(aggregates,
                                     relative_risks,
                                     priority_term) {
   aggregates[, 
-    .(priority = sum(priority_term(aggregate_count,
+    .(included_streams = list(stream),
+      priority = sum(priority_term(aggregate_count,
                                    aggregate_baseline,
-                                   relative_risks[stream])),
-                 included_streams = list(stream)),
+                                   relative_risks[stream]))),
              by = .(location, duration)]
 }
 
