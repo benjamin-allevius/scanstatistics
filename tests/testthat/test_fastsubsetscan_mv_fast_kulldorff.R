@@ -8,11 +8,11 @@ test_that("fast_kulldorff_priority: works as intended", {
                     aggregate_count = 1:4,
                     aggregate_baseline = 4:1)
   rr <- c(1.2, 1.3)
-  expected <- c(fk_priority_term_poisson(1, 4, 1.2) + 
-                  fk_priority_term_poisson(2, 3, 1.3),
-                fk_priority_term_poisson(3, 2, 1.2) +
-                  fk_priority_term_poisson(4, 1, 1.3))
-  res <- fast_kulldorff_priority(ags, rr, fk_priority_term_poisson)
+  expected <- c(priority_term_poisson(1, 4, 1.2) + 
+                  priority_term_poisson(2, 3, 1.3),
+                priority_term_poisson(3, 2, 1.2) +
+                  priority_term_poisson(4, 1, 1.3))
+  res <- fast_kulldorff_priority(ags, rr, priority_term_poisson)
   expect_equal(res[, priority], expected)
   expect_equal(res[1, included_streams], list(1:2))
 })
@@ -20,8 +20,8 @@ test_that("fast_kulldorff_priority: works as intended", {
 test_that("fast_kulldorff_maxregion: works as intended", {
   pri <- data.table(location = 1:5,
                     duration = rep(2, 5),
-                    priority = c(-0.5, 0.5, 2, 0, 3.4),
-                    included_streams = list(1:2, 1:2, 1:2, 1:2, 1:2))
+                    included_streams = list(1:2, 1:2, 1:2, 1:2, 1:2),
+                    priority = c(-0.5, 0.5, 2, 0, 3.4))
   expected <- 0.5 + 2 + 3.4
   res <- fast_kulldorff_maxregion(pri)
   expect_equal(res[, score], expected)
