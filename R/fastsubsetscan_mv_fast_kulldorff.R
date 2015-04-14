@@ -138,11 +138,19 @@ single_region_minimal_stream_subset <- function(scores) {
   topscore
 }
 
-# Aggregate counts C^m(S,W) and baselines B^m(S,W) for single region and 
-# duration, for all streams m
-h <- function(aggregates, incl_locations) {
-  aggregates[location %in% incl_locations,
-             .(included_locations = list(location),
+#' Compute the per-stream aggregates for a given region and event duration.
+#' 
+#' Compute the per-stream aggregate counts \eqn{C^m(S,W)} and aggregate 
+#' baselines \eqn{B^m(S,W)}, given a single region (specified as a set of 
+#' locations) and a single duration.
+#' @inheritParams relative_risk_mle
+#' @return A new \code{data.table} with columns \code{region, stream, duration,
+#'    aggregate_count, aggregate_baseline}. The column \code{region} is a list
+#'    which contains identical elements; the column duration also contains 
+#'    identical elements.
+aggregate_per_stream <- function(aggregates, locations) {
+  aggregates[location %in% locations,
+             .(region = list(location),
                aggregate_count = sum(aggregate_count),
                aggregate_baseline = sum(aggregate_baseline)),
              by = .(stream, duration)]
