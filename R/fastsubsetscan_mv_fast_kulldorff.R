@@ -109,11 +109,33 @@ single_region_score_EB <- function(aggregates, score_function) {
              by = .(duration, stream)]
 }
 
-# Calculates the score F(C^m(S,W), B^m(S,W)) for all streams m
-score_included_region <- function(d, score_function) {
-  d[,
-    .(score = score_function(aggregate_counts, aggregate_baseline),
-    by = .(included_locations, duration, stream)]
+#' Score and minimal stream subset for the Kulldorff method.
+#' 
+#' Calculates the score for each combination of region and duration, and the 
+#' minimal subset of locations that contribute to the score, according to the
+#' Kulldorff method. See Neill et. al. (2013) section 3.2.
+#' @param scores A \code{data.table} with columns \code{region, duration, 
+#'    stream, score}. The column \code{region} should be a list with all 
+#'    elements equal, each element the same vector of locations that constitute 
+#'    the region. Likewise, the column \code{duration} should have all elements
+#'    equal.
+#' @return A \code{data.table} with columns \code{region, duration, stream, 
+#'    score, included_streams}. The colum \code{score} contain the sum of the 
+#'    input scores over all data streams, for each region and duration. The 
+#'    column \code{included_streams} contain those data streams that made a 
+#'    positive contribution to this sum.
+single_region_minimal_stream_subset <- function(scores) {
+  # Can't sum by list column in data.table, so must do workaround.
+  reg <- scores[1, region]
+  topscore <- scores[score > 0, 
+                     .(score = sum(score), 
+                       included_streams = list(stream)), 
+                     by = .(duration)][, region := reg]
+  setcolorder(topscore, c("included_streams", 
+                          "region", 
+                          "duration",
+                          "score"))
+  topscore
 }
 
 # Aggregate counts C^m(S,W) and baselines B^m(S,W) for single region and 
