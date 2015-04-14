@@ -31,7 +31,7 @@
 
 # called for each duration W
 # i.e. pass in aggregates for a single W
-f <- function(aggregates, priority_term) {
+find_maximizing_subsets <- function(aggregates, priority_term, score_fun) {
   all_streams <- sort(unique(aggregates[, stream]))
   n_streams <- length(all_streams)
   # Decide which streams to include by coin flip
@@ -46,51 +46,52 @@ f <- function(aggregates, priority_term) {
                       exp(2 * runif(n_streams)), 
                       rep(1, n_streams))
   # Iterative maximization step
-  m <- g(aggregates, 
-         all_streams, 
-         incl_streams, 
-         priority_term,
-         rel_risks, 
-         tol, 
-         max_iter)
+  maxregion <- find_maximizing_region(aggregates, 
+                                      all_streams, 
+                                      incl_streams, 
+                                      priority_term,
+                                      rel_risks, 
+                                      tol, 
+                                      max_iter)
   # Region is conditionally optimal given relative risks
+  maxreg_locations <- maxregion[, region][[1]]
+  # Find the optimal subset of streams for the region found above
+  optimal_window <- aggregates %>%
+    aggregate_per_stream(locations = maxreg_locations) %>%
+    single_region_score_EB(score_function = score_fun) %>%
+    single_region_minimal_stream_subset
+    
 }
 
 # Performs the two-step iterative procedure to find conditionally optimal region
-g <- function(aggregates, 
-              all_streams,
-              incl_streams, 
-              priority_term,
-              rel_risks, 
-              tol, 
-              max_iter) {
+find_maximizing_region <- function(aggregates, 
+                                   all_streams,
+                                   incl_streams, 
+                                   priority_term,
+                                   rel_risks, 
+                                   tol, 
+                                   max_iter) {
   previous_score <- 1
   for (i in seq(max_iter)) {
     # Iterate until score is maximized
-    maxreg <- aggregates[stream %in% incl_streams] %>%
+    maxregion <- aggregates[stream %in% incl_streams] %>%
       fast_kulldorff_priority(relative_risks = rel_risks,
                               priority_term = priority_term) %>%
       fast_kulldorff_maxregion
     
     rel_risks <- aggregates %>% 
-      relative_risk_mle(locations = maxreg[, included_locations][[1]])
+      relative_risk_mle(locations = maxregion[, region][[1]])
     
-    if (has_converged(maxreg[, score], previous_score, rel_tolerance)) {
-      return(maxreg)
+    if (has_converged(maxregion[, score], previous_score, rel_tolerance)) {
+      return(maxregion)
     }
     incl_streams <- all_streams[rel_risks > 1]
-    previous_score <- maxreg[, score]
+    previous_score <- maxregion[, score]
   }
   # Did not converge before maximum number of iterations, but return anyway
-  maxreg
+  maxregion
 }
 
-# Calculate scores by only counting streams which make a positive contribution
-# Report score and the included streams
-optimal_score <- function(scores) {
-  scores[score > 0,
-         .(score = sum(score), included_streams = list(stream)),
-         by = .(included_locations, duration)]
 #' Calculates the expectation-based score for each stream and the given region
 #' and event duration.
 #' 
