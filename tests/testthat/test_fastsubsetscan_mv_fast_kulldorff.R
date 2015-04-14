@@ -25,7 +25,7 @@ test_that("fast_kulldorff_maxregion: works as intended", {
   expected <- 0.5 + 2 + 3.4
   res <- fast_kulldorff_maxregion(pri)
   expect_equal(res[, score], expected)
-  expect_equal(res[1, included_locations], list(c(2L, 3L, 5L)))
+  expect_equal(res[1, region], list(c(2L, 3L, 5L)))
 })
 
 test_that("relative_risk_mle: works as intended", {
