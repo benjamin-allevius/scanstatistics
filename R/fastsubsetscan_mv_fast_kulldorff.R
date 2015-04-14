@@ -91,6 +91,22 @@ optimal_score <- function(scores) {
   scores[score > 0,
          .(score = sum(score), included_streams = list(stream)),
          by = .(included_locations, duration)]
+#' Calculates the expectation-based score for each stream and the given region
+#' and event duration.
+#' 
+#' Given the aggegate counts and baselines for each data stream and the given
+#' region and event duration, calculates the expectation-based score, with the
+#' given score function.
+#' @param aggregates A \code{data.table} with columns \code{region, duration, 
+#'    stream, aggregate_count, aggregate_baseline}.
+#' @param score_function A two-parameter scalar input, single scalar output
+#'    score function.
+#' @return A \code{data.table} with columns \code{region, duration, stream, 
+#'    score}.
+single_region_score_EB <- function(aggregates, score_function) {
+  aggregates[, .(region = region,
+                 score = score_function(aggregate_count, aggregate_baseline)),
+             by = .(duration, stream)]
 }
 
 # Calculates the score F(C^m(S,W), B^m(S,W)) for all streams m
