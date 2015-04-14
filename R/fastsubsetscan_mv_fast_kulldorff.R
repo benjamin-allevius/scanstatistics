@@ -202,9 +202,9 @@ fast_kulldorff_priority <- function(aggregates,
 #'    should be the same, and the column \code{included_streams} is a list, in 
 #'    which all elements are also equal.
 #' @return A single-row \code{data.table} with columns \code{included_streams, 
-#'    included_locations, duration, score}. The columns \code{included_streams}
+#'    region, duration, score}. The columns \code{included_streams}
 #'    and \code{duration} have the same elements as in the input (now without
-#'    duplicates). The column \code{included_locations} consists of those 
+#'    duplicates). The column \code{region} consists of those 
 #'    locations which form the score-maximizing region. The column \code{score}
 #'    contains the conditional expectation-based score; conditional on the 
 #'    relative risks which entered into the calculations of the input 
@@ -213,6 +213,7 @@ fast_kulldorff_maxregion <- function(priorities) {
   priorities[priority > 0,
              .(included_streams = included_streams,
                included_locations = list(location),
+               region = list(location),
                duration = duration, 
                score = sum(priority))][which.max(score)]
 }
@@ -237,6 +238,7 @@ relative_risk_mle <- function(aggregates, locations) {
              by = .(stream, duration)][, 
     .(relative_risk = max(1, aggregate_count / aggregate_baseline)),
     by = .(stream)]
+    by = .(stream, duration)]
   relrisks <- rr_mle[, relative_risk]
   names(relrisks) <- rr_mle[, stream]
   relrisks
