@@ -1,37 +1,36 @@
 
 
-# fast_kulldorff <- function(aggregates, 
-#                            fk_priority_term_function,
-#                            rel_tolerance = 0.01,
-#                            max_iter = 100) {
-#   foreach::foreach(W = unique(aggregates[, duration])) {
-#     ags <- aggregates[duration == W]
-#     # choose included streams at random
-#     included_streams <- 1
-#     # initialize relative risks at random for the included streams;
-#     # set the relative risks to 1 for the excluded streams
-#     relative_risks <- 1
-#     previous_score <- 1
-#     for (i in seq(max_iter)) {
-#       maxreg <- ags[stream %in% included_streams] %>%
-#         fast_kulldorff_priority(relative_risks = ) %>%
-#         fast_kulldorff_maxregion
-#       
-#       if (has_converged(maxreg[, score], previous_score, rel_tolerance)) {
-#         maxreg
-#       }
-#       
-#       relative_risks <- relative_risk_mle(ags, 
-#                                           maxreg[, unlist(included_locations)])
-#                 
-#     }
-#   }
-# }
+fast_kulldorff <- function(aggregates, 
+                           distribution = "poisson",
+                           random_restarts = 50,
+                           tol = 0.01,
+                           max_iter = 100) {
+  # Choose priority and score functions based on distribution
+  durations <- unique(aggregates[, duration])
+  foreach::foreach(W = durations, .combine = rbind, .inorder = FALSE) %do% {
+    ags <- aggregates[duration == W]
+    random_restart_maximizer(ags)
+  }
+}
 
+random_restart_maximizer <- function(aggregates,
+                                     priority_term, 
+                                     score_fun,
+                                     restarts = 50,
+                                     ...) {
+  foreach::foreach(i = seq(restarts),
+                  .combine = rbind,
+                  .inorder = FALSE) %do% {
+    find_maximizing_subsets(aggregates, priority_term, score_fun, ...)
+  }
+}
 
 # called for each duration W
 # i.e. pass in aggregates for a single W
-find_maximizing_subsets <- function(aggregates, priority_term, score_fun) {
+find_maximizing_subsets <- function(aggregates, 
+                                    priority_term, 
+                                    score_fun,
+                                    ...) {
   all_streams <- sort(unique(aggregates[, stream]))
   n_streams <- length(all_streams)
   # Decide which streams to include by coin flip
@@ -56,7 +55,7 @@ find_maximizing_subsets <- function(aggregates, priority_term, score_fun) {
   # Region is conditionally optimal given relative risks
   maxreg_locations <- maxregion[, region][[1]]
   # Find the optimal subset of streams for the region found above
-  optimal_window <- aggregates %>%
+  optimal_subset <- aggregates %>%
     aggregate_per_stream(locations = maxreg_locations) %>%
     single_region_score_EB(score_function = score_fun) %>%
     single_region_minimal_stream_subset
