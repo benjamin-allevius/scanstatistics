@@ -1,4 +1,4 @@
-context("FastSubsetScan - fast Kulldorff functions")
+context("FastSubsetScan - fast Kulldorff method")
 
 
 test_that("fast_kulldorff_priority: works as intended", {

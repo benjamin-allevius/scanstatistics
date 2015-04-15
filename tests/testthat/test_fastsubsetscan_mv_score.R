@@ -1,4 +1,4 @@
-context("FSS score functions")
+context("FastSubsetScan - general functions")
 
 
 test_that("aggregate_CB_poisson: works as intended", {

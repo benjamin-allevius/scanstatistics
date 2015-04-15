@@ -1,4 +1,4 @@
-context("FSS naive Kulldorff functions")
+context("FastSubsetScan - naive Kulldorff method")
 
 test_that("score_minimal_stream_subset: works as intended", {
   sco <- data.table(region = rep(1:2, each = 4),
