@@ -43,7 +43,7 @@ naive_kulldorff_general <- function(counts,
   counts %>%
     aggregate_CB %>%
     region_apply(region_partition = region_partition,
-                 f = aggregate_again,
+                 f = aggregate_per_stream,
                  keys = c("region", "duration", "stream")) %>%
     score_EB(score_function = score_function) %>%
     score_minimal_stream_subset

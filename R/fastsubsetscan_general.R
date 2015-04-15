@@ -4,8 +4,53 @@
 #' combination.
 #' 
 #' Take the already calculated aggregates for each location, stream and duration
-#' and sum them over all locations in each region. This is the quantity denoted
-#' \eqn{C^m(S,W)}.
+#' and sum them over all locations in each region. These are the quantities 
+#' denoted \eqn{C^m(S,W)} and \eqn{B^m(S,W)}.
+#' @param aggregates See \code{\link{aggregate_per_stream_regionnotlist}} if
+#'    argument \code{region_as_list} is \code{TRUE}. See 
+#'    \code{\link{aggregate_per_stream_regionaslist}} if argument 
+#'    \code{region_as_list} is \code{FALSE}.
+#' @param location A vector of locations corresponding to a single region; 
+#'    passed to \code{\link{aggregate_per_stream_regionaslist}} if 
+#'    \code{region_as_list} is \code{TRUE}.
+#' @param region_as_list Boolean: if \code{TRUE}, call 
+#'    \code{\link{aggregate_per_stream_regionaslist}} with input. If 
+#'    \code{FALSE}, call \code{\link{aggregate_per_stream_regionnotlist}} with 
+#'    input.
+aggregate_per_stream <- function(aggregates, 
+                                 locations = NULL, 
+                                 region_as_list = FALSE) {
+  if (region_as_list) {
+    return(aggregate_per_stream_regionaslist(aggregates, locations))
+  } else {
+    return(aggregate_per_stream_regionnotlist(aggregates))
+  }
+}
+
+#' Compute the per-stream aggregates for a given region and event duration.
+#' 
+#' Compute the per-stream aggregate counts \eqn{C^m(S,W)} and aggregate 
+#' baselines \eqn{B^m(S,W)}, given a single region (specified as a set of 
+#' locations) and a single duration.
+#' @inheritParams relative_risk_mle
+#' @return A new \code{data.table} with columns \code{region, stream, duration,
+#'    aggregate_count, aggregate_baseline}. The column \code{region} is a list
+#'    which contains identical elements; the column duration also contains 
+#'    identical elements.
+aggregate_per_stream_regionaslist <- function(aggregates, locations) {
+  aggregates[location %in% locations,
+             .(region = list(location),
+               aggregate_count = sum(aggregate_count),
+               aggregate_baseline = sum(aggregate_baseline)),
+             by = .(stream, duration)]
+}
+
+#' Calculate the count and baseline aggregates over each region-stream-duration
+#' combination.
+#' 
+#' Take the already calculated aggregates for each location, stream and duration
+#' and sum them over all locations in each region. These are the quantities 
+#' denoted \eqn{C^m(S,W)} and \eqn{B^m(S,W)}.
 #' @param aggregates A \code{data.table} containing columns \code{region, 
 #'    duration, stream, location, aggregate_count, aggregate_baseline}. The 
 #'    latter two columns contain the aggregate counts and baselines as produced 
@@ -14,7 +59,7 @@
 #' @return A \code{data.table} with the same columns except \code{location}; the
 #'    aggregate quantities have now been summed over all locations in each 
 #'    region, for each region, duration, and data stream.
-aggregate_again <- function(aggregates) {
+aggregate_per_stream_regionnotlist <- function(aggregates) {
   aggregates[, .(aggregate_count = sum(aggregate_count),
                  aggregate_baseline = sum(aggregate_baseline)),
              by = .(region, duration, stream)]
