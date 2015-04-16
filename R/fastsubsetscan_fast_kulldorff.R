@@ -105,17 +105,6 @@ has_converged <- function(current, previous, tol = 0.01) {
   rel_change > 0 && rel_change < tol
 }
 
-# term for a given stream in the G_W^D(s_i) sum for Poisson
-priority_term_poisson <- function(c, b, q) {
-  c * log(q) + b * (1 - q)
-}
-
-# term for a given stream in the G_W^D(s_i) sum for Gaussian
-priority_term_gaussian <- function(c, b, q) {
-  (q - 1) * (c - (q + 1) * b / 2)
-}
-
-
 #' Calculates the priority for each location, for a given duration and subset of
 #' streams.
 #' 
