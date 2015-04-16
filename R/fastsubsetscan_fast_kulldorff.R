@@ -92,19 +92,6 @@ find_maximizing_region <- function(aggregates,
   maxregion
 }
 
-#' Is the relative error between two numbers is less than the given tolerance?
-#' 
-#' Given two consecutive numbers in a sequence, return \code{TRUE} if the
-#' relative change is positive but less than the given tolerance.
-#' @param current A scalar; the most recent value of the sequence.
-#' @param previous A scalar; the second most recent value of the sequence, or a
-#'    reference value.
-#' @param tol The tolerance, a positive scalar near zero.
-has_converged <- function(current, previous, tol = 0.01) {
-  rel_change <- (current - previous) / abs(previous)
-  rel_change > 0 && rel_change < tol
-}
-
 #' Calculates the priority for each location, for a given duration and subset of
 #' streams.
 #' 
