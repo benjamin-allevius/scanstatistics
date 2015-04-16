@@ -3,6 +3,10 @@
 # do 'by' groupings on these columns. Therefore, we need one function for the
 # case in which the column is of atomic type, and another for when the column is 
 # a list.
+# Specific consequence: need to provide separate functions for the case in which
+# a region is given in a data.table as an atomic vector (integer most likely)
+# and for the case in which the region column is given as a list, each item a
+# vector of locations.
 
 
 # score_minimal_stream_subset --------------------------------------------------
@@ -11,16 +15,16 @@
 #' 
 #' Calculate the score and the subset of data streams that make a (positive)
 #' contribution to this score. Calls either 
-#' \code{\link{score_minimal_stream_subset_regionaslist}} or
+#' \code{\link{score_minimal_stream_subset_list}} or
 #' \code{\link{score_minimal_stream_subset_atomic}}.
 #' @param scores A \code{data.table} containing expectation-based scores, which
 #'    are to be summed over all streams with positive scores.
 #' @inheritParams aggregate_per_stream
 score_minimal_stream_subset <- function(scores, region_as_list = FALSE) {
   if (region_as_list) {
-    return(score_minimal_stream_subset_regionaslist(scores))
+    return(score_minimal_stream_subset_list(scores))
   } else {
-    return(score_minimal_stream_subset_regionasatomic(scores))
+    return(score_minimal_stream_subset_atomic(scores))
   }
 }
 
@@ -39,17 +43,11 @@ score_minimal_stream_subset <- function(scores, region_as_list = FALSE) {
 #'    input scores over all data streams, for each region and duration. The 
 #'    column \code{included_streams} contain those data streams that made a 
 #'    positive contribution to this sum.
-score_minimal_stream_subset_regionaslist <- function(scores) {
+score_minimal_stream_subset_list <- function(scores) {
   reg <- scores[1, region]
-  topscore <- scores[score > 0, 
-                     .(score = sum(score), 
-                       included_streams = list(stream)), 
-                     by = .(duration)][, region := list(reg)]
-  setcolorder(topscore, c("region", 
-                          "duration",
-                          "included_streams",
-                          "score"))
-  topscore
+  scores[score > 0, 
+         .(score = sum(score), included_streams = list(stream)), 
+         by = .(duration)][, region := list(reg)]
 }
 
 #' Score and minimal stream subset for the Kulldorff method.
@@ -64,7 +62,7 @@ score_minimal_stream_subset_regionaslist <- function(scores) {
 #'    input score over all data streams, for each region and duration. The 
 #'    column \code{included_streams} contain those data streams that made a 
 #'    positive contribution to this sum.
-score_minimal_stream_subset_regionasatomic <- function(scores) {
+score_minimal_stream_subset_atomic <- function(scores) {
   scores[score > 0, 
          .(included_streams = list(stream), score = sum(score)), 
          by = .(region, duration)]
@@ -81,10 +79,10 @@ score_minimal_stream_subset_regionasatomic <- function(scores) {
 #' denoted \eqn{C^m(S,W)} and \eqn{B^m(S,W)}.
 #' @param aggregates See \code{\link{aggregate_per_stream_regionnotlist}} if
 #'    argument \code{region_as_list} is \code{TRUE}. See 
-#'    \code{\link{aggregate_per_stream_regionaslist}} if argument 
+#'    \code{\link{aggregate_per_stream_list}} if argument 
 #'    \code{region_as_list} is \code{FALSE}.
 #' @param location A vector of locations corresponding to a single region; 
-#'    passed to \code{\link{aggregate_per_stream_regionaslist}} if 
+#'    passed to \code{\link{aggregate_per_stream_list}} if 
 #'    \code{region_as_list} is \code{TRUE}.
 #' @param region_as_list Boolean: is the region colum a list, or an atomic 
 #'    vector? 
@@ -92,9 +90,9 @@ aggregate_per_stream <- function(aggregates,
                                  locations = NULL, 
                                  region_as_list = FALSE) {
   if (region_as_list) {
-    return(aggregate_per_stream_regionaslist(aggregates, locations))
+    return(aggregate_per_stream_list(aggregates, locations))
   } else {
-    return(aggregate_per_stream_regionasatomic(aggregates))
+    return(aggregate_per_stream_atomic(aggregates))
   }
 }
 
@@ -108,7 +106,7 @@ aggregate_per_stream <- function(aggregates,
 #'    aggregate_count, aggregate_baseline}. The column \code{region} is a list
 #'    which contains identical elements; the column duration also contains 
 #'    identical elements.
-aggregate_per_stream_regionaslist <- function(aggregates, locations) {
+aggregate_per_stream_list <- function(aggregates, locations) {
   aggregates[location %in% locations,
              .(region = list(location),
                aggregate_count = sum(aggregate_count),
@@ -130,18 +128,22 @@ aggregate_per_stream_regionaslist <- function(aggregates, locations) {
 #' @return A \code{data.table} with the same columns except \code{location}; the
 #'    aggregate quantities have now been summed over all locations in each 
 #'    region, for each region, duration, and data stream.
-aggregate_per_stream_regionasatomic <- function(aggregates) {
+aggregate_per_stream_atomic <- function(aggregates) {
   aggregates[, .(aggregate_count = sum(aggregate_count),
                  aggregate_baseline = sum(aggregate_baseline)),
              by = .(region, duration, stream)]
 }
 
-# Expectation-based score for data.table ---------------------------------------
+# Expectation-based score for data.table (not scalar input) =-------------------
 
 expectation_based_score <- function(aggregates, 
                                     score_function, 
                                     region_as_list = FALSE) {
-  
+  if (region_as_list) {
+    return(expectation_based_score_list(aggregates, score_function))
+  } else {
+    return(expectation_based_score_atomic(aggregates, score_function))
+  }  
 }
 
 #' Calculates the expectation-based score for each stream and the given region
@@ -156,7 +158,7 @@ expectation_based_score <- function(aggregates,
 #'    score function.
 #' @return A \code{data.table} with columns \code{region, duration, stream, 
 #'    score}.
-single_region_score_EB <- function(aggregates, score_function) {
+expectation_based_score_list <- function(aggregates, score_function) {
   aggregates[, .(region = region,
                  score = score_function(aggregate_count, aggregate_baseline)),
              by = .(duration, stream)]
@@ -174,7 +176,7 @@ single_region_score_EB <- function(aggregates, score_function) {
 #'    score function.
 #' @return A \code{data.table} with columns \code{region, duration, stream, 
 #'    score}.
-score_EB <- function(aggregates, score_function) {
+expectation_based_score_atomic <- function(aggregates, score_function) {
   aggregates[, .(score = score_function(aggregate_count, aggregate_baseline)),
              by = .(region, duration, stream)]
 }

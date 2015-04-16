@@ -58,9 +58,9 @@ find_maximizing_subsets <- function(aggregates,
   optimal_subset <- aggregates %>%
     aggregate_per_stream(locations = maxreg_locations,
                          region_as_list = TRUE) %>%
-    single_region_score_EB(score_function = score_fun) %>%
-    single_region_minimal_stream_subset
-    
+    expectation_based_score(score_function = score_fun,
+                            region_as_list = TRUE) %>%
+    score_minimal_stream_subset(region_as_list = TRUE)
 }
 
 # Performs the two-step iterative procedure to find conditionally optimal region

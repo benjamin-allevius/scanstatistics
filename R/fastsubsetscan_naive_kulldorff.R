@@ -27,7 +27,8 @@ naive_kulldorff_general <- function(counts,
     region_apply(region_partition = region_partition,
                  f = aggregate_per_stream,
                  keys = c("region", "duration", "stream")) %>%
-    score_EB(score_function = score_function) %>%
+    expectation_based_score(score_function = score_function,
+                            region_as_list = FALSE) %>%
     score_minimal_stream_subset(region_as_list = FALSE)
 }
 
