@@ -28,7 +28,7 @@ naive_kulldorff_general <- function(counts,
                  f = aggregate_per_stream,
                  keys = c("region", "duration", "stream")) %>%
     score_EB(score_function = score_function) %>%
-    score_minimal_stream_subset
+    score_minimal_stream_subset(region_as_list = FALSE)
 }
 
 # Expectation-based Poisson ----------------------------------------------------

@@ -1,41 +1,62 @@
-# minimal_stream_subset---------------------------------------------------------
+# Note about potential functionality duplication: the data.table package does 
+# not allow columns that are lists to be used as keys, which means you can't
+# do 'by' groupings on these columns. Therefore, we need one function for the
+# case in which the column is of atomic type, and another for when the column is 
+# a list.
 
 
+# score_minimal_stream_subset --------------------------------------------------
+
+#' Score and minimal stream subset for the Kulldorff method.
+#' 
+#' Calculate the score and the subset of data streams that make a (positive)
+#' contribution to this score. Calls either 
+#' \code{\link{score_minimal_stream_subset_regionaslist}} or
+#' \code{\link{score_minimal_stream_subset_atomic}}.
+#' @param scores A \code{data.table} containing expectation-based scores, which
+#'    are to be summed over all streams with positive scores.
+#' @inheritParams aggregate_per_stream
+score_minimal_stream_subset <- function(scores, region_as_list = FALSE) {
+  if (region_as_list) {
+    return(score_minimal_stream_subset_regionaslist(scores))
+  } else {
+    return(score_minimal_stream_subset_regionasatomic(scores))
+  }
+}
+
+#' Score and minimal stream subset for the Kulldorff method.
+#' 
+#' Calculates the score for a given region and event duration, by summing those
+#' per-stream scores which are positive. These streams are returned in the 
+#' output.
+#' @param scores A \code{data.table} with columns \code{region, duration, 
+#'    stream, score}. The column \code{region} should be a list with all 
+#'    elements equal, each element the same vector of locations that constitute 
+#'    the region. Likewise, the column \code{duration} should have all elements
+#'    equal.
+#' @return A \code{data.table} with columns \code{region, duration, 
+#'    included_streams, score}. The colum \code{score} contain the sum of the 
+#'    input scores over all data streams, for each region and duration. The 
+#'    column \code{included_streams} contain those data streams that made a 
+#'    positive contribution to this sum.
+score_minimal_stream_subset_regionaslist <- function(scores) {
+  reg <- scores[1, region]
+  topscore <- scores[score > 0, 
+                     .(score = sum(score), 
+                       included_streams = list(stream)), 
+                     by = .(duration)][, region := list(reg)]
+  setcolorder(topscore, c("region", 
+                          "duration",
+                          "included_streams",
+                          "score"))
+  topscore
+}
 
 #' Score and minimal stream subset for the Kulldorff method.
 #' 
 #' Calculates the score for each combination of region and duration, and the 
 #' minimal subset of locations that contribute to the score, according to the
 #' Kulldorff method. See Neill et. al. (2013) section 3.2.
-#' @param scores A \code{data.table} with columns \code{region, duration, 
-#'    stream, score}. The column \code{region} should be a list with all 
-#'    elements equal, each element the same vector of locations that constitute 
-#'    the region. Likewise, the column \code{duration} should have all elements
-#'    equal.
-#' @return A \code{data.table} with columns \code{region, duration, stream, 
-#'    score, included_streams}. The colum \code{score} contain the sum of the 
-#'    input scores over all data streams, for each region and duration. The 
-#'    column \code{included_streams} contain those data streams that made a 
-#'    positive contribution to this sum.
-single_region_minimal_stream_subset <- function(scores) {
-  # Can't sum by list column in data.table, so must do workaround.
-  reg <- scores[1, region]
-  topscore <- scores[score > 0, 
-                     .(score = sum(score), 
-                       included_streams = list(stream)), 
-                     by = .(duration)][, region := reg]
-  setcolorder(topscore, c("included_streams", 
-                          "region", 
-                          "duration",
-                          "score"))
-  topscore
-}
-
-#' Score and minimal stream subset for the Naive Kulldorff method.
-#' 
-#' Calculates the score for each combination of region and duration, and the 
-#' minimal subset of locations that contribute to the score, according to the
-#' Naive Kulldorff method. See Neill et. al. (2013) section 3.2.
 #' @param scores A \code{data.table} with columns \code{region, duration, stream, 
 #'    score}.
 #' @return A \code{data.table} with columns \code{region, duration, stream, 
@@ -43,9 +64,9 @@ single_region_minimal_stream_subset <- function(scores) {
 #'    input score over all data streams, for each region and duration. The 
 #'    column \code{included_streams} contain those data streams that made a 
 #'    positive contribution to this sum.
-score_minimal_stream_subset <- function(scores) {
+score_minimal_stream_subset_regionasatomic <- function(scores) {
   scores[score > 0, 
-         .(score = sum(score), included_streams = list(stream)), 
+         .(included_streams = list(stream), score = sum(score)), 
          by = .(region, duration)]
 }
 
@@ -65,10 +86,8 @@ score_minimal_stream_subset <- function(scores) {
 #' @param location A vector of locations corresponding to a single region; 
 #'    passed to \code{\link{aggregate_per_stream_regionaslist}} if 
 #'    \code{region_as_list} is \code{TRUE}.
-#' @param region_as_list Boolean: if \code{TRUE}, call 
-#'    \code{\link{aggregate_per_stream_regionaslist}} with input. If 
-#'    \code{FALSE}, call \code{\link{aggregate_per_stream_regionnotlist}} with 
-#'    input.
+#' @param region_as_list Boolean: is the region colum a list, or an atomic 
+#'    vector? 
 aggregate_per_stream <- function(aggregates, 
                                  locations = NULL, 
                                  region_as_list = FALSE) {
@@ -118,6 +137,12 @@ aggregate_per_stream_regionasatomic <- function(aggregates) {
 }
 
 # Expectation-based score for data.table ---------------------------------------
+
+expectation_based_score <- function(aggregates, 
+                                    score_function, 
+                                    region_as_list = FALSE) {
+  
+}
 
 #' Calculates the expectation-based score for each stream and the given region
 #' and event duration.
