@@ -38,7 +38,7 @@ test_that("aggregate_CB_exponential: works as intended", {
 })
 
 
-test_that("aggregate_per_stream_regionnotlist: works as intended", {
+test_that("aggregate_per_stream_regionasatomic: works as intended", {
   aggreg <- data.table(region = rep(3L, 8),
                        duration = rep(1:2, each = 4),
                        stream = rep(1:2, 2, each = 2),
@@ -46,7 +46,7 @@ test_that("aggregate_per_stream_regionnotlist: works as intended", {
                        aggregate_count = 1:8,
                        aggregate_baseline = 1:8)
 
-  ag <- aggregate_per_stream_regionnotlist(aggreg)
+  ag <- aggregate_per_stream_regionasatomic(aggreg)
   expect_equal(ag[, aggregate_count], c(3, 7, 11, 15))
   expect_equal(ag[, aggregate_baseline], c(3, 7, 11, 15))
 })

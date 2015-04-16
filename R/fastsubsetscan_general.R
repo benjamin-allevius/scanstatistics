@@ -23,7 +23,7 @@ aggregate_per_stream <- function(aggregates,
   if (region_as_list) {
     return(aggregate_per_stream_regionaslist(aggregates, locations))
   } else {
-    return(aggregate_per_stream_regionnotlist(aggregates))
+    return(aggregate_per_stream_regionasatomic(aggregates))
   }
 }
 
@@ -59,7 +59,7 @@ aggregate_per_stream_regionaslist <- function(aggregates, locations) {
 #' @return A \code{data.table} with the same columns except \code{location}; the
 #'    aggregate quantities have now been summed over all locations in each 
 #'    region, for each region, duration, and data stream.
-aggregate_per_stream_regionnotlist <- function(aggregates) {
+aggregate_per_stream_regionasatomic <- function(aggregates) {
   aggregates[, .(aggregate_count = sum(aggregate_count),
                  aggregate_baseline = sum(aggregate_baseline)),
              by = .(region, duration, stream)]
