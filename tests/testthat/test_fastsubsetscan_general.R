@@ -3,16 +3,21 @@ context("FastSubsetScan - general functions")
 # expectation_based_score ------------------------------------------------------
 
 test_that("expectation_based_score_atomic: works as intended", {
-  sco <- data.table(region = rep(1:2, each = 4),
+  ags <- data.table(region = rep(1:2, each = 4),
                     duration = rep(1:2, 2, each = 2),
                     stream = rep(1:2, 4),
-                    score = c(-1, -1, 1, 0, 1:4))
-  rr <- c(1.2, 1.3)
-  expected_score <- c(1, 3, 7)
-  expected_is <- list(1L, 1:2, 1:2)
-  res <- score_minimal_stream_subset(sco, region_as_list = FALSE)
+                    aggregate_count = 1:8,
+                    aggregate_baseline = 8:1)
+  score_fun <- function(x, y) x + y
+  expected_score <- rep(9, 8)
+  expected_region <- ags[, region]
+  expected_duration <- ags[, duration]
+  expected_streams <- ags[, stream]
+  res <- expectation_based_score_atomic(ags, score_fun)
   expect_equal(res[, score], expected_score)
-  expect_equal(res[, included_streams], expected_is)
+  expect_equal(res[, region], expected_region)
+  expect_equal(res[, duration], expected_duration)
+  expect_equal(res[, stream], expected_streams)
 })
 
 test_that("expectation_based_score_list: works as intended", {
@@ -21,11 +26,11 @@ test_that("expectation_based_score_list: works as intended", {
                     stream = rep(1:2, 2),
                     aggregate_count = 1:4,
                     aggregate_baseline = 4:1)
-  score_fun <- function(x,y) x + y
+  score_fun <- function(x, y) x + y
   expected_score <- rep(5, 4)
   expected_region <- ags[, region]
-  expected_duration = ags[, duration]
-  expected_streams = sort(ags[, stream])
+  expected_duration <- ags[, duration]
+  expected_streams <- sort(ags[, stream])
   res <- expectation_based_score_list(ags, score_fun)
   expect_equal(res[, score], expected_score)
   expect_equal(res[, region], expected_region)
