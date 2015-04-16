@@ -92,54 +92,6 @@ find_maximizing_region <- function(aggregates,
   maxregion
 }
 
-#' Calculates the expectation-based score for each stream and the given region
-#' and event duration.
-#' 
-#' Given the aggegate counts and baselines for each data stream and the given
-#' region and event duration, calculates the expectation-based score, with the
-#' given score function.
-#' @param aggregates A \code{data.table} with columns \code{region, duration, 
-#'    stream, aggregate_count, aggregate_baseline}.
-#' @param score_function A two-parameter scalar input, single scalar output
-#'    score function.
-#' @return A \code{data.table} with columns \code{region, duration, stream, 
-#'    score}.
-single_region_score_EB <- function(aggregates, score_function) {
-  aggregates[, .(region = region,
-                 score = score_function(aggregate_count, aggregate_baseline)),
-             by = .(duration, stream)]
-}
-
-#' Score and minimal stream subset for the Kulldorff method.
-#' 
-#' Calculates the score for each combination of region and duration, and the 
-#' minimal subset of locations that contribute to the score, according to the
-#' Kulldorff method. See Neill et. al. (2013) section 3.2.
-#' @param scores A \code{data.table} with columns \code{region, duration, 
-#'    stream, score}. The column \code{region} should be a list with all 
-#'    elements equal, each element the same vector of locations that constitute 
-#'    the region. Likewise, the column \code{duration} should have all elements
-#'    equal.
-#' @return A \code{data.table} with columns \code{region, duration, stream, 
-#'    score, included_streams}. The colum \code{score} contain the sum of the 
-#'    input scores over all data streams, for each region and duration. The 
-#'    column \code{included_streams} contain those data streams that made a 
-#'    positive contribution to this sum.
-single_region_minimal_stream_subset <- function(scores) {
-  # Can't sum by list column in data.table, so must do workaround.
-  reg <- scores[1, region]
-  topscore <- scores[score > 0, 
-                     .(score = sum(score), 
-                       included_streams = list(stream)), 
-                     by = .(duration)][, region := reg]
-  setcolorder(topscore, c("included_streams", 
-                          "region", 
-                          "duration",
-                          "score"))
-  topscore
-}
-
-
 #' Is the relative error between two numbers is less than the given tolerance?
 #' 
 #' Given two consecutive numbers in a sequence, return \code{TRUE} if the

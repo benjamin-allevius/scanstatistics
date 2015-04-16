@@ -1,22 +1,4 @@
 
-#' Score and minimal stream subset for the Naive Kulldorff method.
-#' 
-#' Calculates the score for each combination of region and duration, and the 
-#' minimal subset of locations that contribute to the score, according to the
-#' Naive Kulldorff method. See Neill et. al. (2013) section 3.2.
-#' @param scores A \code{data.table} with columns \code{region, duration, stream, 
-#'    score}.
-#' @return A \code{data.table} with columns \code{region, duration, stream, 
-#'    score, included_streams}. The colum \code{score} contain the sum of the 
-#'    input score over all data streams, for each region and duration. The 
-#'    column \code{included_streams} contain those data streams that made a 
-#'    positive contribution to this sum.
-score_minimal_stream_subset <- function(scores) {
-  scores[score > 0, 
-         .(score = sum(score), included_streams = list(stream)), 
-         by = .(region, duration)]
-}
-
 #' Calculates the multivariate scan statistic by the naive Kulldorff method.
 #' 
 #' Calculates the multivariate scan statistic by the naive Kulldorff method, for 
