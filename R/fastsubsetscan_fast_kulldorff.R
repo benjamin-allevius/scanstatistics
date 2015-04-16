@@ -56,7 +56,8 @@ find_maximizing_subsets <- function(aggregates,
   maxreg_locations <- maxregion[, region][[1]]
   # Find the optimal subset of streams for the region found above
   optimal_subset <- aggregates %>%
-    aggregate_per_stream(locations = maxreg_locations) %>%
+    aggregate_per_stream(locations = maxreg_locations,
+                         region_as_list = TRUE) %>%
     single_region_score_EB(score_function = score_fun) %>%
     single_region_minimal_stream_subset
     
@@ -138,23 +139,6 @@ single_region_minimal_stream_subset <- function(scores) {
   topscore
 }
 
-#' Compute the per-stream aggregates for a given region and event duration.
-#' 
-#' Compute the per-stream aggregate counts \eqn{C^m(S,W)} and aggregate 
-#' baselines \eqn{B^m(S,W)}, given a single region (specified as a set of 
-#' locations) and a single duration.
-#' @inheritParams relative_risk_mle
-#' @return A new \code{data.table} with columns \code{region, stream, duration,
-#'    aggregate_count, aggregate_baseline}. The column \code{region} is a list
-#'    which contains identical elements; the column duration also contains 
-#'    identical elements.
-aggregate_per_stream <- function(aggregates, locations) {
-  aggregates[location %in% locations,
-             .(region = list(location),
-               aggregate_count = sum(aggregate_count),
-               aggregate_baseline = sum(aggregate_baseline)),
-             by = .(stream, duration)]
-}
 
 #' Is the relative error between two numbers is less than the given tolerance?
 #' 
