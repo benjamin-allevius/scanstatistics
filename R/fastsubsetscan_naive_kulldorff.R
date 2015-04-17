@@ -13,7 +13,7 @@
 #' @param aggregate_CB A function for calculating the aggregate counts and 
 #'    baselines over all event durations for a given expectation-based scan 
 #'    statistic.
-#' @inheritParams score_EB
+#' @inheritParams expectation_based_score
 #' @return A \code{data.table} with columns \code{region, duration, score,
 #'    included_streams}.
 #' @importFrom magrittr %>%

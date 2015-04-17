@@ -104,23 +104,25 @@ find_maximizing_region <- function(aggregates,
 #' streams.
 #' 
 #' For a given duration and set of data streams, this function calculates the 
-#' priority \eqn{G_W^D(s_i)} for each location, using the input relative risks
-#' and priority function.
+#' priority \eqn{G_W^D(s_i)} for each location, using the given relative risks
+#' and conditonal score function (conditional on relative risks).
 #' @inheritParams relative_risk_mle
 #' @param relative_risks A vector of relative risks, one for each data stream.
-#' @param priority_term A function for the term in the sum over streams for the
-#'    priority function \eqn{G_W^D(s_i)}. This function should take three 
-#'    arguments: an aggregate count, an aggregate baseline, and a relative risk.
+#' @param conditional_score The score function, conditional on known relative 
+#'    risks. One for each data stream; corresponds to a term in the sum of the
+#'    priority \eqn{G_W^D(s_i)}. Takes three scalar inputs: an aggregate count, an aggregate 
+#'    baseline, and a relative risk. Outputs a scalar value, the conditional 
+#'    score.
 #' @return A \code{data.table} with columns \code{location, duration, priority,
 #'    included_streams}.
 fast_kulldorff_priority <- function(aggregates, 
                                     relative_risks,
-                                    priority_term) {
+                                    conditional_score) {
   aggregates[, 
     .(included_streams = list(stream),
-      priority = sum(priority_term(aggregate_count,
-                                   aggregate_baseline,
-                                   relative_risks[stream]))),
+      priority = sum(conditional_score(aggregate_count,
+                                       aggregate_baseline,
+                                       relative_risks[stream]))),
              by = .(location, duration)]
 }
 

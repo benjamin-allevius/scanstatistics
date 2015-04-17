@@ -8,11 +8,12 @@ test_that("fast_kulldorff_priority: works as intended", {
                     aggregate_count = 1:4,
                     aggregate_baseline = 4:1)
   rr <- c(1.2, 1.3)
-  expected <- c(priority_term_poisson(1, 4, 1.2) + 
-                  priority_term_poisson(2, 3, 1.3),
-                priority_term_poisson(3, 2, 1.2) +
-                  priority_term_poisson(4, 1, 1.3))
-  res <- fast_kulldorff_priority(ags, rr, priority_term_poisson)
+  cond_score_fun <- conditional_score_fun_EBP
+  expected <- c(cond_score_fun(1, 4, 1.2) + 
+                  cond_score_fun(2, 3, 1.3),
+                cond_score_fun(3, 2, 1.2) +
+                  cond_score_fun(4, 1, 1.3))
+  res <- fast_kulldorff_priority(ags, rr, cond_score_fun)
   expect_equal(res[, priority], expected)
   expect_equal(res[1, included_streams], list(1:2))
 })

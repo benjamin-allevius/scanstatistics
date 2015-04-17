@@ -70,7 +70,6 @@ score_minimal_stream_subset_atomic <- function(scores) {
 
 # aggregate_per_stream ---------------------------------------------------------
 
-
 #' Calculate the count and baseline aggregates over each region-stream-duration
 #' combination.
 #' 
@@ -81,7 +80,7 @@ score_minimal_stream_subset_atomic <- function(scores) {
 #'    argument \code{region_as_list} is \code{TRUE}. See 
 #'    \code{\link{aggregate_per_stream_list}} if argument 
 #'    \code{region_as_list} is \code{FALSE}.
-#' @param location A vector of locations corresponding to a single region; 
+#' @param locations A vector of locations corresponding to a single region; 
 #'    passed to \code{\link{aggregate_per_stream_list}} if 
 #'    \code{region_as_list} is \code{TRUE}.
 #' @param region_as_list Boolean: is the region colum a list, or an atomic 
@@ -136,6 +135,16 @@ aggregate_per_stream_atomic <- function(aggregates) {
 
 # Expectation-based score for data.table (not scalar input) =-------------------
 
+#' Calculates the expectation-based score.
+#' 
+#' @param aggregates A \code{data.table} with columns \code{region, duration, 
+#'    stream, aggregate_count, aggregate_baseline}. If the column \code{region}
+#'    is a list, set the argument \code{region_as_list} to \code{TRUE}. If it is
+#'    an atomic vector (e.g. regions are integers), set \code{region_as_list} to 
+#'    \code{FALSE}.
+#' @param score_function A two-parameter scalar input, single scalar output
+#'    score function.
+#' @inheritParams aggregate_per_stream
 expectation_based_score <- function(aggregates, 
                                     score_function, 
                                     region_as_list = FALSE) {
@@ -154,8 +163,7 @@ expectation_based_score <- function(aggregates,
 #' given score function.
 #' @param aggregates A \code{data.table} with columns \code{region, duration, 
 #'    stream, aggregate_count, aggregate_baseline}.
-#' @param score_function A two-parameter scalar input, single scalar output
-#'    score function.
+#' @inheritParams expectation_based_score
 #' @return A \code{data.table} with columns \code{region, duration, stream, 
 #'    score}.
 expectation_based_score_list <- function(aggregates, score_function) {
