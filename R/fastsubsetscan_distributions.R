@@ -106,3 +106,14 @@ score_fun_EBE <- function(c, b) {
   ifelse(c > b, b * (log(b / c) - 1) + c, 0)
 }
 
+#' Expectation-based exponential-distribution score, conditional on the relative 
+#' risk.
+#' 
+#' This function computes the expectation-based score for exponentially 
+#' distributed counts, conditional on the relative risk. Appears as a term 
+#' (corresponding to a single data stream) in the sum for the priority function 
+#' G_W^D(s_i) used in the Fast Kulldorff method.
+#' @inheritParams conditional_score_fun_EBP
+conditional_score_fun_EBE <- function(c, b, q) {
+  stop("Not yet implemented")
+}

@@ -1,10 +1,18 @@
 
 
-fast_kulldorff <- function(aggregates, 
+fast_kulldorff <- function(counts, 
                            distribution = "poisson",
                            random_restarts = 50,
                            tol = 0.01,
                            max_iter = 100) {
+  # Input validation here
+  initial_aggregation_fun <- aggregate_CB(distribution)
+  score_fun <- score_function_EB(distribution)
+  conditional_score_fun <- conditional_score_function_EB(distribution)
+  
+  aggregates <- counts %>%
+    add_duration(keys = c("duration", "location", "stream")) %>%
+    initial_aggregation_fun
   # Choose priority and score functions based on distribution
   durations <- unique(aggregates[, duration])
   foreach::foreach(W = durations, .combine = rbind, .inorder = FALSE) %do% {

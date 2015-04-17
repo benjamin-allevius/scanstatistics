@@ -180,3 +180,62 @@ expectation_based_score_atomic <- function(aggregates, score_function) {
   aggregates[, .(score = score_function(aggregate_count, aggregate_baseline)),
              by = .(region, duration, stream)]
 }
+
+# Initial aggregation ----------------------------------------------------------
+
+#' Take a distribution (string) and return the function corresponding to it.
+#' @param distribution One of "poisson", "gaussian", "normal", "exponential".
+#' @param function_list A list of functions with (one of the) names of the list 
+#'    matching the distribution argument.
+dispatch_function_on_distribution <- function(distribution, function_list) {
+  dist <- tolower(distribution)
+  valid_distributions <- c("poisson", "gaussian", "normal", "exponential")
+  if (dist %notin% valid_distributions) {
+    stop("distribution must be one of ",
+         paste0(valid_distributions, collapse = ", "))
+  }
+  function_list[[dist]]
+}
+
+#' Return the function that does the initial aggregation for the distribution.
+#' 
+#' Return the function that does the initial aggregation of counts and baselines
+#' for the given distribution. By initial aggregation is meant the cumulative 
+#' sums of the counts and baselines over the event duration, for each location 
+#' and data stream.
+#' @inheritParams dispatch_function_on_distribution
+aggregate_CB <- function(distribution) {
+  aggregation_functions <- list(poisson = aggregate_CB_poisson,
+                                gaussian = aggregate_CB_gaussian,
+                                normal = aggregate_CB_gaussian,
+                                exponential = aggregate_CB_exponential)
+  dispatch_function_on_distribution(distribution, aggregation_functions)
+}
+
+#' Return the scalar-output expectation-based score function for the given 
+#' distribution.
+#' 
+#' Return the expectation-based, scalar valued score function corresponding to
+#' the given distribution.
+#' @inheritParams dispatch_function_on_distribution
+score_function_EB <- function(distribution) {
+  score_functions <- list(poisson = score_fun_EBP,
+                          gaussian = score_fun_EBG,
+                          normal = score_fun_EBG,
+                          exponential = score_fun_EBE)
+  dispatch_function_on_distribution(distribution, score_functions)
+}
+
+#' Return the scalar-output conditional expectation-based score function for 
+#' the given distribution.
+#' 
+#' Return the conditional (on relative risks) expectation-based, scalar valued 
+#' score function corresponding to the given distribution.
+#' @inheritParams dispatch_function_on_distribution
+conditional_score_function_EB <- function(distribution) {
+  score_functions <- list(poisson = conditional_score_fun_EBP,
+                          gaussian = conditional_score_fun_EBG,
+                          normal = conditional_score_fun_EBG,
+                          exponential = conditional_score_fun_EBE)
+  dispatch_function_on_distribution(distribution, score_functions)
+}
