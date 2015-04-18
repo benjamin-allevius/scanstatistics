@@ -1,5 +1,21 @@
 context("FastSubsetScan - fast Kulldorff method")
 
+test_that("find_maximizing_region: works as intended", {
+  ags <- data.table(location = rep(1:2, each = 2),
+                    stream = rep(1:2, 2),
+                    duration = rep(2, 4),
+                    aggregate_count = 1:4,
+                    aggregate_baseline = 4:1)
+  cond_score_fun <- conditional_score_fun_EBP
+  expected <- c(cond_score_fun(1, 4, 1.2) + 
+                  cond_score_fun(2, 3, 1.3),
+                cond_score_fun(3, 2, 1.2) +
+                  cond_score_fun(4, 1, 1.3))
+  res <- find_maximizing_region(aggregates = ags, 
+                                cond_score_fun = cond_score_fun, tol = 0.01)
+  expect_equal(res, 2L)
+})
+
 
 test_that("fast_kulldorff_priority: works as intended", {
   ags <- data.table(location = rep(1:2, each = 2),

@@ -10,7 +10,7 @@ fast_kulldorff <- function(counts,
   # Define aggregation and score functions based on distribution
   initial_aggregation_fun <- aggregate_CB(distribution)
   score_fun <- score_function_EB(distribution)
-  conditional_score_fun <- conditional_score_function_EB(distribution)
+  cond_score_fun <- conditional_score_function_EB(distribution)
   
   # Do initial aggregation for each stream, location, and duration
   aggregates <- counts %>%
@@ -21,32 +21,37 @@ fast_kulldorff <- function(counts,
   durations <- unique(aggregates[, duration])
   foreach::foreach(W = durations, .combine = rbind, .inorder = FALSE) %do% {
     ags <- aggregates[duration == W]
-    random_restart_maximizer(ags)
+    random_restart_maximizer(aggregates = ags,
+                             score_fun = score_fun,
+                             cond_score_fun = cond_score_fun,
+                             tol = tol,
+                             max_iter = max_iter,
+                             restarts = restarts)
   }
 }
 
 random_restart_maximizer <- function(..., restarts = 50) {
   foreach::foreach(i = seq(restarts), .combine = rbind, .inorder = FALSE) %do% {
-    find_maximizing_subsets(aggregates, priority_term, score_fun, ...)
+    find_maximizing_subsets(...)
   }
 }
 
 # called for each duration W
 # i.e. pass in aggregates for a single W
-find_maximizing_subsets <- function(aggregates, score_function, ...) {  
+find_maximizing_subsets <- function(aggregates, score_fun, ...) {  
   # Find the maximizing region by iterative procedure
   maxregion <- find_maximizing_region(aggregates, ...)
   
   # Find the optimal subset of streams for this optimal region
   aggregates %>%
     aggregate_per_stream(locations = maxregion, TRUE) %>%
-    expectation_based_score(score_function = score_function, TRUE) %>%
+    expectation_based_score(score_function = score_fun, TRUE) %>%
     score_minimal_stream_subset(region_as_list = TRUE)
 }
 
 # Performs the two-step iterative procedure to find conditionally optimal region
 find_maximizing_region <- function(aggregates, 
-                                   conditional_score, 
+                                   cond_score_fun, 
                                    max_iter = 100,
                                    ...) {
   # Choose which streams to initially include in maximization
@@ -61,9 +66,16 @@ find_maximizing_region <- function(aggregates,
   for (i in seq(max_iter)) {
     # For the current relative risks, find the region which maximizes score
     maxregscore <- aggregates[stream %in% incl_streams] %>%
-      fast_kulldorff_priority(relative_risks = relative_risks,
-                              conditional_score = conditional_score) %>%
-      fast_kulldorff_maxregion
+      fast_kulldorff_priority(relative_risks = rel_risks,
+                              conditional_score = cond_score_fun)
+    
+    # If all priorities are negative, need to reset relative risks and streams
+    if (all(maxregscore[, priority] < 0)) {
+      incl_streams <- choose_streams_randomly(all_streams)
+      rel_risks <- random_relative_risk(incl_streams, all_streams)
+      next
+    }
+    maxregscore <- fast_kulldorff_maxregion(maxregscore)
     
     # Extract locations in region as vector
     current_maxregion <- maxregscore[, region][[1]]
