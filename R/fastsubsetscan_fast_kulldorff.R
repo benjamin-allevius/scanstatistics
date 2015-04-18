@@ -33,8 +33,76 @@ random_restart_maximizer <- function(..., restarts = 50) {
 
 # called for each duration W
 # i.e. pass in aggregates for a single W
-find_maximizing_subsets <- function(aggregates, score_function, ...) {
-  all_streams <- sort(unique(aggregates[, stream]))
+find_maximizing_subsets <- function(aggregates, score_function, ...) {  
+  # Find the maximizing region by iterative procedure
+  maxregion <- find_maximizing_region(aggregates, ...)
+  
+  # Find the optimal subset of streams for this optimal region
+  aggregates %>%
+    aggregate_per_stream(locations = maxregion, TRUE) %>%
+    expectation_based_score(score_function = score_function, TRUE) %>%
+    score_minimal_stream_subset(region_as_list = TRUE)
+}
+
+# Performs the two-step iterative procedure to find conditionally optimal region
+find_maximizing_region <- function(aggregates, 
+                                   conditional_score, 
+                                   max_iter = 100,
+                                   ...) {
+  # Choose which streams to initially include in maximization
+  all_streams <- get_all_streams(aggregates)
+  incl_streams <- choose_streams_randomly(all_streams)
+  
+  # Randomly initialize relative risks for included streams
+  rel_risks <- random_relative_risk(incl_streams, all_streams)
+   
+  # Iterate until score is maximized
+  previous_score <- 1 
+  for (i in seq(max_iter)) {
+    # For the current relative risks, find the region which maximizes score
+    maxregscore <- aggregates[stream %in% incl_streams] %>%
+      fast_kulldorff_priority(relative_risks = relative_risks,
+                              conditional_score = conditional_score) %>%
+      fast_kulldorff_maxregion
+    
+    # Extract locations in region as vector
+    current_maxregion <- maxregscore[, region][[1]]
+    
+    if (i > 1 && has_converged(maxregscore[, score], previous_score, ...)) {
+      return(current_maxregion)
+    }
+    rel_risks <- relative_risk_mle(aggregates, current_maxregion)
+    incl_streams <- all_streams[rel_risks > 1]
+    previous_score <- maxregscore[, score]
+  }
+  # Did not converge before maximum number of iterations, but return anyway
+  current_maxregion
+}
+
+#' Randomly assign relative risks for included streams, and set to 1 for 
+#' non-included streams.
+#' 
+#' For the included streams, set the relative risks to a random number greater
+#' than one. For the non-included streams, set the relative risk to one.
+#' @param incl_streams A subset of the atomic vector all_streams.
+#' @param all_streams An atomic vector containing the sorted names or 
+#'    identifiers for all data streams.
+random_relative_risk <- function(incl_streams, all_streams) {
+  n_streams <- length(all_streams)
+  ifelse(all_streams %in% incl_streams, 
+         exp(2 * runif(n_streams)), 
+         rep(1, n_streams))
+}
+
+
+#' Decide which data streams are to be included by independent coin flips.
+#' 
+#' Given a vector of data stream names, return a subset of these by including
+#' each data stream based on the flip of a biased coin; the bias is random and 
+#' the coin flips are independent. However, if by chance no streams are 
+#' included, choose one stream uniformly at random to return.
+#' @param all_streams A vector of data stream names or other identifiers.
+choose_streams_randomly <- function(all_streams) {
   n_streams <- length(all_streams)
   
   # Decide which streams to include by coin flip
@@ -44,56 +112,7 @@ find_maximizing_subsets <- function(aggregates, score_function, ...) {
   if (all(!stream_included)) {
     stream_included[sample(seq(stream_included), 1)] <- TRUE
   }
-  incl_streams <- all_streams[stream_included]
-  
-  # Randomly initialize relative risks for included streams
-  rel_risks <- ifelse(stream_included, 
-                      exp(2 * runif(n_streams)), 
-                      rep(1, n_streams))
-  
-  # Iterative maximization step
-  maxregion <- find_maximizing_region(aggregates = aggregates, 
-                                      all_streams = all_streams, 
-                                      incl_streams = incl_streams, 
-                                      ...)
-  # Region is conditionally optimal given relative risks
-  maxreg_locations <- maxregion[, region][[1]]
-  
-  # Find the optimal subset of streams for this optimal region
-  optimal_subset <- aggregates %>%
-    aggregate_per_stream(locations = maxreg_locations,
-                         region_as_list = TRUE) %>%
-    expectation_based_score(score_function = score_function,
-                            region_as_list = TRUE) %>%
-    score_minimal_stream_subset(region_as_list = TRUE)
-}
-
-# Performs the two-step iterative procedure to find conditionally optimal region
-find_maximizing_region <- function(aggregates, 
-                                   all_streams,
-                                   incl_streams, 
-                                   priority_term,
-                                   relative_risks, 
-                                   max_iter = 100) {
-  previous_score <- 1
-  # Iterate until score is maximized
-  for (i in seq(max_iter)) {
-    maxregion <- aggregates[stream %in% incl_streams] %>%
-      fast_kulldorff_priority(relative_risks = relative_risks,
-                              priority_term = priority_term) %>%
-      fast_kulldorff_maxregion
-    
-    rel_risks <- aggregates %>% 
-      relative_risk_mle(locations = maxregion[, region][[1]])
-    
-    if (i > 1 && has_converged(maxregion[, score], previous_score, ...)) {
-      return(maxregion)
-    }
-    incl_streams <- all_streams[rel_risks > 1]
-    previous_score <- maxregion[, score]
-  }
-  # Did not converge before maximum number of iterations, but return anyway
-  maxregion
+  all_streams[stream_included]
 }
 
 #' Calculates the priority for each location, for a given duration and subset of
