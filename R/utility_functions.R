@@ -1,4 +1,14 @@
 
+#' Extract the sorted names of all data streams from a \code{data.table}.
+#' 
+#' From a \code{data.table} with a column \code{stream}, extract the unique and
+#' sorted values from this column as a vector. 
+#' @param d A \code{data.table} containing a column \code{stream}.
+get_all_streams <- function(d) {
+  if ("stream" %notin% names(d)) stop("data.table must have column 'stream'.")
+  sort(unique(d[, stream]))
+}
+
 `%notin%` <- function(a, b) !(a %in% b)
 
 # get package names
@@ -15,6 +25,19 @@ logsumexp_unstable <- function(x) {
 logsumexp <- function(x) {
     A <- max(x)
     A + log(sum(exp(x - A)))
+}
+
+#' Compute values from a date-time vector that are periodic over 24 hours.
+#' 
+#' Take a date-time vector and compute an equal-length vector, such that the new
+#' vector has a period of 24 hours. Handy for when you want to include a 
+#' periodic component with period 24 hours in a regression.
+#' @examples
+#' x <- dayperiod(seq(as.POSIXct("2015-04-18 19:00:00 CEST"), 
+#'                length.out = 4*24+1, by = "15 mins"))
+#' x[1] == x[length(x)]
+dayperiod <- function(t) {
+  2*pi*(lubridate::hour(t) + lubridate::minute(t)/60)/24
 }
 
 #' Is the relative error between two numbers is less than the given tolerance?
