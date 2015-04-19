@@ -20,6 +20,7 @@ NULL
 globalVariables(c(
   # Variables used unquoted inside functions
   "duration", 
+  "W",
   "event",
   "location",
   "stream",
