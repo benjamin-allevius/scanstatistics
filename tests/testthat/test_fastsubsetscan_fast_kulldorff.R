@@ -1,9 +1,42 @@
 context("FastSubsetScan - fast Kulldorff method")
 
+test_that("find_maximizing_subsets: works as intended", {
+  ags <- data.table(location = rep(1:2, each = 2),
+                    stream = rep(1:2, 2),
+                    duration = rep(2L, 4),
+                    aggregate_count = 1:4,
+                    aggregate_baseline = 4:1)
+  score_fun <- score_fun_EBP
+  cond_score_fun <- conditional_score_fun_EBP
+  expected_score <- score_fun(3, 2) + score_fun(4, 1)
+  expected_streams <- list(1:2)
+  expected_reg <- list(2L)
+  res <- find_maximizing_subsets(aggregates = ags, 
+                                 score_fun = score_fun,
+                                 cond_score_fun = cond_score_fun)
+  expect_equal(res[, score], expected_score)
+  expect_equal(res[, included_streams], expected_streams)
+  expect_equal(res[, region], expected_reg)
+})
+
+test_that("optimal_stream_subset: works as intended", {
+  ags <- data.table(location = rep(1:2, each = 2),
+                    stream = rep(1:2, 2),
+                    duration = rep(2L, 4),
+                    aggregate_count = 1:4,
+                    aggregate_baseline = 4:1)
+  score_fun <- score_fun_EBP
+  expected_score <- score_fun(3, 2) + score_fun(4, 1)
+  expected_streams <- list(1:2)
+  res <- optimal_stream_subset(ags, 2L, score_fun)
+  expect_equal(res[, score], expected_score)
+  expect_equal(res[, included_streams], expected_streams)
+})
+
 test_that("find_maximizing_region: works as intended", {
   ags <- data.table(location = rep(1:2, each = 2),
                     stream = rep(1:2, 2),
-                    duration = rep(2, 4),
+                    duration = rep(2L, 4),
                     aggregate_count = 1:4,
                     aggregate_baseline = 4:1)
   cond_score_fun <- conditional_score_fun_EBP
@@ -20,7 +53,7 @@ test_that("find_maximizing_region: works as intended", {
 test_that("fast_kulldorff_priority: works as intended", {
   ags <- data.table(location = rep(1:2, each = 2),
                     stream = rep(1:2, 2),
-                    duration = rep(2, 4),
+                    duration = rep(2L, 4),
                     aggregate_count = 1:4,
                     aggregate_baseline = 4:1)
   rr <- c(1.2, 1.3)
@@ -36,7 +69,7 @@ test_that("fast_kulldorff_priority: works as intended", {
 
 test_that("fast_kulldorff_maxregion: works as intended", {
   pri <- data.table(location = 1:5,
-                    duration = rep(2, 5),
+                    duration = rep(2L, 5),
                     included_streams = list(1:2, 1:2, 1:2, 1:2, 1:2),
                     priority = c(-0.5, 0.5, 2, 0, 3.4))
   expected <- 0.5 + 2 + 3.4
@@ -51,7 +84,7 @@ test_that("relative_risk_mle: works as intended", {
   # belong to the region we want.
   ags <- data.table(location = rep(1:3, each = 3),
                     stream = rep(1:3, 3),
-                    duration = rep(2, 9), 
+                    duration = rep(2L, 9), 
                     key = "stream")
   # Aggregates are the C_i^m(W), B_i^m(W)
   ags[, aggregate_count := 1:9]

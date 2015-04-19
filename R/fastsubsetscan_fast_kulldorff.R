@@ -2,7 +2,7 @@
 
 fast_kulldorff <- function(counts, 
                            distribution = "poisson",
-                           random_restarts = 50,
+                           restarts = 50,
                            tol = 0.01,
                            max_iter = 100) {
   # [Input validation here]
@@ -19,7 +19,9 @@ fast_kulldorff <- function(counts,
   
   # For each duration, find score-maximizing subsets of locations and streams
   durations <- unique(aggregates[, duration])
-  foreach::foreach(W = durations, .combine = rbind, .inorder = FALSE) %do% {
+  res <- foreach::foreach(W = durations, 
+                          .combine = rbind, 
+                          .inorder = FALSE) %do% {
     ags <- aggregates[duration == W]
     random_restart_maximizer(aggregates = ags,
                              score_fun = score_fun,
@@ -28,12 +30,24 @@ fast_kulldorff <- function(counts,
                              max_iter = max_iter,
                              restarts = restarts)
   }
+  unique(res[!is.na(duration), .SD, keyby = .(score)])
 }
 
 random_restart_maximizer <- function(..., restarts = 50) {
-  foreach::foreach(i = seq(restarts), .combine = rbind, .inorder = FALSE) %do% {
-    find_maximizing_subsets(...)
+  # Pre-allocate data.table
+  maxed <- empty_max_table(nrow = restarts)
+  for (i in seq(restarts)) {
+    maxed[i, names(maxed) := find_maximizing_subsets(...)]
   }
+  maxed
+}
+
+# Table as returned by optimal_stream_subset
+empty_max_table <- function(nrow = 1) {
+  data.table(duration = rep(as.integer(NA), nrow), 
+             score = as.numeric(NA), 
+             included_streams = list(), 
+             region = list())
 }
 
 # called for each duration W
@@ -41,15 +55,24 @@ random_restart_maximizer <- function(..., restarts = 50) {
 find_maximizing_subsets <- function(aggregates, score_fun, ...) {  
   # Find the maximizing region by iterative procedure
   maxregion <- find_maximizing_region(aggregates, ...)
-  
-  # Find the optimal subset of streams for this optimal region
+  if (length(maxregion) == 1 && is.na(maxregion)) {
+    return(empty_max_table(nrow = 1))
+  }
+  optimal_stream_subset(aggregates = aggregates, 
+                        locations = maxregion,
+                        score_fun = score_fun)
+}
+
+optimal_stream_subset <- function(aggregates, locations, score_fun) {
   aggregates %>%
-    aggregate_per_stream(locations = maxregion, TRUE) %>%
+    aggregate_per_stream(locations = locations, TRUE) %>%
     expectation_based_score(score_function = score_fun, TRUE) %>%
     score_minimal_stream_subset(region_as_list = TRUE)
 }
 
 # Performs the two-step iterative procedure to find conditionally optimal region
+# Generates initial random relative risks
+# Outputs a vector of locations
 find_maximizing_region <- function(aggregates, 
                                    cond_score_fun, 
                                    max_iter = 100,
@@ -62,6 +85,7 @@ find_maximizing_region <- function(aggregates,
   rel_risks <- random_relative_risk(incl_streams, all_streams)
    
   # Iterate until score is maximized
+  current_maxregion <- as.integer(NA)
   previous_score <- 1 
   for (i in seq(max_iter)) {
     # For the current relative risks, find the region which maximizes score
@@ -137,9 +161,9 @@ choose_streams_randomly <- function(all_streams) {
 #' @param relative_risks A vector of relative risks, one for each data stream.
 #' @param conditional_score The score function, conditional on known relative 
 #'    risks. One for each data stream; corresponds to a term in the sum of the
-#'    priority \eqn{G_W^D(s_i)}. Takes three scalar inputs: an aggregate count, an aggregate 
-#'    baseline, and a relative risk. Outputs a scalar value, the conditional 
-#'    score.
+#'    priority \eqn{G_W^D(s_i)}. Takes three scalar inputs: an aggregate count, 
+#'    an aggregate baseline, and a relative risk. Outputs a scalar value, the 
+#'    conditional score.
 #' @return A \code{data.table} with columns \code{location, duration, priority,
 #'    included_streams}.
 fast_kulldorff_priority <- function(aggregates, 
