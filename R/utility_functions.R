@@ -32,10 +32,14 @@ logsumexp <- function(x) {
 #' Take a date-time vector and compute an equal-length vector, such that the new
 #' vector has a period of 24 hours. Handy for when you want to include a 
 #' periodic component with period 24 hours in a regression.
+#' @param t A date-time vector, e.g. of class POSIXct, for which the hour and 
+#'    minute can be extracted.
 #' @examples
+#' \dontrun{
 #' x <- dayperiod(seq(as.POSIXct("2015-04-18 19:00:00 CEST"), 
 #'                length.out = 4*24+1, by = "15 mins"))
 #' x[1] == x[length(x)]
+#' }
 dayperiod <- function(t) {
   2*pi*(lubridate::hour(t) + lubridate::minute(t)/60)/24
 }
