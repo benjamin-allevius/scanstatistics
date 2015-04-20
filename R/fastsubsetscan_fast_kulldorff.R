@@ -86,7 +86,7 @@ find_maximizing_region <- function(aggregates,
    
   # Iterate until score is maximized
   current_maxregion <- as.integer(NA)
-  previous_score <- 1 
+  previous_score <- as.numeric(NA)
   for (i in seq(max_iter)) {
     # For the current relative risks, find the region which maximizes score
     maxregscore <- aggregates[stream %in% incl_streams] %>%
@@ -97,6 +97,7 @@ find_maximizing_region <- function(aggregates,
     if (all(maxregscore[, priority] < 0)) {
       incl_streams <- choose_streams_randomly(all_streams)
       rel_risks <- random_relative_risk(incl_streams, all_streams)
+      previous_score <- as.numeric(NA)
       next
     }
     maxregscore <- fast_kulldorff_maxregion(maxregscore)
@@ -104,7 +105,8 @@ find_maximizing_region <- function(aggregates,
     # Extract locations in region as vector
     current_maxregion <- maxregscore[, region][[1]]
     
-    if (i > 1 && has_converged(maxregscore[, score], previous_score, ...)) {
+    if (!is.na(previous_score) && 
+          has_converged(maxregscore[, score], previous_score, ...)) {
       return(current_maxregion)
     }
     rel_risks <- relative_risk_mle(aggregates, current_maxregion)
