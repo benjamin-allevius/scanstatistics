@@ -11,7 +11,7 @@
 #' longest, is calculated.
 #' @param counts A \code{data.table} with columns \code{location, stream, 
 #'    duration, count, baseline}.
-aggregate_CB_poisson <- function(counts) {
+initial_aggregation_poisson <- function(counts) {
   counts[, .(duration = duration,
              aggregate_count = cumsum(count),
              aggregate_baseline = cumsum(baseline)),
@@ -50,8 +50,8 @@ conditional_score_fun_EBP <- function(c, b, q) {
 #' \eqn{B_{i,m}} for the expectation-based Gaussian (EBG) scan statistic, for 
 #' each location \eqn{i} and data stream \eqn{m}. I.e. the cumulative sum over
 #' the event duration, from shortest to longest, is calculated.
-#' @inheritParams aggregate_CB_poisson
-aggregate_CB_gaussian <- function(counts) {
+#' @inheritParams initial_aggregation_poisson
+initial_aggregation_gaussian <- function(counts) {
   counts[, .(duration = duration,
              aggregate_count = cumsum(count * baseline / variance),
              aggregate_baseline = cumsum(baseline^2 / variance)),
@@ -88,8 +88,8 @@ conditional_score_fun_EBG <- function(c, b, q) {
 #' \eqn{B_{i,m}} for the expectation-based Exponential (EBE) scan statistic, for 
 #' each location \eqn{i} and data stream \eqn{m}. I.e. the cumulative sum over
 #' the event duration, from shortest to longest, is calculated.
-#' @inheritParams aggregate_CB_poisson
-aggregate_CB_exponential <- function(counts) {
+#' @inheritParams initial_aggregation_poisson
+initial_aggregation_exponential <- function(counts) {
   counts[, .(duration = duration,
              aggregate_count = cumsum(count / baseline),
              aggregate_baseline = duration), 

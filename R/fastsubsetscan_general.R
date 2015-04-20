@@ -55,8 +55,8 @@ score_minimal_stream_subset_list <- function(scores) {
 #' Calculates the score for each combination of region and duration, and the 
 #' minimal subset of locations that contribute to the score, according to the
 #' Kulldorff method. See Neill et. al. (2013) section 3.2.
-#' @param scores A \code{data.table} with columns \code{region, duration, stream, 
-#'    score}.
+#' @param scores A \code{data.table} with columns \code{region, duration, 
+#'    stream, score}.
 #' @return A \code{data.table} with columns \code{region, duration, stream, 
 #'    score, included_streams}. The colum \code{score} contain the sum of the 
 #'    input score over all data streams, for each region and duration. The 
@@ -122,7 +122,7 @@ aggregate_per_stream_list <- function(aggregates, locations) {
 #' @param aggregates A \code{data.table} containing columns \code{region, 
 #'    duration, stream, location, aggregate_count, aggregate_baseline}. The 
 #'    latter two columns contain the aggregate counts and baselines as produced 
-#'    by the functions \code{aggregate_CB_X}, where \code{X} is e.g. 
+#'    by the functions \code{initial_aggregation_X}, where \code{X} is e.g. 
 #'    \code{poisson} or \code{gaussian}.
 #' @return A \code{data.table} with the same columns except \code{location}; the
 #'    aggregate quantities have now been summed over all locations in each 
@@ -212,11 +212,11 @@ dispatch_function_on_distribution <- function(distribution, function_list) {
 #' sums of the counts and baselines over the event duration, for each location 
 #' and data stream.
 #' @inheritParams dispatch_function_on_distribution
-aggregate_CB <- function(distribution) {
-  aggregation_functions <- list(poisson = aggregate_CB_poisson,
-                                gaussian = aggregate_CB_gaussian,
-                                normal = aggregate_CB_gaussian,
-                                exponential = aggregate_CB_exponential)
+dispatch_initial_aggregation <- function(distribution) {
+  aggregation_functions <- list(poisson = initial_aggregation_poisson,
+                                gaussian = initial_aggregation_gaussian,
+                                normal = initial_aggregation_gaussian,
+                                exponential = initial_aggregation_exponential)
   dispatch_function_on_distribution(distribution, aggregation_functions)
 }
 
@@ -226,7 +226,7 @@ aggregate_CB <- function(distribution) {
 #' Return the expectation-based, scalar valued score function corresponding to
 #' the given distribution.
 #' @inheritParams dispatch_function_on_distribution
-score_function_EB <- function(distribution) {
+dispatch_score_function <- function(distribution) {
   score_functions <- list(poisson = score_fun_EBP,
                           gaussian = score_fun_EBG,
                           normal = score_fun_EBG,
@@ -240,7 +240,7 @@ score_function_EB <- function(distribution) {
 #' Return the conditional (on relative risks) expectation-based, scalar valued 
 #' score function corresponding to the given distribution.
 #' @inheritParams dispatch_function_on_distribution
-conditional_score_function_EB <- function(distribution) {
+dispatch_cond_score_function <- function(distribution) {
   score_functions <- list(poisson = conditional_score_fun_EBP,
                           gaussian = conditional_score_fun_EBG,
                           normal = conditional_score_fun_EBG,

@@ -10,7 +10,7 @@
 #'    each region itself a set containing one or more locations of those found 
 #'    in \code{counts}.
 #' @inheritParams region_apply
-#' @param aggregate_CB A function for calculating the aggregate counts and 
+#' @param initial_aggregation A function for calculating the aggregate counts and 
 #'    baselines over all event durations for a given expectation-based scan 
 #'    statistic.
 #' @inheritParams expectation_based_score
@@ -20,10 +20,10 @@
 naive_kulldorff_general <- function(counts, 
                                     regions, 
                                     region_partition,
-                                    aggregate_CB, 
+                                    initial_aggregation, 
                                     score_function) {
   counts %>%
-    aggregate_CB %>%
+    initial_aggregation %>%
     region_apply(region_partition = region_partition,
                  f = aggregate_per_stream,
                  keys = c("region", "duration", "stream")) %>%
@@ -41,7 +41,7 @@ naive_kulldorff_general <- function(counts,
 #' @inheritParams naive_kulldorff_general
 naive_kulldorff_poisson <- function(counts, regions, region_partition) {
   naive_kulldorff_general(
-    counts, regions, region_partition, aggregate_CB_poisson, score_fun_EBP)
+    counts, regions, region_partition, initial_aggregation_poisson, score_fun_EBP)
 }
 
 
@@ -54,7 +54,7 @@ naive_kulldorff_poisson <- function(counts, regions, region_partition) {
 #' @inheritParams naive_kulldorff_general
 naive_kulldorff_gaussian <- function(counts, regions, region_partition) {
   naive_kulldorff_general(
-    counts, regions, region_partition, aggregate_CB_gaussian, score_fun_EBG)
+    counts, regions, region_partition, initial_aggregation_gaussian, score_fun_EBG)
 }
 
 
@@ -67,5 +67,5 @@ naive_kulldorff_gaussian <- function(counts, regions, region_partition) {
 #' @inheritParams naive_kulldorff_general
 naive_kulldorff_exponential <- function(counts, regions, region_partition) {
   naive_kulldorff_general(
-    counts, regions, region_partition, aggregate_CB_exponential, score_fun_EBE)
+    counts, regions, region_partition, initial_aggregation_exponential, score_fun_EBE)
 }

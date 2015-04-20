@@ -8,9 +8,9 @@ fast_kulldorff <- function(counts,
   # [Input validation here]
   
   # Define aggregation and score functions based on distribution
-  initial_aggregation_fun <- aggregate_CB(distribution)
-  score_fun <- score_function_EB(distribution)
-  cond_score_fun <- conditional_score_function_EB(distribution)
+  initial_aggregation_fun <- dispatch_aggregate_CB(distribution)
+  score_fun <- dispatch_score_function(distribution)
+  cond_score_fun <- dispatch_cond_score_function(distribution)
   
   # Do initial aggregation for each stream, location, and duration
   aggregates <- counts %>%
@@ -63,6 +63,14 @@ find_maximizing_subsets <- function(aggregates, score_fun, ...) {
                         score_fun = score_fun)
 }
 
+#' Returns the minimal subset of streams that maximizes the score function.
+#' 
+#' For a given region (vector of locations), return those data streams which 
+#' make a positive contribution to the score, and return this score along with 
+#' that minimal subset of streams that contribute to it.
+#' @inheritParams relative_risk_mle
+#' @param locations A vector of locations.
+#' @inheritParams
 optimal_stream_subset <- function(aggregates, locations, score_fun) {
   aggregates %>%
     aggregate_per_stream(locations = locations, TRUE) %>%
@@ -73,6 +81,23 @@ optimal_stream_subset <- function(aggregates, locations, score_fun) {
 # Performs the two-step iterative procedure to find conditionally optimal region
 # Generates initial random relative risks
 # Outputs a vector of locations
+#' Find the conditional score-maximizing region.
+#' 
+#' Find the region that maximizes the conditional score function by iteratively
+#' finding the subset of locations (the region) that maximizes the score given
+#' the current relative risk, and finding the maximum likelihood estimates of 
+#' the relative risks given the region.
+#' @inheritParams relative_risk_mle
+#' @inheritParams fast_kulldorff_priority
+#' @param max_iter The maximum number of iterations before returning the current
+#'    best candidate for the score-maximizing region. 
+#' @param ... Parameters sent to \code{\link{has_converged}}.
+#' @return A vector of locations, or NA if no such optimal region is found. The
+#'    function returns the best candidate for the score-maximizing region if 
+#'    convergence of the score is reached before \code{max_iter} iterations. If
+#'    this convergence is not obtained before \code{max_iter} iterations, then
+#'    the current best candidate (which may be NA) for the score-maximizing 
+#'    region is returned.
 find_maximizing_region <- function(aggregates, 
                                    cond_score_fun, 
                                    max_iter = 100,
@@ -91,7 +116,7 @@ find_maximizing_region <- function(aggregates,
     # For the current relative risks, find the region which maximizes score
     maxregscore <- aggregates[stream %in% incl_streams] %>%
       fast_kulldorff_priority(relative_risks = rel_risks,
-                              conditional_score = cond_score_fun)
+                              cond_score_fun = cond_score_fun)
     
     # If all priorities are negative, need to reset relative risks and streams
     if (all(maxregscore[, priority] < 0)) {
@@ -161,7 +186,7 @@ choose_streams_randomly <- function(all_streams) {
 #' and conditonal score function (conditional on relative risks).
 #' @inheritParams relative_risk_mle
 #' @param relative_risks A vector of relative risks, one for each data stream.
-#' @param conditional_score The score function, conditional on known relative 
+#' @param cond_score_fun The score function, conditional on known relative 
 #'    risks. One for each data stream; corresponds to a term in the sum of the
 #'    priority \eqn{G_W^D(s_i)}. Takes three scalar inputs: an aggregate count, 
 #'    an aggregate baseline, and a relative risk. Outputs a scalar value, the 
@@ -170,12 +195,12 @@ choose_streams_randomly <- function(all_streams) {
 #'    included_streams}.
 fast_kulldorff_priority <- function(aggregates, 
                                     relative_risks,
-                                    conditional_score) {
+                                    cond_score_fun) {
   aggregates[, 
     .(included_streams = list(stream),
-      priority = sum(conditional_score(aggregate_count,
-                                       aggregate_baseline,
-                                       relative_risks[stream]))),
+      priority = sum(cond_score_fun(aggregate_count,
+                                    aggregate_baseline,
+                                    relative_risks[stream]))),
              by = .(location, duration)]
 }
 
