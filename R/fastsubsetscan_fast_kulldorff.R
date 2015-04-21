@@ -35,42 +35,57 @@ fast_kulldorff <- function(counts,
 
 random_restart_maximizer <- function(..., restarts = 50) {
   # Pre-allocate data.table
-  maxed <- empty_max_table(nrow = restarts)
+  maxed <- empty_optimal_stream_subset(nrow = restarts)
   for (i in seq(restarts)) {
     maxed[i, names(maxed) := find_maximizing_subsets(...)]
   }
   maxed
 }
 
-# Table as returned by optimal_stream_subset
-empty_max_table <- function(nrow = 1) {
-  data.table(duration = rep(as.integer(NA), nrow), 
-             score = as.numeric(NA), 
-             included_streams = list(), 
-             region = list())
-}
-
-# called for each duration W
-# i.e. pass in aggregates for a single W
-find_maximizing_subsets <- function(aggregates, score_fun, ...) {  
+#' Find the score-maximizing subset of locations and data streams.
+#' 
+#' For a given event duration, find the subset of locations and data streams 
+#' that maximize the given score function. 
+#' @inheritParams relative_risk_mle
+#' @inheritParams optimal_stream_subset
+#' @return A one-row \code{data.table} with columns \code{duration, score,
+#'    included_streams, region}. If a score-maximizing region could not be 
+#'    found, the table contains NAs. Otherwise, the colum \code{score} contains 
+#'    the sum of the input scores over all data streams, for the given region 
+#'    and duration, and the column \code{included_streams} contains those data 
+#'    streams that made a positive contribution to this sum.
+find_maximizing_subsets <- function(aggregates, score_fun, ...) {
+  empty_output <- empty_optimal_stream_subset(nrow = 1)
   # Find the maximizing region by iterative procedure
   maxregion <- find_maximizing_region(aggregates, ...)
   if (length(maxregion) == 1 && is.na(maxregion)) {
-    return(empty_max_table(nrow = 1))
+    return(empty_output)
   }
-  optimal_stream_subset(aggregates = aggregates, 
-                        locations = maxregion,
-                        score_fun = score_fun)
+  output <- optimal_stream_subset(aggregates = aggregates, 
+                                  locations = maxregion,
+                                  score_fun = score_fun)
+  if (nrow(output) == 0) {
+    return(empty_output)
+  }
+  output
 }
 
 #' Returns the minimal subset of streams that maximizes the score function.
 #' 
-#' For a given region (vector of locations), return those data streams which 
-#' make a positive contribution to the score, and return this score along with 
-#' that minimal subset of streams that contribute to it.
+#' For a given region (vector of locations) and event duration, return those 
+#' data streams which make a positive contribution to the score, and return this 
+#' score along with that minimal subset of streams that contribute to it.
 #' @inheritParams relative_risk_mle
 #' @param locations A vector of locations.
-#' @inheritParams
+#' @param score_fun A two-parameter scalar input, single scalar output score 
+#'    function.
+#' @return A \code{data.table} with columns \code{duration, score, 
+#'    included_streams, region}. The colum \code{score} contains the sum of the 
+#'    input scores over all data streams, for the given region and duration. The 
+#'    column \code{included_streams} contains those data streams that made a 
+#'    positive contribution to this sum. The table has a single row if an 
+#'    optimal subset of streams was found; it has zero rows (is empty) if an
+#'    optimal subset of streams was not found.
 optimal_stream_subset <- function(aggregates, locations, score_fun) {
   aggregates %>%
     aggregate_per_stream(locations = locations, TRUE) %>%
@@ -163,7 +178,7 @@ random_relative_risk <- function(incl_streams, all_streams) {
 #' Given a vector of data stream names, return a subset of these by including
 #' each data stream based on the flip of a biased coin; the bias is random and 
 #' the coin flips are independent. However, if by chance no streams are 
-#' included, choose one stream uniformly at random to return.
+#' included by this, choose one stream uniformly at random to return.
 #' @param all_streams A vector of data stream names or other identifiers.
 choose_streams_randomly <- function(all_streams) {
   n_streams <- length(all_streams)

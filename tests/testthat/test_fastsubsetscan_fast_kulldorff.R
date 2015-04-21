@@ -1,5 +1,7 @@
 context("FastSubsetScan - fast Kulldorff method")
 
+# find_maximizing_subsets -----------------------------------------------------------------
+
 test_that("find_maximizing_subsets: works as intended", {
   ags <- data.table(location = rep(1:2, each = 2),
                     stream = rep(1:2, 2),
@@ -19,6 +21,26 @@ test_that("find_maximizing_subsets: works as intended", {
   expect_equal(res[, region], expected_reg)
 })
 
+test_that("find_maximizing_subsets: works as intended with 'bad' input", {
+  # counts are equal to baselines, so no subset of of locations or streams
+  # are optimal
+  ags <- data.table(location = rep(1:2, each = 2),
+                    stream = rep(1:2, 2),
+                    duration = rep(2L, 4),
+                    aggregate_count = 4:1,
+                    aggregate_baseline = 4:1)
+  score_fun <- score_fun_EBP
+  cond_score_fun <- conditional_score_fun_EBP
+  res <- find_maximizing_subsets(aggregates = ags, 
+                                 score_fun = score_fun,
+                                 cond_score_fun = cond_score_fun)
+  expect_equal(res[, score], as.numeric(NA))
+  expect_equal(res[, included_streams], list(NULL))
+  expect_equal(res[, region], list(NULL))
+})
+
+# optimal_stream_subset --------------------------------------------------------
+
 test_that("optimal_stream_subset: works as intended", {
   ags <- data.table(location = rep(1:2, each = 2),
                     stream = rep(1:2, 2),
@@ -32,6 +54,20 @@ test_that("optimal_stream_subset: works as intended", {
   expect_equal(res[, score], expected_score)
   expect_equal(res[, included_streams], expected_streams)
 })
+
+test_that("optimal_stream_subset: works as intended with empty output", {
+  # counts are equal to baselines, so no subset of streams is optimal
+  ags <- data.table(location = rep(1:2, each = 2),
+                    stream = rep(1:2, 2),
+                    duration = rep(2L, 4),
+                    aggregate_count = 4:1,
+                    aggregate_baseline = 4:1)
+  score_fun <- score_fun_EBP
+  res <- optimal_stream_subset(ags, 2L, score_fun)
+  expect_equal(nrow(res), 0)
+})
+
+# find_maximizing_region -------------------------------------------------------
 
 test_that("find_maximizing_region: works as intended", {
   ags <- data.table(location = rep(1:2, each = 2),
