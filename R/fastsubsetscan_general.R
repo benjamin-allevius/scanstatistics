@@ -38,10 +38,10 @@ score_minimal_stream_subset <- function(scores, region_as_list = FALSE) {
 #'    elements equal, each element the same vector of locations that constitute 
 #'    the region. Likewise, the column \code{duration} should have all elements
 #'    equal.
-#' @return A \code{data.table} with columns \code{region, duration, 
-#'    included_streams, score}. The colum \code{score} contain the sum of the 
-#'    input scores over all data streams, for each region and duration. The 
-#'    column \code{included_streams} contain those data streams that made a 
+#' @return A one-row \code{data.table} with columns \code{duration, score,
+#'    included_streams, region}. The colum \code{score} contains the sum of the 
+#'    input scores over all data streams, for the given region and duration. The 
+#'    column \code{included_streams} contains those data streams that made a 
 #'    positive contribution to this sum.
 score_minimal_stream_subset_list <- function(scores) {
   reg <- scores[1, region]
@@ -246,4 +246,15 @@ dispatch_cond_score_function <- function(distribution) {
                           normal = conditional_score_fun_EBG,
                           exponential = conditional_score_fun_EBE)
   dispatch_function_on_distribution(distribution, score_functions)
+}
+
+
+#  ----------------------------------------------------------
+
+# Table as returned by optimal_stream_subset
+empty_optimal_stream_subset <- function(nrow = 1) {
+  data.table(duration = rep(as.integer(NA), nrow), 
+             score = as.numeric(NA), 
+             included_streams = list(), 
+             region = list())
 }
