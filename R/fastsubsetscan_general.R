@@ -76,7 +76,7 @@ score_minimal_stream_subset_atomic <- function(scores) {
 #' Take the already calculated aggregates for each location, stream and duration
 #' and sum them over all locations in each region. These are the quantities 
 #' denoted \eqn{C^m(S,W)} and \eqn{B^m(S,W)}.
-#' @param aggregates See \code{\link{aggregate_per_stream_regionnotlist}} if
+#' @param aggregates See \code{\link{aggregate_per_stream_atomic}} if
 #'    argument \code{region_as_list} is \code{TRUE}. See 
 #'    \code{\link{aggregate_per_stream_list}} if argument 
 #'    \code{region_as_list} is \code{FALSE}.

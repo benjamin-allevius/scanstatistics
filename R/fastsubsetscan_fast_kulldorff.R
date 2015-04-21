@@ -8,7 +8,10 @@
 #'    count, baseline}, and possibly other columns depending on the distribution
 #'    used. For example, a column \code{variance} is needed for the normal 
 #'    distribution. The column \code{count} is not limited to actual integer
-#'    counts, but should be appropriate for the distribution used.
+#'    counts, but should instead be appropriate for the distribution used. The 
+#'    column \code{time} could for example be POSIXct times, but must in any
+#'    case be sortable so that the most recent time is the last element in the
+#'    sorted structure when sorting into ascending order.
 #' @param distribution One of "poisson", "gaussian" (or "normal"), or 
 #'    "exponential".
 #' @param restarts The number of random restarts to perform in finding the
@@ -27,7 +30,39 @@ fast_kulldorff <- function(counts,
                            restarts = 50,
                            tol = 0.01,
                            max_iter = 100) {
-  # [Input validation here]
+  # Input preprocessing --------------------------------------------------------
+  distribution <- tolower(distribution)
+  restarts <- as.integer(restarts)
+  max_iter <- as.integer(max_iter)
+  
+  # Input validation------------------------------------------------------------
+  if (!is.data.table(counts)) {
+    stop("The log-likelihoods must be supplied as a data.table.")
+  }
+  valid_distributions <- c("poisson", "gaussian", "normal", "exponential")
+  if (distribution %notin% valid_distributions) {
+    stop("distribution must be one of ",
+         paste0(valid_distributions, collapse = ", "))
+  }
+  if (!all(c("stream", "location", "time", "count", "baseline") %in% 
+             names(counts))) {
+    stop("The data.table containing the counts must contain the columns ",
+         "'stream', 'location', 'time', 'count', 'baseline'.")
+  }
+  if (distribution %in% c("normal", "gaussian") && 
+        "variance" %notin% names(counts)) {
+    stop("If distribution is 'normal' or 'gaussian', the counts table must ",
+         "contain the column 'variance'.")
+  }
+  if (length(tol) != 1 || tol <= 0) {
+    stop("tol must be a single number greater than 0.")
+  }
+  if (length(restarts) != 1 || length(max_iter) != 1 || 
+        restarts < 1 || max_iter < 1) {
+    stop("restarts and max_iter must be single positive integers.")
+  }
+  
+  # Input valid; start calculations --------------------------------------------
   
   # Define aggregation and score functions based on distribution
   initial_aggregation_fun <- dispatch_initial_aggregation(distribution)
@@ -54,7 +89,7 @@ fast_kulldorff <- function(counts,
   }
   setcolorder(res, c("score", "included_streams", "region", "duration"))
   # Return an empty table if no optimal regions and stream subsets were found.
-  if (all(is.na(rr[, score]))) {
+  if (all(is.na(res[, score]))) {
     return(res[0])
   }
   unique(res[!is.na(score), .SD, keyby = .(score)])
@@ -88,6 +123,7 @@ random_restart_maximizer <- function(..., restarts = 50) {
 #' that maximize the given score function. 
 #' @inheritParams relative_risk_mle
 #' @inheritParams optimal_stream_subset
+#' @param ... Arguments passed to \code{\link{find_maximizing_region}}.
 #' @return A one-row \code{data.table} with columns \code{duration, score,
 #'    included_streams, region}. If a score-maximizing region could not be 
 #'    found, the table contains NAs. Otherwise, the colum \code{score} contains 
