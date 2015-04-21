@@ -252,6 +252,12 @@ dispatch_cond_score_function <- function(distribution) {
 #  ----------------------------------------------------------
 
 # Table as returned by optimal_stream_subset
+#' Returns a \code{data.table} filled with NAs and empty lists.
+#' 
+#' Returns a \code{data.table} of the same format as the output of
+#' \code{\link{optimal_stream_subset}}, but with NAs and empty lists as elements
+#' of the appropriate columns.
+#' @param nrow The number of rows of the output \code{data.table}.
 empty_optimal_stream_subset <- function(nrow = 1) {
   data.table(duration = rep(as.integer(NA), nrow), 
              score = as.numeric(NA), 

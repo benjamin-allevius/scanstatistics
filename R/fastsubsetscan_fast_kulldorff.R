@@ -1,5 +1,27 @@
 
-
+#' Determine the highest-scoring subsets of locations and streams by the Fast 
+#' Kulldorff method.
+#' 
+#' Determine the highest-scoring region (subset of locations) and subset of data
+#' streams by the Fast Kulldorff method.
+#' @param counts A \code{data.table} with columns \code{time, location, stream,
+#'    count, baseline}, and possibly other columns depending on the distribution
+#'    used. For example, a column \code{variance} is needed for the normal 
+#'    distribution. The column \code{count} is not limited to actual integer
+#'    counts, but should be appropriate for the distribution used.
+#' @param distribution One of "poisson", "gaussian" (or "normal"), or 
+#'    "exponential".
+#' @param restarts The number of random restarts to perform in finding the
+#'    score-maximizing region. A higher number means a greater chance of finding
+#'    a global rather than local maximum of the score function.
+#' @param tol The tolerance used in \code{\link{has_converged}}.
+#' @param max_iter The maximum number of iterations to perform in finding the
+#'    score-maximizing region, if convergence of the score is not reached 
+#'    sooner.
+#' @return A \code{data.table} with columns \code{score, included_streams,
+#'    region, duration}, keyed by \code{score} (so the last row contains the 
+#'    highest score). If no positive-scoring subsets were found, the table will
+#'    be empty.
 fast_kulldorff <- function(counts, 
                            distribution = "poisson",
                            restarts = 50,
@@ -8,7 +30,7 @@ fast_kulldorff <- function(counts,
   # [Input validation here]
   
   # Define aggregation and score functions based on distribution
-  initial_aggregation_fun <- dispatch_aggregate_CB(distribution)
+  initial_aggregation_fun <- dispatch_initial_aggregation(distribution)
   score_fun <- dispatch_score_function(distribution)
   cond_score_fun <- dispatch_cond_score_function(distribution)
   
@@ -30,9 +52,27 @@ fast_kulldorff <- function(counts,
                              max_iter = max_iter,
                              restarts = restarts)
   }
-  unique(res[!is.na(duration), .SD, keyby = .(score)])
+  setcolorder(res, c("score", "included_streams", "region", "duration"))
+  # Return an empty table if no optimal regions and stream subsets were found.
+  if (all(is.na(rr[, score]))) {
+    return(res[0])
+  }
+  unique(res[!is.na(score), .SD, keyby = .(score)])
 }
 
+#' Find the score-maximizing subsets for multiple initial values of the relative
+#' risks.
+#' 
+#' This function finds the score-maximizing region and subset of data streams
+#' for a given event duration, by multiple calls to 
+#' \code{\link{find_maximizing_region}}. The initial values of the relative 
+#' risks are chosen at random for each call, so that with multiple calls, the 
+#' global maximum of the score function is more likely to have been found.
+#' @param restarts The number of times we find the score-maximizing region and 
+#'    subset of streams with different initial values.
+#' @param ... Arguments passed to \code{\link{find_maximizing_subsets}}.
+#' @return A \code{data.table} with \code{restarts} number of rows. This table
+#'    has columns \code{duration, score, included_streams, region}.
 random_restart_maximizer <- function(..., restarts = 50) {
   # Pre-allocate data.table
   maxed <- empty_optimal_stream_subset(nrow = restarts)
