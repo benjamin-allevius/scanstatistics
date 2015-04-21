@@ -14,8 +14,7 @@ loglikelihoods <- table_creator(list(time = times,
                                      event = events))
 # Time-dependent rate
 null_rate <- loglikelihoods[event == 0, 
-  5*stream + location + 
-    8*sin((lubridate::hour(time) + lubridate::minute(time)/4) / (2*pi*24))]
+  5*stream + location + 8*sin(dayperiod(time))]
 
 # Fill with null and event likelihoods
 counts <- rpois(length(null_rate), lambda = null_rate)

@@ -22,8 +22,8 @@
 #'    durations, given the event types. Either the string 'uniform', meaning 
 #'    that the event durations are uniformly distributed for all event types, 
 #'    or a matrix in which the row numbers correspond to the event duration, and 
-#'    the columns to the different events. If events types are given as strings, make it a \code{data.frame} with
-#'    the events types as column names instead.
+#'    the columns to the different events. If events types are given as strings, 
+#'    make it a \code{data.frame} with the events types as column names instead.
 #' @param n_partitions Integer parameter that specifies how many parts, 
 #'    approximately equal in size in the number of locations, the set of all
 #'    regions should be partitioned into to avoid memory issues. The more 
@@ -49,7 +49,7 @@ MBSS <- function(loglikelihoods,
                  event_priors,
                  duration_condpriors = "uniform",
                  n_partitions = "auto") {
-  # Input checking -------------------------------------------------------------
+  # Input validation------------------------------------------------------------
   if (!is.data.table(loglikelihoods)) {
     stop("The log-likelihoods must be supplied as a data.table.")
   }
@@ -125,8 +125,7 @@ MBSS <- function(loglikelihoods,
   null_loglikelihood <- loglikelihoods[event == null_name, sum(loglikelihood)]
   
   if (n_partitions == "auto") {
-    n_partitions <- min(length(regions), 
-                        floor(log(sum(vapply(regions, length, integer(1))))))
+    n_partitions <- auto_region_partition_size(regions)
   }
   
   region_partition <- partition_regions(regions, n_parts = n_partitions)

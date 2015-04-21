@@ -1,4 +1,14 @@
 
+#' Decide how many parts to partition the set of all regions into.
+#' 
+#' Decide how many parts to partition the set of all regions into, for applying
+#' some function(s) over each part. Few parts can lead to memory problems for 
+#' large data sets, while many parts lead to longer computation times.
+#' @inheritParams partition_regions
+auto_region_partition_size <- function(regions) {
+  min(length(regions), floor(log(sum(vapply(regions, length, integer(1))))))
+}
+
 #' Partition a set of regions.
 #' 
 #' Partition a set of regions such that each part contains about the same
