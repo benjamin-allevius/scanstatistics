@@ -38,12 +38,12 @@ partition_regions <- function(regions, n_parts = min(10L, length(regions))) {
   n_parts <- as.integer(n_parts)
   
   # Turn into list in order to be able to access ranges of elements by index
-  regs <- as.list(regions)  
+  regs <- as.list(regions)
   
   # Decide partition by looking at cumulative sum of number of locations
   n_locations <- vapply(regions, length, integer(1))
   cs <- cumsum(n_locations)
-  total_n <- sum(n_locations)
+  total_n <- cs[length(cs)]
   
   # Get breakpoints for where to partition regions
   ranges <- integer(n_parts)
