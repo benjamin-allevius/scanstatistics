@@ -69,13 +69,22 @@ has_converged <- function(current, previous, tol = 0.01) {
 #'    which is sortable. For example, could be POSIXct dates.
 #' @param keys A character vector for the columns you wish the output table to 
 #'    be keyed by.
+#' @param silent Should the table be modified and this function return nothing
+#'    (silent = TRUE), or should the function return the modified table (silent
+#'    = FALSE).
 #' @return The input \code{data.table}, with a column \code{duration} added.
-add_duration <- function(d, keys = NULL) {
+add_duration <- function(d, keys = NULL, silent = TRUE) {
   td <- times_and_durations(d)
   # Can't test directly for POSIXct equality in current version of data.table.
   # Workaround from https://github.com/Rdatatable/data.table/issues/1008
   dur_from_time <- function(t) td[time >= t & time <= t, duration]
-  d[, duration := dur_from_time(time), by = .(time)][, .SD, keyby = keys]
+  d[, duration := dur_from_time(time), by = .(time)]
+  if (!is.null(keys)) {
+    setkeyv(d, keys)
+  }
+  if (!silent) {
+    return(d)
+  }
 }
 
 #' Creates a \code{data.table} with columns \code{time} and \code{duration}.
@@ -135,6 +144,16 @@ get_set <- function(set_of_sets, index) {
   i <- 1
   for (s in set_of_sets) {
     if (i == index) {
+      return(s)
+    }
+    i <- i + 1
+  }
+}
+
+get_region <- function(regions, number) {
+  i <- 1
+  for (s in regions) {
+    if (i == number) {
       return(s)
     }
     i <- i + 1
