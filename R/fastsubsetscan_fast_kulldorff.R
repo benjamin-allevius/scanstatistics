@@ -1,4 +1,140 @@
 
+
+fast_subset_scan <- function(counts,
+                             variant = "Fast Kulldorff",
+                             distribution = "poisson",
+                             knn_matrix = NULL,
+                             regions = NULL,
+                             n_partitions = "auto",
+                             restarts = 50,
+                             tol = 0.01,
+                             max_iter = 100) {
+  # Input preprocessing --------------------------------------------------------
+  distribution <- tolower(distribution)
+  variant <- tolower(variant)
+  restarts <- as.integer(restarts)
+  max_iter <- as.integer(max_iter)
+  valid_distributions <- c("poisson", "gaussian", "normal", "exponential")
+  valid_variants <- c("fast kulldorff", 
+                      "localized fast kulldorff",
+                      "naive kulldorff")
+  # Input validation------------------------------------------------------------
+  if (!is.data.table(counts)) {
+    stop("The counts must be supplied as a data.table.")
+  }
+  if (distribution %notin% valid_distributions) {
+    stop("distribution must be one of ",
+         paste0(valid_distributions, collapse = ", "))
+  }
+  if (!all(c("stream", "location", "count", "baseline") %in% names(counts))) {
+    stop("The data.table containing the counts must contain the columns ",
+         "'stream', 'location', 'count', 'baseline'.")
+  }
+  if (all(c("time", "duration") %notin% names(counts))) {
+    stop("The data.table containing the counts must contain at least one of ",
+         " the columns 'time', 'duration'.")
+  }
+  if (distribution %in% c("normal", "gaussian") && 
+        "variance" %notin% names(counts)) {
+    stop("If distribution is 'normal' or 'gaussian', the counts table must ",
+         "contain the column 'variance'.")
+  }
+  if (length(tol) != 1 || tol <= 0) {
+    stop("tol must be a single number greater than 0.")
+  }
+  if (length(restarts) != 1 || length(max_iter) != 1 || 
+        restarts < 1 || max_iter < 1) {
+    stop("restarts and max_iter must be single positive integers.")
+  }
+  if (grepl("localized", variant) && is.null(knn_matrix)) {
+    stop("For localized version of method, a k-nearest neighbor matrix ",
+         "or data frame must be supplied, row i containing the k nearest ",
+         "neighbors of location i, including itself.")
+  }
+  if (grepl("naive", variant) && is.null(regions)) {
+    stop("For localized version of method, a k-nearest neighbor matrix ",
+         "or data frame must be supplied, row i containing the k nearest ",
+         "neighbors of location i, including itself.")
+  }
+  
+  if ("duration" %notin% names(counts)) {
+    add_duration(counts, keys = c("duration", "location", "stream"))
+  }
+  
+  # Dispatch valid input to chosen variant -------------------------------------
+  if (variant == "fast kulldorff") {
+    return(fast_kulldorff(counts, 
+                          distribution, 
+                          restarts, 
+                          tol, 
+                          max_iter))
+  }
+  if (variant == "localized fast kulldorff") {
+    return(localized_fast_kulldorff(counts, 
+                                    knn_matrix,
+                                    distribution, 
+                                    restarts, 
+                                    tol, 
+                                    max_iter))
+  }
+  if (variant == "naive kulldorff") {
+    return(naive_kulldorff(counts, 
+                           distribution, 
+                           region, 
+                           n_partitions))
+  }
+}
+
+
+localized_fast_kulldorff <- function(counts, 
+                                     knn_matrix,
+                                     distribution = "poisson",
+                                     restarts = 50,
+                                     tol = 0.01,
+                                     max_iter = 100,
+                                     regions_per_nbhd = 3) {
+  table_out <- empty_optimal_stream_subset(
+    nrow = regions_per_nbhd * nrow(knn_matrix))
+  setcolorder(table_out, c("score", "included_streams", "region", "duration"))
+  
+#   table_out <- foreach::foreach(i = seq(nrow(knn_matrix)), 
+#                           .combine = rbind, 
+#                           .inorder = FALSE) %do% {
+#     print(i)
+#     fast_kulldorff(counts[location %in% knn_matrix[i, ]],
+#                    distribution,
+#                    restarts,
+#                    tol,
+#                    max_iter)
+#   }
+  
+  i <- 1L
+  for (location_row in seq(nrow(knn_matrix))) {
+    print(location_row)
+    # Use property that index beyond table range gives table filled with 
+    # NA/NULL columns
+    res <- fast_kulldorff(
+      counts[location %in% knn_matrix[location_row, ]],
+      distribution,
+      restarts,
+      tol,
+      max_iter)[max(1L, .N - regions_per_nbhd + 1):.N][seq(regions_per_nbhd)]
+    row_range <- i:(i + regions_per_nbhd - 1)
+    set(table_out, row_range, 1L, res[, score])
+    set(table_out, row_range, 2L, res[, included_streams])
+    set(table_out, row_range, 3L, res[, region])
+    set(table_out, row_range, 4L, res[, duration])
+    i <- i + regions_per_nbhd
+  }
+  if (all(is.na(table_out[, score]))) {
+    return(table_out[0])
+  }
+  unique(table_out[!is.na(score), .SD, keyby = .(score)])
+}
+#   res
+# }
+
+
 #' Determine the highest-scoring subsets of locations and streams by the Fast 
 #' Kulldorff method.
 #' 
@@ -30,39 +166,6 @@ fast_kulldorff <- function(counts,
                            restarts = 50,
                            tol = 0.01,
                            max_iter = 100) {
-  # Input preprocessing --------------------------------------------------------
-  distribution <- tolower(distribution)
-  restarts <- as.integer(restarts)
-  max_iter <- as.integer(max_iter)
-  
-  # Input validation------------------------------------------------------------
-  if (!is.data.table(counts)) {
-    stop("The log-likelihoods must be supplied as a data.table.")
-  }
-  valid_distributions <- c("poisson", "gaussian", "normal", "exponential")
-  if (distribution %notin% valid_distributions) {
-    stop("distribution must be one of ",
-         paste0(valid_distributions, collapse = ", "))
-  }
-  if (!all(c("stream", "location", "time", "count", "baseline") %in% 
-             names(counts))) {
-    stop("The data.table containing the counts must contain the columns ",
-         "'stream', 'location', 'time', 'count', 'baseline'.")
-  }
-  if (distribution %in% c("normal", "gaussian") && 
-        "variance" %notin% names(counts)) {
-    stop("If distribution is 'normal' or 'gaussian', the counts table must ",
-         "contain the column 'variance'.")
-  }
-  if (length(tol) != 1 || tol <= 0) {
-    stop("tol must be a single number greater than 0.")
-  }
-  if (length(restarts) != 1 || length(max_iter) != 1 || 
-        restarts < 1 || max_iter < 1) {
-    stop("restarts and max_iter must be single positive integers.")
-  }
-  
-  # Input valid; start calculations --------------------------------------------
   
   # Define aggregation and score functions based on distribution
   initial_aggregation_fun <- dispatch_initial_aggregation(distribution)
@@ -70,9 +173,7 @@ fast_kulldorff <- function(counts,
   cond_score_fun <- dispatch_cond_score_function(distribution)
   
   # Do initial aggregation for each stream, location, and duration
-  aggregates <- counts %>%
-    add_duration(keys = c("duration", "location", "stream")) %>%
-    initial_aggregation_fun
+  aggregates <- initial_aggregation_fun(counts)
   
   # For each duration, find score-maximizing subsets of locations and streams
   durations <- unique(aggregates[, duration])
