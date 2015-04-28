@@ -6,8 +6,9 @@
 #' event is uniform over all regions, and that events are mutually exclusive
 #' and affect only a single region.
 #' @param loglikelihoods A \code{data.table} in long format,
-#'    containing at least the columns \code{event, stream, location, time} and 
-#'    \code{loglikelihood}. See details below for full specification.
+#'    containing at least the columns \code{event, stream, location, 
+#'    loglikelihood}, and at least one of \code{time, duration}. See details 
+#'    below for full specification.
 #' @param regions A \code{list} or \code{set} of regions, 
 #'    each region itself a set containing one or more locations of those found 
 #'    in \code{loglikelihoods}.
@@ -30,16 +31,34 @@
 #'    regions, and size of these regions, the larger this parameter should be.
 #'    Can be left as \code{"auto"} (default) to be figured out for itself.
 #' @details 
-#'    More details on the input arguments:
-#'    \itemize{
-#'      \item{loglikelihoods}
+#'    More details on the columns of \code{loglikelihoods}:
+#'    \describe{
+#'      \item{event}
 #'        {The column \code{event} contains identifiers (integer or character) 
-#'        for both the null hypothesis of no event and for the event types
-#'        under the alternative hypothesis. If integer, the null hypothesis
-#'        should be specified as \code{0L}, and if character, 
-#'        should be specified as \code{"null"}.
-#'        The column \code{loglikelihood} contains the predicted log-likelihood 
-#'        for each observation and each event type (including the null).}
+#'        for both the null hypothesis of no event and for the different event 
+#'        types under the alternative hypothesis. If integer, the null 
+#'        hypothesis should be specified as \code{0L}, and if character, should 
+#'        be specified as \code{"null"}.}
+#'      \item{loglikelihood}
+#'        {The column \code{loglikelihood} contains the log-likelihood for each 
+#'        observation and each event type (including the null), using the 
+#'        estimated or specified parameters for each type.}
+#'      \item{stream}
+#'        {The column \code{stream} contains the identifier (integer or 
+#'        character) for the different data streams.}
+#'      \item{The column \code{location} contains the identifier (integer or 
+#'        character) for the different spatial locations.}
+#'      \item{time}
+#'        {The column \code{time}, if present, should be a date-time object, 
+#'        e.g. POSIXct. Either this column, or one called \code{duration}, must
+#'        be present in the table \code{loglikelihoods}. The most recent time
+#'        corresponds to a duration of 1, the second most recent a duration of 
+#'        2, and so on.}
+#'      \item{duration}
+#'        {The column \code{duration}, if present, should contain integers 
+#'        ranging from 1 to as many time points back you wish to look for 
+#'        events. A duration of 1 signifies the present or most recent time, a
+#'        duration of 2 the second most recent time point, and so on.}
 #'    }
 #' @importFrom magrittr %>%
 #' @export
@@ -53,10 +72,14 @@ MBSS <- function(loglikelihoods,
   if (!is.data.table(loglikelihoods)) {
     stop("The log-likelihoods must be supplied as a data.table.")
   }
-  if (!all(c("event", "stream", "location", "time", "loglikelihood") %in% 
+  if (!all(c("event", "stream", "location", "loglikelihood") %in% 
              names(loglikelihoods))) {
     stop("The data.table containing the log-likelihoods must contain the ",
-         "columns 'event', 'stream', 'location', 'time', 'loglikelihood'.")
+         "columns 'event', 'stream', 'location', 'loglikelihood'.")
+  }
+  if (all(c("time", "duration") %notin% names(loglikelihoods))) {
+    stop("The data.table containing the log-likelihoods  must contain at ",
+         "least one of the columns 'time', 'duration'.")
   }
   if (any(is.na(loglikelihoods))) {
     stop("No support for missing values yet. Consider imputation methods.")
@@ -106,10 +129,24 @@ MBSS <- function(loglikelihoods,
   # Normalize event priors to sum to 1 together with the null prior
   event_priors <- (1 - null_prior) * event_priors / sum(event_priors)
   
-  times_durations <- times_and_durations(loglikelihoods)
+  # Add durations if not present
+  # Set columns in correct order for adding log-likelihood ratios (add_llr)
+  if ("duration" %notin% names(loglikelihoods)) {
+    add_duration(loglikelihoods, 
+                 keys = c("event", "location", "stream", "duration"))
+  } else {
+      setkeyv(loglikelihoods, c("event", "location", "stream", "duration"))
+  }
+  
+  # Save correspondence between time and duration if present
+  times_durations <- NULL
+  if ("time" %in% names(loglikelihoods)) {
+    times_durations <- times_and_durations(loglikelihoods) 
+  }
+  
   n_regions <- length(regions)
   n_events <- length(event_priors)
-  max_duration <- max(times_durations[, duration])
+  max_duration <- max(loglikelihoods[event == null_name, duration])
   
   # If duration_condpriors is "uniform", create the appropriate matrix
   if (is.character(duration_condpriors)) {
@@ -124,21 +161,20 @@ MBSS <- function(loglikelihoods,
   
   null_loglikelihood <- loglikelihoods[event == null_name, sum(loglikelihood)]
   
+  # Create the partition of regions; needed for large input to avoid memory
+  # issues
   if (n_partitions == "auto") {
     n_partitions <- auto_region_partition_size(regions)
   }
-  
   region_partition <- partition_regions(regions, n_parts = n_partitions)
-
-  # Set columns in correct order for adding log-likelihood ratios (add_llr)
-  setkeyv(loglikelihoods, c("event", "location", "stream", "time"))
   
   # Calculate log-likelihood ratios for all events, regions, and durations
   keys_used_for_stllr <- c("region", "event", "duration", "stream", "location")
   spacetime_output <- 
     loglikelihoods %>%
     add_llr(null_name = null_name) %>%
-    add_duration(keys = c("location", "stream", "duration", "event")) %>%
+#     add_duration(keys = c("location", "stream", "duration", "event"), 
+#                  silent = FALSE) %>%
     region_apply(region_partition = region_partition, 
                  f = spacetime_llr, 
                  keys = keys_used_for_stllr)
