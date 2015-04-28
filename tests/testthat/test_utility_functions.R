@@ -40,19 +40,18 @@ test_that("FALSE if checking too many keys", {
 # Convenience ------------------------------------------------------------------
 test_that("add_llr: works correctly", {
   n_times <- 2
-  times <- seq(as.POSIXct("2015-03-27 11:00:00 CET"), 
-               length.out = n_times, by = "15 mins")
+  durations <- seq(n_times)
   locations <- 1:2
   streams <- 1:2
   events <- 0:2
-  loglikelihoods <- table_creator(list(time = times, 
+  loglikelihoods <- table_creator(list(duration = durations, 
                                        location = locations,
                                        stream = streams,
                                        event = events))
-  setkeyv(loglikelihoods, c("event", "location", "stream", "time"))
+  setkeyv(loglikelihoods, c("event", "location", "stream", "duration"))
   loglikelihoods[, loglikelihood := 1:24]
   expected <- loglikelihoods[event != 0][, 
     llr := loglikelihood - rep(1:8, 2)]
-  setkeyv(expected, c("location", "event", "stream", "time"))
+  setkeyv(expected, c("location", "event", "stream", "duration"))
   expect_equal(add_llr(loglikelihoods, 0)[, llr], expected[, llr])
 })

@@ -107,29 +107,30 @@ times_and_durations <- function(d) {
 #' From a \code{data.table} containing the log-likelihoods for all event types,
 #' and for the null hypothesis of no event, calculates the log-likelihood ratios
 #' by subtracting null log-likelihoods from the event log-likelihoods,
-#' for each location, stream, and time.
+#' for each location, stream, and event duration.
 #' @param loglikelihoods A \code{data.table} containing at least the columns 
-#'    \code{event, location, stream, time} and \code{loglikelihood}. The first 
-#'    four columns must be key columns, in that order. The column \code{event} 
-#'    contains all event types (given e.g. as integers or strings) and also the 
-#'    null hypothesis, as specified by the argument \code{null_name}.
+#'    \code{event, location, stream, duration} and \code{loglikelihood}. The 
+#'    first four columns must be key columns, in that order. The column 
+#'    \code{event} contains all event types (given e.g. as integers or strings) 
+#'    and also the null hypothesis, as specified by the argument 
+#'    \code{null_name}.
 #' @param null_name The identifier for the null hypothesis in the column
 #'    \code{event} of the input argument \code{loglikelihoods}. E.g. \code{0L} 
 #'    if event types are specified as integers, or \code{"null"} if event types 
 #'    are specified as strings.
 #' @return A \code{data.table} with key columns \code{location, event, stream,
-#'    time}, and a column \code{llr} containing the log-likelihood ratios for 
+#'    duration}, and a column \code{llr} containing the log-likelihood ratios for 
 #'    each event type.
 add_llr <- function(loglikelihoods, null_name) {
-  input_keys <- c("event", "location", "stream", "time")
+  input_keys <- c("event", "location", "stream", "duration")
   if (any(getkeys(loglikelihoods)[1:4] != input_keys)) {
     stop("The key columns of the input table have to be ",
-         "'event', 'location', 'stream', 'time'.")
+         "'event', 'location', 'stream', 'duration'.")
   }
-  keys <- c("location", "event", "stream", "time")
+  keys <- c("location", "event", "stream", "duration")
   loglikelihoods[
     event != null_name, 
-    .(location = location, event = event, stream = stream, time = time, 
+    .(location = location, event = event, stream = stream, duration = duration, 
      llr = loglikelihood - loglikelihoods[event == null_name, loglikelihood])][,
     .SD, keyby = keys]
 }
