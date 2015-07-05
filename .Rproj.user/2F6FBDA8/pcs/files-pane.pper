@@ -1,12 +1,12 @@
 {
-    "path" : "~/Dropbox/Thesis/scanstatistics",
+    "path" : "~/Dropbox/Thesis/scanstatistics/R",
     "sortOrder" : [
         {
-            "ascending" : true,
+            "ascending" : false,
             "columnIndex" : 1
         },
         {
-            "ascending" : true,
+            "ascending" : false,
             "columnIndex" : 2
         }
     ]

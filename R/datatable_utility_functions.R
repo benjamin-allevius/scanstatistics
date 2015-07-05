@@ -14,7 +14,7 @@
 #' table_creator(cols)
 #' }
 table_creator <- function(col_list, keys = NULL) {
-  data.table(do.call(expand.grid, col_list),
+  data.table(do.call(expand.grid, c(col_list, stringsAsFactors = FALSE)),
              key = keys)
 }
 
@@ -35,6 +35,11 @@ first_keys_match <- function(data_table, keys) {
   }
 }
 
+#' Determine if table has all the given keys.
+#' 
+#' @inheritParams first_keys_match
+#' @return \code{TRUE} if the table has all the given keys, \code{FALSE} 
+#'    otherwise.
 haskeys <- function(data_table, keys) {
   all(keys %in% getkeys(data_table))
 }
@@ -46,4 +51,75 @@ haskeys <- function(data_table, keys) {
 #'         else a character vector containing the keys.
 getkeys <- function(data_table) {
   attributes(data_table)$sorted
+}
+
+#' Extract the values of a \code{data.table} column by the column name.
+#' 
+#' This function extracts the values of a \code{data.table} column as a vector;
+#' the column name is supplied as a character.
+#' @param table A \code{data.table}.
+#' @param colname The name of a column in the table.
+#' @return The values of the column as a vector.
+get_column_values <- function(table, colname) {
+  if (colname %notin% names(table)) {
+    stop("The table does not contain a column named ", colname)
+  }
+  unname(table[, colname, with = FALSE][, unlist(.SD)])
+}
+
+
+
+#' Enumerate the unique, sorted values of a column, returned as a list.
+#' 
+#' Enumerate the unique and sorted values of a \code{data.table} column, and 
+#' return the result as a list.
+#' @param table A \code{data.table}.
+#' @param colname The name of a column in the table. This column should be of
+#'    class character or factor.
+#' @return A list with the sorted and unique values of the column; the original
+#'    values of the column are the list names, and the value for each name is 
+#'    the number for that name (numbering starts at 1).
+enumerate_character <- function(table, colname) {
+  if (colname %notin% names(table)) {
+    stop(colname, " is not a name of a column in the table.")
+  }
+  if (sapply(table, class)[[colname]] %notin% c("character", "factor")) {
+    warning("enumerate_character should only be used for character or factor ",
+            "columns of a data.table.")
+  }
+  original <- get_column_values(table, colname) %>%
+    unique %>%
+    sort(decreasing = FALSE)
+  enumerated <- seq_along(original)
+  as.list(setNames(enumerated, original))
+}
+
+#' Get the name (as character) corresponding to the given number, from a list of
+#' enumerated names.
+#' 
+#' @param enum_list A list as returned from \code{\link{enumerate_character}}.
+#' @param number The number of the name you wish to extract.
+get_enumerated_character <- function(enum_list, number) {
+  names(enum_list)[number]
+}
+
+
+#' Replaces a column with integers, its unique and sorted values enumerated.
+#' 
+#' Takes a \code{data.table} and replaces a single column (preferably) 
+#' containing character or factor values with the enumeration of these values.
+#' The enumeration is done according to the unique and sorted values of the 
+#' original column elements. This function \strong{modifies} the input table.
+#' @inheritParams enumerate_character
+#' @return The input table \strong{modified}, with the given column replaced by 
+#'    integer values as described.
+column_to_int <- function(table, colname) {
+  timeclasses <- c("Date", "POSIXct", "POSIXlt")
+  if (any(sapply(counts, class)[[colname]] %in% timeclasses)) {
+    stop("Enumeration of time-related column classes not allowed.")
+  }
+  lookup <- enumerate_character(table, colname)
+  get_int <- function(s) lookup[[s]]
+  ints <- unname(vapply(table[, get(colname)], get_int, integer(1)))
+  table[, c(colname) := list(ints)]
 }

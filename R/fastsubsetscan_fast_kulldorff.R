@@ -1,5 +1,40 @@
 
-
+#' Determine the highest-scoring subsets of locations and streams by the Fast 
+#' Subset Scan.
+#' 
+#' Determine the highest-scoring region (subset of locations) and subset of data
+#' streams by the Fast Subset Scan. Currently, 3 variants of this method is 
+#' offered for multivariate data: Fast Kulldorff, Localized Fast Kulldorff, and
+#' Naive Kulldorff (see 2013 paper by Neill for definitions).
+#' @param counts A \code{data.table} with columns \code{time, location, stream,
+#'    count, baseline}, and possibly other columns depending on the distribution
+#'    used. For example, a column \code{variance} is needed for the normal 
+#'    distribution. The column \code{count} is not limited to actual integer
+#'    counts, but should instead be appropriate for the distribution used. The 
+#'    column \code{time} could for example be POSIXct times, but must in any
+#'    case be sortable so that the most recent time is the last element in the
+#'    sorted structure when sorting into ascending order.
+#' @param variant The variant of the Fast Subset Scan used. Options are 
+#'    \code{"Fast Kulldorff", "Localized Fast Kulldorff", "Naive Kulldorff"}.
+#' @param distribution One of "poisson", "gaussian" (or "normal"), or 
+#'    "exponential".
+#' @param knn_matrix A matrix in which each row contains the k nearest neighbors
+#'    (locations) for each location, including itself. Used for the Localized
+#'    Fast Kulldorff method.
+#' @param regions A set of sets (see package \code{sets}), each inner set 
+#'    containing one or more locations. These inner sets are the regions. Used
+#'    for the Naive Kulldorff method.
+#' @param restarts The number of random restarts to perform in finding the
+#'    score-maximizing region. A higher number means a greater chance of finding
+#'    a global rather than local maximum of the score function.
+#' @param tol The tolerance used in \code{\link{has_converged}}.
+#' @param max_iter The maximum number of iterations to perform in finding the
+#'    score-maximizing region, if convergence of the score is not reached 
+#'    sooner.
+#' @return A \code{data.table} with columns \code{score, included_streams,
+#'    region, duration}, keyed by \code{score} (so the last row contains the 
+#'    highest score). If no positive-scoring subsets were found, the table will
+#'    be empty.
 fast_subset_scan <- function(counts,
                              variant = "Fast Kulldorff",
                              distribution = "poisson",
@@ -57,32 +92,50 @@ fast_subset_scan <- function(counts,
          "neighbors of location i, including itself.")
   }
   
+  # Conversion to integer values -----------------------------------------------
+  if (class(counts$location) %in% c("character", "factor")) {
+    locations_enumerated <- enumerate_character(counts, "location")
+    column_to_int(counts, "location")
+  }
+  if (class(counts$stream) %in% c("character", "factor")) {
+    streams_enumerated <- enumerate_character(counts, "stream")
+    column_to_int(counts, "stream")
+  }
   if ("duration" %notin% names(counts)) {
+    time_duration_table <- times_and_durations(counts)
     add_duration(counts, keys = c("duration", "location", "stream"))
   }
   
   # Dispatch valid input to chosen variant -------------------------------------
   if (variant == "fast kulldorff") {
-    return(fast_kulldorff(counts, 
-                          distribution, 
-                          restarts, 
-                          tol, 
-                          max_iter))
+    scores <- fast_kulldorff(counts, distribution, restarts, tol, max_iter)
   }
   if (variant == "localized fast kulldorff") {
-    return(localized_fast_kulldorff(counts, 
-                                    knn_matrix,
-                                    distribution, 
-                                    restarts, 
-                                    tol, 
-                                    max_iter))
+    scores <- localized_fast_kulldorff(
+      counts, knn_matrix, distribution, restarts, tol, max_iter)
   }
   if (variant == "naive kulldorff") {
-    return(naive_kulldorff(counts, 
-                           distribution, 
-                           region, 
-                           n_partitions))
+    scores <- naive_kulldorff(counts, distribution, region, n_partitions)
   }
+  
+  # ----------------------------------------------------------------------------
+  # Convert locations and streams back to character if that's what they were
+  if(exists("locations_enumerated")) {
+    scores[, region := lapply(scores[, region], 
+                              function(x) names(locations_enumerated)[x])]
+  }
+  if(exists("streams_enumerated")) {
+    scores[, 
+      included_streams := lapply(scores[, included_streams], 
+                                 function(x) names(streams_enumerated)[x])]
+  }
+  if(exists("time_duration_table")) {
+    get_start_time <- function(d) {
+      lapply(d, function(x) time_duration_table[duration == x, time])
+    }
+    scores[, event_start_time := get_start_time(duration)]
+  }
+  scores
 }
 
 
@@ -93,44 +146,44 @@ localized_fast_kulldorff <- function(counts,
                                      tol = 0.01,
                                      max_iter = 100,
                                      regions_per_nbhd = 3) {
-  table_out <- empty_optimal_stream_subset(
-    nrow = regions_per_nbhd * nrow(knn_matrix))
-  setcolorder(table_out, c("score", "included_streams", "region", "duration"))
+#   table_out <- empty_optimal_stream_subset(
+#     nrow = regions_per_nbhd * nrow(knn_matrix))
+#   setcolorder(table_out, c("score", "included_streams", "region", "duration"))
   
-#   table_out <- foreach::foreach(i = seq(nrow(knn_matrix)), 
-#                           .combine = rbind, 
-#                           .inorder = FALSE) %do% {
-#     print(i)
-#     fast_kulldorff(counts[location %in% knn_matrix[i, ]],
-#                    distribution,
-#                    restarts,
-#                    tol,
-#                    max_iter)
-#   }
-  
-  i <- 1L
-  for (location_row in seq(nrow(knn_matrix))) {
-    print(location_row)
-    # Use property that index beyond table range gives table filled with 
-    # NA/NULL columns
-    res <- fast_kulldorff(
-      counts[location %in% knn_matrix[location_row, ]],
-      distribution,
-      restarts,
-      tol,
-      max_iter)[max(1L, .N - regions_per_nbhd + 1):.N][seq(regions_per_nbhd)]
-    row_range <- i:(i + regions_per_nbhd - 1)
-    set(table_out, row_range, 1L, res[, score])
-    set(table_out, row_range, 2L, res[, included_streams])
-    set(table_out, row_range, 3L, res[, region])
-    set(table_out, row_range, 4L, res[, duration])
-    i <- i + regions_per_nbhd
+  table_out <- foreach::foreach(i = seq(nrow(knn_matrix)), 
+                          .combine = rbind, 
+                          .inorder = FALSE) %do% {
+    print(paste0("kNN for location = ", i))
+    fast_kulldorff(counts[location %in% knn_matrix[i, ]],
+                   distribution,
+                   restarts,
+                   tol,
+                   max_iter)
   }
-  if (all(is.na(table_out[, score]))) {
-    return(table_out[0])
-  }
-  unique(table_out[!is.na(score), .SD, keyby = .(score)])
 }
+#   i <- 1L
+#   for (location_row in seq(nrow(knn_matrix))) {
+#     print(location_row)
+#     # Use property that index beyond table range gives table filled with 
+#     # NA/NULL columns
+#     res <- fast_kulldorff(
+#       counts[location %in% knn_matrix[location_row, ]],
+#       distribution,
+#       restarts,
+#       tol,
+#       max_iter)[max(1L, .N - regions_per_nbhd + 1):.N][seq(regions_per_nbhd)]
+#     row_range <- i:(i + regions_per_nbhd - 1)
+#     set(table_out, row_range, 1L, res[, score])
+#     set(table_out, row_range, 2L, res[, included_streams])
+#     set(table_out, row_range, 3L, res[, region])
+#     set(table_out, row_range, 4L, res[, duration])
+#     i <- i + regions_per_nbhd
+#   }
+#   if (all(is.na(table_out[, score]))) {
+#     return(table_out[0])
+#   }
+#   unique(table_out[!is.na(score), .SD, keyby = .(score)])
+# }
 #   res
 # }
 
@@ -181,6 +234,9 @@ fast_kulldorff <- function(counts,
                           .combine = rbind, 
                           .inorder = FALSE) %do% {
     ags <- aggregates[duration == W]
+    #
+    print(paste0("Duration = ", W))
+    #
     random_restart_maximizer(aggregates = ags,
                              score_fun = score_fun,
                              cond_score_fun = cond_score_fun,
