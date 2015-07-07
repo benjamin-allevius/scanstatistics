@@ -6,9 +6,17 @@ poisson_scanstatistic <- function(table, regions, n_replicates) {
   # Calculate statistics for observed data
   # extract max value
   observed_statistics <- poisson_calculations(table, regions)
-  scan_obs <- observed_statistics[, max(statistic)]
+  scan_obs <- extract_scanstatistic(observed_statistics)
   
   replicate_scanstats <- poisson_mcsim(table, regions, n_replicates)
+  pval <- (1 + sum(replicate_scanstats > scan_obs)) / (1 + n_replicates)
+  
+  list(data = table,
+       regions = regions,
+       n_replicates = n_replicates,
+       observed = observed_statistics,
+       mlc = extract_mlc(observed_statistics),
+       pvalue = pval)
 }
 
 poisson_mcsim <- function(table, regions, n_replicates) {
