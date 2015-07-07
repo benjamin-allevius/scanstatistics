@@ -18,13 +18,8 @@ poisson_mcsim <- function(table, regions, n_replicates) {
     table[, .(mean), by = .(location, duration)][, 
       count := rpois(.N, lambda = mean)] %>% 
       poisson_calculations(regions = regions) %>%
-      poisson_scanstat
+      extract_scanstatistic
   }
-}
-
-
-poisson_scanstat <- function(table) {
-  table[, max(statistic)]
 }
 
 #' Calculate the expectation-based Poisson statistic for each space-time window.
