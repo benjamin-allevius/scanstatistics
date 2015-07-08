@@ -1,44 +1,96 @@
+### General functions ----------------------------------------------------------
 
-
-
-
-
-score_numerator <- Vectorize(function(x, W) sum(W:1 * x[1:W]), 
-                       vectorize.args = "W")
-
-score_denominator <- Vectorize(function(x, W) sum((W:1)^2 * x[1:W]), 
-                         vectorize.args = "W")
-
-
-# factors in numerator and denominator of eqn(21) Tango 2011 
-# if using negative binomial distribution
+#' Computes the numerator and denominator terms for the hotspot efficient score.
+#' 
+#' This function calculates the terms found in the numerator and denominator 
+#' sums for the hotspot version of the negative binomial efficient score. 
+#' @param table A \code{data.table} with columns \code{location, duration, mean,
+#'    overdispersion, count}. If \eqn{m} is the mean of the distribution and
+#'    \eqn{r} is the `shape' or `size' parameter of the distribution, such that
+#'    the variance of the distribution is \eqn{m+m^2/r}, the overdispersion is
+#'    given by \eqn{1+m/r}.
+#' @return A \code{data.table} with columns \code{location, duration, num, 
+#'    denom}.
 efficient_score_terms_nbin <- function(table) {
-  table[, .(num = sum((count - baseline) / overdispersion),
-        denom = sum(baseline / overdispersion)),
+  table[, 
+        .(num = sum((count - mean) / overdispersion),
+          denom = sum(mean / overdispersion)),
+        by = .(location, duration)]
+}
+
+#' Computes the numerator and denominator terms for the hotspot efficient score.
+#' 
+#' This function calculates the terms found in the numerator and denominator 
+#' sums for the hotspot version of the Poisson efficient score. 
+#' @param table A \code{data.table} with columns \code{location, duration, mean,
+#'    count}.
+#' @return A \code{data.table} with columns \code{location, duration, num, 
+#'    denom}.
+efficient_score_terms_poisson <- function(table) {
+  table[,
+        .(num = sum((count - mean)),
+          denom = sum(mean)),
         by = .(region, duration)]
 }
 
-# numerator and denominator of eqn(21) Tango 2011 if using binomial dist
-efficient_score_terms_binom <- function(table) {
-  table[,
-    .(num = sum((count - baseline)),
-      denom = sum(baseline)),
-    by = .(region, duration)]
+#' Sums the numerator and denominator terms over all locations in each region.
+#' 
+#' Computes the sum of the numerator and denominator terms over all locations in
+#' each region, as part of the efficient score calculation.
+#' @param table A \code{data.table} with columns \code{location, duration, num,
+#'    denom}; the output from \code{\link{efficient_score_terms_nbin}}.
+#' @return A \code{data.table} with columns \code{region, duration, num, denom}.
+#' @importFrom magrittr %>%
+efficient_score_region_sums <- function(table, regions) {
+  table %>% 
+    region_joiner(regions = regions, keys = c("region", "duration")) %>%
+    region_sum(sumcols = c("num", "denom"))
 }
 
+
+### Functions for hotspot model ------------------------------------------------
+
+#' Computes the hotspot efficient score for each space-time window.
+#' 
+#' Computes the efficient score statistic for each space-time window, assuming a 
+#' hotspot outbreak model and either a Poisson or a negative binomial 
+#' distribution for the counts.
+#' @param table A \code{data.table} with columns \code{region, duration, num, 
+#'    denom}.
+#' @return A \code{data.table} with columns \code{region, duration, statistic}.
+hotspot_efficient_score <- function(table) {
+  table[,
+        .(duration = duration,
+          statistic = cumsum(num) / sqrt(cumsum(denom))),
+        by = .(region)]
+}
+
+### Functions for outbreak model -----------------------------------------------
+
 # components of eqn (21) Tango 2011
+#' Calculate the outbreak efficient score for each space-time window.
+#' 
+#' Computes the efficient score statistic for each space-time window, assuming 
+#' an (emergent) outbreak model and either a Poisson or a negative binomial 
+#' distribution for the counts.
+#' @inheritParams hotspot_efficient_score
+#' @return A \code{data.table} with columns \code{region, duration, statistic}.
 outbreak_efficient_score <- function(table) {
   table[,
     .(duration = duration,
-      score = score_numerator(num, duration)
-      / sqrt(score_denominator(denom, duration))), 
+      statistic = convolute_numerator(num, duration)
+      / sqrt(convolute_denominator(denom, duration))), 
     by = .(region)]
 }
 
-# components of eqn (23) Tango 2011
-hotspot_efficient_score <- function(table) {
-  table[,
-    .(duration = duration,
-      score = cumsum(num) / sqrt(cumsum(denom))),
-    by = .(region)]
-}
+#' Computes the sum in the outbreak efficient score numerator.
+#' 
+#' @param x A vector of normalized counts summed over a single region.
+#' @param d A vector of outbreak durations considered.
+convolute_numerator <- Vectorize(
+  function(x, d) sum(d:1 * x[1:d]), vectorize.args = "d")
+
+#' Computes the sum in the outbreak efficient score denominator.
+#' @inheritParams convolute_numerator
+convolute_denominator <- Vectorize(
+  function(x, d) sum((d:1)^2 * x[1:d]), vectorize.args = "d")
