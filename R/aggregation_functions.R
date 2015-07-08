@@ -1,7 +1,10 @@
 
-#' Sum columns over all locations in per region and duration.
+#' Sum columns over all location in each region, for each duration.
 #' 
-#' 
+#' @param table A \code{data.table} with columns \code{region, location, 
+#'    duration} and those given in the argument \code{sumcols}.
+#' @param sumcols Character vector of column names, the columns to be summed 
+#'    over each region and duration.
 region_sum <- function(table, sumcols) {
   e <- parse(text = paste0("list(", 
                            paste0(sumcols, " = sum(", sumcols, ")", 

@@ -22,8 +22,8 @@
 #' @param duration_condpriors The prior conditional probabilities of the event
 #'    durations, given the event types. Either the string 'uniform', meaning 
 #'    that the event durations are uniformly distributed for all event types, 
-#'    or a matrix in which the row numbers correspond to the event duration, and 
-#'    the columns to the different events. If events types are given as strings, 
+#'    or a matrix in which the row numbers correspond to the event duration, and
+#'    the columns to the different events. If events types are given as strings,
 #'    make it a \code{data.frame} with the events types as column names instead.
 #' @param n_partitions Integer parameter that specifies how many parts, 
 #'    approximately equal in size in the number of locations, the set of all
@@ -33,32 +33,27 @@
 #' @details 
 #'    More details on the columns of \code{loglikelihoods}:
 #'    \describe{
-#'      \item{event}
-#'        {The column \code{event} contains identifiers (integer or character) 
-#'        for both the null hypothesis of no event and for the different event 
-#'        types under the alternative hypothesis. If integer, the null 
-#'        hypothesis should be specified as \code{0L}, and if character, should 
-#'        be specified as \code{"null"}.}
-#'      \item{loglikelihood}
-#'        {The column \code{loglikelihood} contains the log-likelihood for each 
-#'        observation and each event type (including the null), using the 
-#'        estimated or specified parameters for each type.}
-#'      \item{stream}
-#'        {The column \code{stream} contains the identifier (integer or 
-#'        character) for the different data streams.}
-#'      \item{The column \code{location} contains the identifier (integer or 
-#'        character) for the different spatial locations.}
-#'      \item{time}
-#'        {The column \code{time}, if present, should be a date-time object, 
-#'        e.g. POSIXct. Either this column, or one called \code{duration}, must
-#'        be present in the table \code{loglikelihoods}. The most recent time
-#'        corresponds to a duration of 1, the second most recent a duration of 
-#'        2, and so on.}
-#'      \item{duration}
-#'        {The column \code{duration}, if present, should contain integers 
-#'        ranging from 1 to as many time points back you wish to look for 
-#'        events. A duration of 1 signifies the present or most recent time, a
-#'        duration of 2 the second most recent time point, and so on.}
+#'      \item{event}{The column \code{event} contains identifiers (integer 
+#'        or character) for both the null hypothesis of no event and for the 
+#'        different event types under the alternative hypothesis. If integer, 
+#'        the null hypothesis should be specified as \code{0L}, and if 
+#'        character, should be specified as \code{"null"}.}
+#'      \item{loglikelihood}{The column \code{loglikelihood} contains the 
+#'        log-likelihood for each observation and each event type (including 
+#'        the null), using the estimated or specified parameters for each type.}
+#'      \item{stream}{The column \code{stream} contains the identifier (integer 
+#'        or character) for the different data streams.}
+#'      \item{location}{The column \code{location} contains the identifier 
+#'        (integer or character) for the different spatial locations.}
+#'      \item{time}{The column \code{time}, if present, should be a date-time 
+#'        object, e.g. POSIXct. Either this column, or one called 
+#'        \code{duration}, must be present in the table \code{loglikelihoods}. 
+#'        The most recent time corresponds to a duration of 1, the second most 
+#'        recent a duration of 2, and so on.}
+#'      \item{duration}{The column \code{duration}, if present, should contain 
+#'        integers ranging from 1 to as many time points back you wish to look 
+#'        for events. A duration of 1 signifies the present or most recent time,
+#'        a duration of 2 the second most recent time point, and so on.}
 #'    }
 #' @importFrom magrittr %>%
 #' @export
@@ -273,8 +268,8 @@ get_duration_condposteriors <- function(MBSS_obj, duration_column = TRUE) {
 #' Get the k most probable region-event-duration combinations.
 #' 
 #' Extracts the k most probable combinations of region, event type and event
-#' duration from an MBSS object. One can also specify a restriction to a 
-#' subset of the different event types, and a subset of the durations.
+#' duration from an MBSS object. One can also specify a restriction to a subset 
+#' of the different event types, and a subset of the durations.
 #' @param MBSS_obj An object of class "MBSS".
 #' @param k An integer specifying how many of the most probable 
 #'        region-event-duration combinations to output.

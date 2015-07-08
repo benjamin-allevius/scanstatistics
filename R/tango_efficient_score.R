@@ -24,8 +24,8 @@ compute_nb_overdispersion <- function(table) {
 #'    distribution and \eqn{\phi} is the parameter such that the variance of the 
 #'    distribution is \eqn{\mu+\mu^2/\phi}, the overdispersion is given by 
 #'    \eqn{1+\mu/\phi}. The parameter \eqn{\phi} is referred to as the 
-#'    \code{size} in \code{\link[stats]{stats::NegBinomial}}, and \code{theta} 
-#'    in \code{\link[MASS]{MASS::negative.binomial}}.
+#'    \code{size} in \code{\link[stats]{NegBinomial}}, and \code{theta} 
+#'    in \code{\link[MASS]{negative.binomial}}.
 #' @return A \code{data.table} with columns \code{location, duration, num, 
 #'    denom}.
 efficient_score_terms_nbin <- function(table) {
@@ -56,6 +56,7 @@ efficient_score_terms_poisson <- function(table) {
 #' each region, as part of the efficient score calculation.
 #' @param table A \code{data.table} with columns \code{location, duration, num,
 #'    denom}; the output from \code{\link{efficient_score_terms_nbin}}.
+#' @inheritParams partition_regions
 #' @return A \code{data.table} with columns \code{region, duration, num, denom}.
 #' @importFrom magrittr %>%
 efficient_score_region_sums <- function(table, regions) {
