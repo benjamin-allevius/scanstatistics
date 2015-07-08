@@ -12,7 +12,7 @@ extract_scanstatistic <- function(table) {
   table[, max(statistic)]
 }
 
-#' Extract the most likely cluster (MCL) and the value of the scans statistic.
+#' Extract the most likely cluster (MLC) and the value of the scans statistic.
 #' 
 #' This function extracts the most likely cluster, which is the spatial or 
 #' spatiotemporal window that corresponds to the scan statistic. It also returns
@@ -20,6 +20,6 @@ extract_scanstatistic <- function(table) {
 #' @inheritParams extract_scanstatistic
 #' @return The row of the input table with the highest value of the column 
 #'    \code{statistic}.
-extract_mcl <- function(table) {
+extract_mlc <- function(table) {
   table[which.max(statistic), ]
 }
