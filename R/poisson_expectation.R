@@ -19,7 +19,20 @@ poisson_scanstatistic <- function(table, regions, n_replicates) {
        pvalue = pval)
 }
 
-poisson_mcsim <- function(table, regions, n_replicates) {
+#' Monte Carlo simulation of expectation-based Poisson scan statistics.
+#' 
+#' This function generates \code{n_replicates} Poisson-distributed data sets 
+#' according to the parameters in the input table, and calculates the value of
+#' the scan statistic for each generated data set using the supplied 
+#' \code{regions}.
+#' @param table A \code{data.table} with columns \code{location, duration, 
+#'    mean}.
+#' @param regions A \code{list} or \code{set} of regions, each region itself a 
+#'    set containing one or more locations of those found in \code{table}.
+#' @param n_replicates A positive integer; the number of replicate scan 
+#'    statistics to generate.
+#' @return A numeric vector of length \code{n_replicates}.
+poisson_mcsim <- function(table, regions, n_replicates = 999L) {
   foreach::foreach(i = seq(n_replicates), 
                           .combine = c, 
                           .inorder = FALSE) %do% {
