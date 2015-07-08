@@ -18,7 +18,7 @@ NULL
 # Hack based on Hadley Wickhams comment: 
 # http://stackoverflow.com/a/12429344/897506
 globalVariables(c(
-  # Variables used unquoted inside functions
+## Variables used unquoted inside functions-------------------------------------
   "duration", 
   "W",
   "event",
@@ -47,11 +47,14 @@ globalVariables(c(
   "variance",
   "aggregate_count",
   "aggregate_baseline",
-  "score",
+  # "score",
   "priority",
   "included_streams",
   "relative_risk",
-  # data.table functions
+  "phi",
+  "relrisk",
+  "statistic",
+## data.table functions---------------------------------------------------------
   "data.table",
   "is.data.table",
   ".",
@@ -60,7 +63,7 @@ globalVariables(c(
   "setkeyv",
   ".SD",
   ".N",
-  # foreach
+## foreach----------------------------------------------------------------------
   "%dopar%",
   "foreach"),
   package = "scanstatistics")
