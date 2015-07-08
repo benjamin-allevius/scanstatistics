@@ -30,7 +30,7 @@ efficient_score_terms_poisson <- function(table) {
   table[,
         .(num = sum((count - mean)),
           denom = sum(mean)),
-        by = .(region, duration)]
+        by = .(location, duration)]
 }
 
 #' Sums the numerator and denominator terms over all locations in each region.
@@ -67,7 +67,6 @@ hotspot_efficient_score <- function(table) {
 
 ### Functions for outbreak model -----------------------------------------------
 
-# components of eqn (21) Tango 2011
 #' Calculate the outbreak efficient score for each space-time window.
 #' 
 #' Computes the efficient score statistic for each space-time window, assuming 
@@ -87,10 +86,12 @@ outbreak_efficient_score <- function(table) {
 #' 
 #' @param x A vector of normalized counts summed over a single region.
 #' @param d A vector of outbreak durations considered.
+#' @return A vector of length \code{length(d)}.
 convolute_numerator <- Vectorize(
   function(x, d) sum(d:1 * x[1:d]), vectorize.args = "d")
 
 #' Computes the sum in the outbreak efficient score denominator.
 #' @inheritParams convolute_numerator
+#' @return A vector of length \code{length(d)}.
 convolute_denominator <- Vectorize(
   function(x, d) sum((d:1)^2 * x[1:d]), vectorize.args = "d")

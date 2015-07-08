@@ -26,7 +26,7 @@ test_that("efficient_score_terms_poisson: calculates correctly", {
   table[, count := x]
   table[, mean := m]
   expected_num <- x - m
-  expected_den <- m / s
+  expected_den <- m
   actual <- efficient_score_terms_poisson(table)
   expect_equal(actual[, num], expected_num)
   expect_equal(actual[, denom], expected_den)
