@@ -1,14 +1,31 @@
 ### General functions ----------------------------------------------------------
 
+#' Computes the overdispersion parameter for a fitted negative binomial model.
+#' 
+#' Computes the overdispersion parameter \eqn{w=1+\mu/\phi} for a negative
+#' binomial distribution parametrized by its mean \eqn{\mu} and with variance
+#' \eqn{\mu+\mu^2/\phi}. The overdispersion is added as a new column to the 
+#' input \code{data.table}, meaning that this function \code{modifies} its 
+#' input.
+#' @param table A \code{data.table} with columns \code{mean, phi} and possibly
+#'    others.
+#' @return The same table, with a new column \code{overdispersion}.
+compute_nb_overdispersion <- function(table) {
+  table[, overdispersion := 1 + mean / phi][]
+}
+
+
 #' Computes the numerator and denominator terms for the hotspot efficient score.
 #' 
 #' This function calculates the terms found in the numerator and denominator 
 #' sums for the hotspot version of the negative binomial efficient score. 
 #' @param table A \code{data.table} with columns \code{location, duration, mean,
-#'    overdispersion, count}. If \eqn{m} is the mean of the distribution and
-#'    \eqn{r} is the `shape' or `size' parameter of the distribution, such that
-#'    the variance of the distribution is \eqn{m+m^2/r}, the overdispersion is
-#'    given by \eqn{1+m/r}.
+#'    overdispersion, count}. If \eqn{\mu} is the mean of the negative binomial 
+#'    distribution and \eqn{\phi} is the parameter such that the variance of the 
+#'    distribution is \eqn{\mu+\mu^2/\phi}, the overdispersion is given by 
+#'    \eqn{1+\mu/\phi}. The parameter \eqn{\phi} is referred to as the 
+#'    \code{size} in \code{\link[stats]{stats::NegBinomial}}, and \code{theta} 
+#'    in \code{\link[MASS]{MASS::negative.binomial}}.
 #' @return A \code{data.table} with columns \code{location, duration, num, 
 #'    denom}.
 efficient_score_terms_nbin <- function(table) {
