@@ -1,5 +1,33 @@
 ### General functions ----------------------------------------------------------
 
+nbinom_score_scanstatistic <- function(
+  table, regions, n_replicates, type = "hotspot") {
+  # input validation
+  
+  if (type == "outbreak") {
+    window_stats <- outbreak_calculations
+  } else {
+    window_stats <- hotspot_calculations
+  }
+  
+  # Calculate statistics for observed data
+  # extract max value
+  observed_statistics <- window_stats(table, regions)
+  scan_obs <- extract_scanstatistic(observed_statistics)
+  
+  replicate_scanstats <- nbinom_mcsim(table, regions, n_replicates, type)
+  pval <- (1 + sum(replicate_scanstats > scan_obs)) / (1 + n_replicates)
+  
+  list(data = table,
+       regions = regions,
+       n_replicates = n_replicates,
+       observed = observed_statistics,
+       mlc = extract_mlc(observed_statistics),
+       pvalue = pval,
+       replicates = replicate_scanstats)
+}
+
+#' @importFrom magrittr %>%
 nbinom_mcsim <- function(table, regions, n_replicates, type = "hotspot") {
   if (type == "outbreak") {
     window_stats <- outbreak_calculations
@@ -105,6 +133,7 @@ efficient_score_region_sums <- function(table, regions) {
 #' @inheritParams efficient_score_terms_nbinom
 #' @inheritParams partition_regions
 #' @return A \code{data.table} with columns \code{region, duration, statistic}.
+#' @importFrom magrittr %>%
 hotspot_calculations <- function(table, regions) {
   table %>% 
     efficient_score_terms_nbinom %>%
@@ -136,6 +165,7 @@ hotspot_efficient_score <- function(table) {
 #' @inheritParams efficient_score_terms_nbinom
 #' @inheritParams partition_regions
 #' @return A \code{data.table} with columns \code{region, duration, statistic}.
+#' @importFrom magrittr %>%
 outbreak_calculations <- function(table, regions) {
   table %>% 
     efficient_score_terms_nbinom %>%
