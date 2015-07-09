@@ -1,5 +1,35 @@
 ### General functions ----------------------------------------------------------
 
+nbinom_mcsim <- function(table, regions, n_replicates, type = "hotspot") {
+  if (type == "outbreak") {
+    window_stats <- outbreak_calculations
+  } else {
+    window_stats <- hotspot_calculations
+  }
+  foreach::foreach(i = seq(n_replicates), 
+                   .combine = c, 
+                   .inorder = FALSE) %do% {
+    table[, .(mean, phi), by = .(location, duration)] %>%
+      generate_nbinom_counts %>%
+      compute_nbinom_overdispersion %>%
+      window_stats(regions) %>%
+      extract_scanstatistic
+  }
+}
+
+#' Randomly generate and add negative binomial counts to a table.
+#' 
+#' This function randomly generates counts from a negative binomial distribution
+#' according to the parameters on each row of the input \code{data.table},
+#' and adds the counts to a new column \code{count}. 
+#' @param table A \code{data.table} with at least the columns \code{mean} and
+#'    \code{phi}. The parameter \eqn{\phi} (phi) is the same as \code{size} in
+#'    \code{\link[stats]{rnbinom}}.
+#' @return The same table, with a new column \code{count}.
+generate_nbinom_counts <- function(table) {
+  table[, count := rnbinom(.N, mu = mean, size = phi)][]
+}
+
 #' Computes the overdispersion parameter for a fitted negative binomial model.
 #' 
 #' Computes the overdispersion parameter \eqn{w=1+\mu/\phi} for a negative
@@ -10,7 +40,7 @@
 #' @param table A \code{data.table} with columns \code{mean, phi} and possibly
 #'    others.
 #' @return The same table, with a new column \code{overdispersion}.
-compute_nb_overdispersion <- function(table) {
+compute_nbinom_overdispersion <- function(table) {
   table[, overdispersion := 1 + mean / phi][]
 }
 
@@ -28,7 +58,7 @@ compute_nb_overdispersion <- function(table) {
 #'    in \code{\link[MASS]{negative.binomial}}.
 #' @return A \code{data.table} with columns \code{location, duration, num, 
 #'    denom}.
-efficient_score_terms_nbin <- function(table) {
+efficient_score_terms_nbinom <- function(table) {
   table[, 
         .(num = sum((count - mean) / overdispersion),
           denom = sum(mean / overdispersion)),
@@ -55,7 +85,7 @@ efficient_score_terms_poisson <- function(table) {
 #' Computes the sum of the numerator and denominator terms over all locations in
 #' each region, as part of the efficient score calculation.
 #' @param table A \code{data.table} with columns \code{location, duration, num,
-#'    denom}; the output from \code{\link{efficient_score_terms_nbin}}.
+#'    denom}; the output from \code{\link{efficient_score_terms_nbinom}}.
 #' @inheritParams partition_regions
 #' @return A \code{data.table} with columns \code{region, duration, num, denom}.
 #' @importFrom magrittr %>%
@@ -67,6 +97,20 @@ efficient_score_region_sums <- function(table, regions) {
 
 
 ### Functions for hotspot model ------------------------------------------------
+
+#' Calculate the hotspot efficient score for each space-time window.
+#' 
+#' Calculate the hotspot efficient score for each space-time window, given the 
+#' initial data of counts, means, and overdispersion parameters.
+#' @inheritParams efficient_score_terms_nbinom
+#' @inheritParams partition_regions
+#' @return A \code{data.table} with columns \code{region, duration, statistic}.
+hotspot_calculations <- function(table, regions) {
+  table %>% 
+    efficient_score_terms_nbinom %>%
+    efficient_score_region_sums(regions) %>%
+    hotspot_efficient_score
+}
 
 #' Computes the hotspot efficient score for each space-time window.
 #' 
@@ -84,6 +128,20 @@ hotspot_efficient_score <- function(table) {
 }
 
 ### Functions for outbreak model -----------------------------------------------
+
+#' Calculate the outbreak efficient score for each space-time window.
+#' 
+#' Calculate the outbreak efficient score for each space-time window, given the 
+#' initial data of counts, means, and overdispersion parameters.
+#' @inheritParams efficient_score_terms_nbinom
+#' @inheritParams partition_regions
+#' @return A \code{data.table} with columns \code{region, duration, statistic}.
+outbreak_calculations <- function(table, regions) {
+  table %>% 
+    efficient_score_terms_nbinom %>%
+    efficient_score_region_sums(regions) %>%
+    outbreak_efficient_score
+}
 
 #' Calculate the outbreak efficient score for each space-time window.
 #' 
