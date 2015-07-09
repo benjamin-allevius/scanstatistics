@@ -32,6 +32,7 @@ poisson_scanstatistic <- function(table, regions, n_replicates) {
 #' @param n_replicates A positive integer; the number of replicate scan 
 #'    statistics to generate.
 #' @return A numeric vector of length \code{n_replicates}.
+#' @importFrom magrittr %>%
 poisson_mcsim <- function(table, regions, n_replicates = 999L) {
   foreach::foreach(i = seq(n_replicates), 
                           .combine = c, 

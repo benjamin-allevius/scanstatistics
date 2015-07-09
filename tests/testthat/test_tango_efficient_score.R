@@ -2,7 +2,27 @@ context("Tango 2011 efficient score functions")
 
 ### General functions ----------------------------------------------------------
 
-test_that("efficient_score_terms_nbin: calculates correctly", {
+test_that("nbinom_mcsim", {
+  table <- table_creator(list(location = 1:2, duration = 1:3), 
+                         keys = c("location", "duration"))
+  table[, mean := 1:6 + 0.5]
+  table[, phi := c(0.2, 0.5, 2.5, 5, 10, 100)]
+  table[, count := c(5, 2, 5, 15, 12, 3)]
+  regions <- sets::set(sets::as.set(1L), 
+                       sets::as.set(2L),
+                       sets::as.set(1:2))
+  nsims <- 10
+  
+  actual_hotspot <- nbinom_mcsim(table, regions, nsims, type = "hotspot")
+  expect_true(!any(actual_hotspot < 0))
+  expect_true(length(actual_hotspot) == nsims)
+  
+  actual_outbreak <- nbinom_mcsim(table, regions, nsims, type = "outbreak")
+  expect_true(!any(actual_outbreak < 0))
+  expect_true(length(actual_outbreak) == nsims)
+})
+
+test_that("efficient_score_terms_nbinom: calculates correctly", {
   table <- table_creator(list(location = 1:2, duration = 1:2), 
                          keys = c("location", "duration"))
   x <- c(1, 3, 5, 7)
@@ -13,7 +33,7 @@ test_that("efficient_score_terms_nbin: calculates correctly", {
   table[, overdispersion := s]
   expected_num <- (x - m) / s
   expected_den <- m / s
-  actual <- efficient_score_terms_nbin(table)
+  actual <- efficient_score_terms_nbinom(table)
   expect_equal(actual[, num], expected_num)
   expect_equal(actual[, denom], expected_den)
 })
