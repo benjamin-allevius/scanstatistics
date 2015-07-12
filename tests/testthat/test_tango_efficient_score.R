@@ -14,11 +14,9 @@ test_that("nbinom_mcsim", {
   nsims <- 10
   
   actual_hotspot <- nbinom_mcsim(table, regions, nsims, type = "hotspot")
-  expect_true(!any(actual_hotspot < 0))
   expect_true(length(actual_hotspot) == nsims)
   
   actual_outbreak <- nbinom_mcsim(table, regions, nsims, type = "outbreak")
-  expect_true(!any(actual_outbreak < 0))
   expect_true(length(actual_outbreak) == nsims)
 })
 
