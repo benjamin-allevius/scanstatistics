@@ -27,8 +27,7 @@ poisson_scanstatistic <- function(table, regions, n_replicates) {
 #' \code{regions}.
 #' @param table A \code{data.table} with columns \code{location, duration, 
 #'    mean}.
-#' @param regions A \code{list} or \code{set} of regions, each region itself a 
-#'    set containing one or more locations of those found in \code{table}.
+#' @inheritParams partition_regions
 #' @param n_replicates A positive integer; the number of replicate scan 
 #'    statistics to generate.
 #' @return A numeric vector of length \code{n_replicates}.

@@ -27,6 +27,18 @@ nbinom_score_scanstatistic <- function(
        replicates = replicate_scanstats)
 }
 
+#' Monte Carlo simulation of negative binomial efficient score scan statistics.
+#' 
+#' This function generates \code{n_replicates} negative binomial-distributed 
+#' data sets according to the parameters in the input table, and calculates the 
+#' value of the efficient score scan statistic for each generated data set using 
+#' the supplied \code{regions}. The score can be calculated either according to
+#' the hotspot cluster model or the emerging outbreak model.
+#' @inheritParams generate_nbinom_counts
+#' @inheritParams partition_regions
+#' @param n_replicates A positive integer; the number of replicate scan 
+#'    statistics to generate.
+#' @return A numeric vector of length \code{n_replicates}.
 #' @importFrom magrittr %>%
 nbinom_mcsim <- function(table, regions, n_replicates, type = "hotspot") {
   if (type == "outbreak") {
