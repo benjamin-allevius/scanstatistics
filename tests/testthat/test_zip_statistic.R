@@ -59,7 +59,7 @@ test_that("window_zip_statistic", {
 })
 
 
-test_that("calc_zipstat_over_duration", {
+test_that("zip_statistic: works", {
   table <- table_creator(list(location = 1:2, duration = 1:3), 
                          keys = c("location", "duration"))
   table[, mean := 1:6 + 0.5]
@@ -71,7 +71,8 @@ test_that("calc_zipstat_over_duration", {
                        sets::as.set(2L),
                        sets::as.set(1:2))
   dt <- region_joiner(table, regions = regions, keys = c("region", "duration"))
-  actual <- dt[, calc_zipstat_over_duration(.SD, 3), by = .(region)]
+  actual <- zip_statistic(dt, maxdur = 3)
+  # actual <- dt[, calc_zipstat_over_duration(.SD, 3), by = .(region)]
   expected <- c(
     dt[1L, window_zip_statistic(p, mean, count)],
     dt[1:2, window_zip_statistic(p, mean, count)],

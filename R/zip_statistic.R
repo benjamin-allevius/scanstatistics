@@ -142,14 +142,21 @@ window_zip_statistic <- function(p, mu, y, d_init = 0.5, tol = 0.01) {
 #'   \item{statistic}{Numeric vector containing the ZIP statistics corresponding
 #'   to each duration, for the given spatial zone.}
 #' }
-calc_zipstat_over_duration <- function(table, maxdur) {
+calc_zipstat_over_duration <- function(table, maxdur, ...) {
   stat <- rep(0, maxdur)
   for (t in seq(maxdur)) {
-    stat[t] <- table[duration <= t, window_zip_statistic(p, mean, count)]
+    stat[t] <- table[duration <= t, window_zip_statistic(p, mean, count, ...)]
   }
   list(duration = seq(maxdur), statistic = stat)
 }
 
+#' Calculates the ZIP statistic for each space-time window.
+#' 
+#' Calculates the zero-inflated Poisson statistic for each space-time window,
+#' using the EM algorithm.
+#' @param table A \code{data.table} with columns \code{region, location, 
+#'    duration, p, mean, count}.
+#' @return A \code{data.table} with columns \code{region, duration, statistic}.
 zip_statistic <- function(table, ...) {
   table[, calc_zipstat_over_duration(.SD, ...), by = .(region)]
 }
