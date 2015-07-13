@@ -125,8 +125,8 @@ region_apply <- function(location_table, region_partition, f, keys = NULL) {
 #'    to the supplied table of locations etc. (not modified).
 #' @examples
 #' \dontrun{
-#' locs_etc <- table_creator(list(location = 1:2, time = 0:2, stream = 1:2))
-#' region_joiner(locs_etc, list(1, 2, 1:2), keys = c("time", "region"))
+#' locs_etc <- table_creator(list(location = 1:2, duration = 1:3, stream = 1:2))
+#' region_joiner(locs_etc, list(1, 2, 1:2), keys = c("duration", "region"))
 #' }
 region_joiner <- function(locations_etc, regions, keys = c("region")) {
   region_table_creator(regions, keys = "location")[
