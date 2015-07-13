@@ -101,7 +101,8 @@ poisson_statistic <- function(table) {
 #' aggregates (sums) of the counts and means for each region and duration.
 #' @param table A \code{data.table} with columns \code{region, duration, count,
 #'    mean}. The latter two are the sums of counts and means for the locations
-#'    comprising the region and up to the given duration.
+#'    comprising the region and up to the given duration (i.e. cumulative sum 
+#'    for the duration).
 #' @return The same table, with an extra column \code{relrisk}.
 poisson_relrisk <- function(table) {
   table[, relrisk := max(1, count / mean), by = .(region, duration)]
