@@ -127,7 +127,7 @@ zip_em_estimates <- function(p, mu, y, d_init = 0.5, tol = 0.01) {
 #' distribution using the EM algorithm.
 #' @inheritParams zip_em_estimates
 #' @return A scalar, the (logarithm of the) ZIP statistic.
-zip_statistic <- function(p, mu, y, d_init = 0.5, tol = 0.01) {
+window_zip_statistic <- function(p, mu, y, d_init = 0.5, tol = 0.01) {
   em <- zip_em_estimates(p, mu, y, d_init = 0.5, tol = 0.01)
   sum(zip_statistic_term(em$q, p, em$dstar, estimate_d(p, mu, y), mu, y))
 }
@@ -145,7 +145,11 @@ zip_statistic <- function(p, mu, y, d_init = 0.5, tol = 0.01) {
 calc_zipstat_over_duration <- function(table, maxdur) {
   stat <- rep(0, maxdur)
   for (t in seq(maxdur)) {
-    stat[t] <- table[duration <= t, zip_statistic(p, mean, count)]
+    stat[t] <- table[duration <= t, window_zip_statistic(p, mean, count)]
   }
   list(duration = seq(maxdur), statistic = stat)
+}
+
+zip_statistic <- function(table, ...) {
+  table[, calc_zipstat_over_duration(.SD, ...), by = .(region)]
 }
