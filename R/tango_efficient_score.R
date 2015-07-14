@@ -21,6 +21,7 @@ nbinom_score_scanstatistic <- function(
   list(data = table,
        regions = regions,
        n_replicates = n_replicates,
+       replicates = replicate_scanstats,
        observed = observed_statistics,
        mlc = extract_mlc(observed_statistics),
        pvalue = pval,

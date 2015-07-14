@@ -14,6 +14,7 @@ poisson_scanstatistic <- function(table, regions, n_replicates) {
   list(data = table,
        regions = regions,
        n_replicates = n_replicates,
+       replicates = replicate_scanstats,
        observed = observed_statistics,
        mlc = extract_mlc(observed_statistics),
        pvalue = pval)
