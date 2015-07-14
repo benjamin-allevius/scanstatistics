@@ -34,8 +34,8 @@ poisson_scanstatistic <- function(table, regions, n_replicates) {
 #' @importFrom magrittr %>%
 poisson_mcsim <- function(table, regions, n_replicates = 999L) {
   foreach::foreach(i = seq(n_replicates), 
-                          .combine = c, 
-                          .inorder = FALSE) %do% {
+                   .combine = c, 
+                   .inorder = FALSE) %do% {
     table[, .(mean), by = .(location, duration)] %>%
       generate_poisson_counts %>% 
       poisson_calculations(regions = regions) %>%
