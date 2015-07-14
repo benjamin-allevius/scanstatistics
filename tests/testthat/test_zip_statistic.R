@@ -59,13 +59,33 @@ test_that("window_zip_statistic", {
 })
 
 
+
+
+
+test_that("calc_zipstat_over_duration: works", {
+  table <- table_creator(list(location = 1:2, duration = 1:3), 
+                         keys = c("location", "duration"))
+  table[, mean := 1:6 + 0.5]
+  table[, p := 1:6 / 20]
+  # Counts should correspond to outbreak with duration 2 at location 1
+  table[, count := c(5, 10, 0, 4, 5, 1)]
+  actual <- calc_zipstat_over_duration(table, 3)
+  expected <- c(
+    table[duration <= 1L, window_zip_statistic(p, mean, count)],
+    table[duration <= 2L, window_zip_statistic(p, mean, count)],
+    table[duration <= 3L, window_zip_statistic(p, mean, count)]
+  )
+  expect_equal(actual$statistic, expected)
+})
+
+
 test_that("zip_statistic: works", {
   table <- table_creator(list(location = 1:2, duration = 1:3), 
                          keys = c("location", "duration"))
   table[, mean := 1:6 + 0.5]
   table[, p := 1:6 / 20]
   # Counts should correspond to outbreak with duration 2 at location 1
-  table[, count := c(5, 10, 0, 4, 5, 0)] 
+  table[, count := c(5, 10, 0, 4, 5, 1)] 
   # table[, gamlss.dist::dZIP(count, mean, p)]
   regions <- sets::set(sets::as.set(1L), 
                        sets::as.set(2L),

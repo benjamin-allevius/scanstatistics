@@ -1,5 +1,13 @@
 
 
+# Scalar/vector input functions ------------------------------------------------
+
+
+
+
+
+
+
 #' Calculate the (logarithm of the) ZIP statistic for each space-time window.
 #' 
 #' Calculate the logarithm of the ZIP statistic for each space-time window, 
@@ -19,7 +27,10 @@
 # }
 
 
-#' Formula for a term in the sum of the logarithm of the ZIP window statistic.
+#' Calculate a term in the sum of the logarithm of the ZIP window statistic.
+#' 
+#' This function calculates a term which appears in the sum of the logarithm of
+#' the zero-inflated Poisson statistic for a given space-time window.
 #' @param q Scalar; the relative risk.
 #' @param p Numeric vector of excess zero probabilities.
 #' @param dstar Numeric vector of estimates of the excess zero indicators, under 
@@ -126,9 +137,10 @@ zip_em_estimates <- function(p, mu, y, d_init = 0.5, tol = 0.01) {
 #' Calculate the single-window statistic for the zero-inflated Poisson 
 #' distribution using the EM algorithm.
 #' @inheritParams zip_em_estimates
+#' @param ... Named parameters passed to \code{\link{zip_em_estimates}}.
 #' @return A scalar, the (logarithm of the) ZIP statistic.
-window_zip_statistic <- function(p, mu, y, d_init = 0.5, tol = 0.01) {
-  em <- zip_em_estimates(p, mu, y, d_init = 0.5, tol = 0.01)
+window_zip_statistic <- function(p, mu, y, ...) {
+  em <- zip_em_estimates(p, mu, y, ...)
   sum(zip_statistic_term(em$q, p, em$dstar, estimate_d(p, mu, y), mu, y))
 }
 
@@ -156,6 +168,12 @@ calc_zipstat_over_duration <- function(table, maxdur, ...) {
 #' using the EM algorithm.
 #' @param table A \code{data.table} with columns \code{region, location, 
 #'    duration, p, mean, count}.
+#' @param ... Any of the following named parameters:
+#' \describe{
+#'   \item{maxdur}{As in \code{\link{calc_zipstat_over_duration}}.}
+#'   \item{d_init}{As in \code{link{window_zip_statistic}}.}
+#'   \item{tol}{As in \code{link{window_zip_statistic}}.}
+#' }
 #' @return A \code{data.table} with columns \code{region, duration, statistic}.
 zip_statistic <- function(table, ...) {
   table[, calc_zipstat_over_duration(.SD, ...), by = .(region)]
