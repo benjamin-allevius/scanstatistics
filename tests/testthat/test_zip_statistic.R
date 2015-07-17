@@ -104,7 +104,7 @@ test_that("zip_statistic: works", {
   expect_equal(actual[, statistic], expected)
 })
 
-test_that("poisson_mcsim", {
+test_that("zip_mcsim", {
   table <- table_creator(list(location = 1:2, duration = 1:3), 
                          keys = c("location", "duration"))
   table[, mean := 1:6 + 0.5]
@@ -119,7 +119,7 @@ test_that("poisson_mcsim", {
   expect_true(!any(actual < 0))
 })
 
-test_that("poisson_scanstatistic", {
+test_that("zip_scanstatistic", {
   table <- table_creator(list(location = 1:2, duration = 1:3), 
                          keys = c("location", "duration"))
   table[, mean := 1:6 + 0.5]
