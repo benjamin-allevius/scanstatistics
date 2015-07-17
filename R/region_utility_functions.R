@@ -164,3 +164,19 @@ region_table_creator <- function(regions, keys = NULL, offset = 0L) {
                           vapply(regions, length, integer(1))),
              key = keys)
 }
+
+
+#' Extract a spatial zone from the set of all zones.
+#' 
+#' Extract a spatial zone from the set of all zones, using its number.
+#' @
+get_zone <- function(zone, all_zones) {
+  i <- 1
+  for (z in all_zones) {
+    if (i == zone) {
+      return(z)
+    }
+    i <- i + 1
+  }
+  stop("Zone not found.")
+}
