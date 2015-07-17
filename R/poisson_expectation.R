@@ -1,4 +1,4 @@
-
+# Main functions ---------------------------------------------------------------
 
 poisson_scanstatistic <- function(table, regions, n_replicates) {
   # input validation
@@ -18,6 +18,21 @@ poisson_scanstatistic <- function(table, regions, n_replicates) {
        observed = observed_statistics,
        mlc = extract_mlc(observed_statistics),
        pvalue = pval)
+}
+
+
+# Simulation and hypothesis testing functions ----------------------------------
+
+#' Randomly generate and add Poisson counts to a table.
+#' 
+#' This function randomly generates counts from a Poisson distribution according 
+#' to the parameters on each row of the input \code{data.table}, and adds the 
+#' counts to a new column \code{count}. 
+#' @param table A \code{data.table} with at least the column \code{mean}, 
+#'    corresponding to the parameter \code{lambda} in 
+#'    \code{\link[stats]{rpois}}.
+generate_poisson_counts <- function(table) {
+  table[, count := rpois(.N, lambda = mean)][]
 }
 
 #' Simulate a single expectation-based Poisson scan statistic.
@@ -49,24 +64,13 @@ simulate_poisson_scanstatistic <- function(table, regions) {
 #' @return A numeric vector of length \code{n_replicates}.
 #' @importFrom foreach %dopar%
 poisson_mcsim <- function(table, regions, n_replicates = 999L) {
-  foreach::foreach(i = seq(n_replicates), 
-                   .combine = c, 
-                   .inorder = FALSE) %dopar% {
+  foreach(i = seq(n_replicates), .combine = c, .inorder = FALSE) %dopar% {
     simulate_poisson_scanstatistic(table, regions)
   }
 }
 
-#' Randomly generate and add Poisson counts to a table.
-#' 
-#' This function randomly generates counts from a Poisson distribution according 
-#' to the parameters on each row of the input \code{data.table}, and adds the 
-#' counts to a new column \code{count}. 
-#' @param table A \code{data.table} with at least the column \code{mean}, 
-#'    corresponding to the parameter \code{lambda} in 
-#'    \code{\link[stats]{rpois}}.
-generate_poisson_counts <- function(table) {
-  table[, count := rpois(.N, lambda = mean)][]
-}
+
+# Functions with data.table input ----------------------------------------------
 
 #' Calculate the expectation-based Poisson statistic for each space-time window.
 #' 
