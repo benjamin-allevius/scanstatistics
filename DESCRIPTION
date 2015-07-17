@@ -13,8 +13,8 @@ Encoding: UTF-8
 License: GPL (>= 3)
 URL: https://github.com/BenjaK/scanstatistics
 BugReports: https://github.com/BenjaK/scanstatistics/issues
-Depends: data.table
-Imports: magrittr, foreach
+Depends: data.table, foreach
+Imports: magrittr
 Suggests: knitr,
     testthat,
     sets,

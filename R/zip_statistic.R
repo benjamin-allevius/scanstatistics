@@ -170,6 +170,41 @@ zip_calculations <- function(table, regions, ...) {
     zip_statistic(...)
 }
 
+
+# Simulation and hypothesis testing functions ----------------------------------
+
+#' Randomly generate and add ZIP-distributed counts to a table.
+#' 
+#' This function randomly generates counts from a zero-inflated Poisson 
+#' distribution according to the parameters on each row of the input 
+#' \code{data.table}, and adds the counts to a new column \code{count}. 
+#' @param table A \code{data.table} with columns \code{mean} and \code{p}. These
+#'    correspond to the parameters \code{mu} and \code{sigma} in 
+#'    \code{\link[gamlss.dist]{rZIP}}; the former is the Poisson mean and the 
+#'    latter is the excess zero probability.
+#' @return The same table, with a new column \code{count}.
+generate_zip_counts <- function(table) {
+  # Note: rZIP returns a numeric vector
+  table[, count := gamlss.dist::rZIP(.N, mu = mean, sigma = p)][]
+}
+
+#' Simulate a single expectation-based ZIP-EM scan statistic.
+#' 
+#' Simulate zero-inflated -distributed data according to the supplied parameters 
+#' and calculate the value of the expectation-based Poisson scan statistic.
+#' @param table A \code{data.table} with columns \code{location, duration, 
+#'    mean}.
+#' @inheritParams partition_regions
+#' @return A scalar; the expectation-based ZIP-EM scan statistic for the 
+#'    simulated data.
+#' @importFrom magrittr %>%
+simulate_zip_scanstatistic <- function(table, regions, ...) {
+  table[, .(p, mean), by = .(location, duration)] %>%
+    generate_zip_counts %>% 
+    zip_calculations(regions = regions, ...) %>%
+    extract_scanstatistic
+}
+
 #' Monte Carlo simulation of expectation-based Poisson scan statistics.
 #' 
 #' This function generates \code{n_replicates} Poisson-distributed data sets 
@@ -187,27 +222,12 @@ zip_mcsim <- function(table, regions, n_replicates = 999L, ...) {
   foreach::foreach(i = seq(n_replicates), 
                    .combine = c, 
                    .inorder = FALSE) %do% {
-   table[, .(p, mean), by = .(location, duration)] %>%
-     generate_zip_counts %>% 
-     zip_calculations(regions = regions, ...) %>%
-     extract_scanstatistic
+    simulate_zip_scanstatistic(table, regions, ...)
   }
 }
 
-#' Randomly generate and add ZIP-distributed counts to a table.
-#' 
-#' This function randomly generates counts from a zero-inflated Poisson 
-#' distribution according to the parameters on each row of the input 
-#' \code{data.table}, and adds the counts to a new column \code{count}. 
-#' @param table A \code{data.table} with columns \code{mean} and \code{p}. These
-#'    correspond to the parameters \code{mu} and \code{sigma} in 
-#'    \code{\link[gamlss.dist]{rZIP}}; the former is the Poisson mean and the 
-#'    latter is the excess zero probability.
-#' @return The same table, with a new column \code{count}.
-generate_zip_counts <- function(table) {
-  # Note: rZIP returns a numeric vector
-  table[, count := gamlss.dist::rZIP(.N, mu = mean, sigma = p)][]
-}
+
+# Main functions ---------------------------------------------------------------
 
 zip_scanstatistic <- function(table, regions, n_replicates, ...) {
   # input validation

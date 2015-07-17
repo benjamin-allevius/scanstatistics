@@ -20,27 +20,39 @@ poisson_scanstatistic <- function(table, regions, n_replicates) {
        pvalue = pval)
 }
 
+#' Simulate a single expectation-based Poisson scan statistic.
+#' 
+#' Simulate Poisson-distributed data according to the supplied parameters and
+#' calculate the value of the expectation-based Poisson scan statistic.
+#' @param table A \code{data.table} with columns \code{location, duration, 
+#'    mean}.
+#' @inheritParams partition_regions
+#' @return A scalar; the scan statistic for the simulated data.
+#' @importFrom magrittr %>%
+simulate_poisson_scanstatistic <- function(table, regions) {
+  table[, .(mean), by = .(location, duration)] %>%
+    generate_poisson_counts %>% 
+    poisson_calculations(regions = regions) %>%
+    extract_scanstatistic
+}
+
 #' Monte Carlo simulation of expectation-based Poisson scan statistics.
 #' 
 #' This function generates \code{n_replicates} Poisson-distributed data sets 
 #' according to the parameters in the input table, and calculates the value of
 #' the scan statistic for each generated data set using the supplied 
 #' \code{regions}.
-#' @param table A \code{data.table} with columns \code{location, duration, 
-#'    mean}.
+#' @inheritParams simulate_poisson_scanstatistic
 #' @inheritParams partition_regions
 #' @param n_replicates A positive integer; the number of replicate scan 
 #'    statistics to generate.
 #' @return A numeric vector of length \code{n_replicates}.
-#' @importFrom magrittr %>%
+#' @importFrom foreach %dopar%
 poisson_mcsim <- function(table, regions, n_replicates = 999L) {
   foreach::foreach(i = seq(n_replicates), 
                    .combine = c, 
-                   .inorder = FALSE) %do% {
-    table[, .(mean), by = .(location, duration)] %>%
-      generate_poisson_counts %>% 
-      poisson_calculations(regions = regions) %>%
-      extract_scanstatistic
+                   .inorder = FALSE) %dopar% {
+    simulate_poisson_scanstatistic(table, regions)
   }
 }
 
