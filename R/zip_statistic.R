@@ -75,7 +75,7 @@ simulate_zip_scanstatistic <- function(table, regions, ...) {
 #' @return A numeric vector of length \code{n_replicates}.
 #' @importFrom magrittr %>%
 zip_mcsim <- function(table, regions, n_replicates = 999L, ...) {
-  foreach(i = seq(n_replicates), .combine = c, .inorder = FALSE) %do% {
+  foreach(i = seq(n_replicates), .combine = c, .inorder = FALSE) %dopar% {
     simulate_zip_scanstatistic(table, regions, ...)
   }
 }
