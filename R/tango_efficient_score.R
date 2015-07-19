@@ -1,4 +1,4 @@
-### General functions ----------------------------------------------------------
+### Main functions -------------------------------------------------------------
 
 nbinom_score_scanstatistic <- function(
   table, regions, n_replicates, type = "hotspot") {
@@ -28,6 +28,41 @@ nbinom_score_scanstatistic <- function(
        replicates = replicate_scanstats)
 }
 
+
+# Simulation and hypothesis testing functions ----------------------------------
+
+#' Randomly generate and add negative binomial counts to a table.
+#' 
+#' This function randomly generates counts from a negative binomial distribution
+#' according to the parameters on each row of the input \code{data.table},
+#' and adds the counts to a new column \code{count}. 
+#' @param table A \code{data.table} with at least the columns \code{mean} and
+#'    \code{phi}. The parameter \eqn{\phi} (phi) is the same as \code{size} in
+#'    \code{\link[stats]{rnbinom}}.
+#' @return The same table, with a new column \code{count}.
+generate_nbinom_counts <- function(table) {
+  table[is.finite(phi), count := rnbinom(.N, mu = mean, size = phi)]
+  table[is.infinite(phi), count := rpois(.N, mean)][]
+}
+
+#' Simulate a single negative binomial efficient score scan statistic.
+#' 
+#' Simulate negative binomial-distributed data according to the supplied 
+#' parameters and calculate the value of the efficient score scan statistic, 
+#' according to the specified model.
+#' @inheritParams generate_nbinom_counts
+#' @inheritParams partition_regions
+#' @param wstat_fun The function that calculates the statistic for each window.
+#' @return A scalar; the scan statistic for the simulated data.
+#' @importFrom magrittr %>%
+simulate_nbinom_scanstatistic <- function(table, regions, wstat_fun) {
+  table[, .(mean, phi), by = .(location, duration)] %>%
+    generate_nbinom_counts %>%
+    compute_nbinom_overdispersion %>%
+    wstat_fun(regions) %>%
+    extract_scanstatistic
+}
+
 #' Monte Carlo simulation of negative binomial efficient score scan statistics.
 #' 
 #' This function generates \code{n_replicates} negative binomial-distributed 
@@ -47,28 +82,14 @@ nbinom_mcsim <- function(table, regions, n_replicates, type = "hotspot") {
   } else {
     window_stats <- hotspot_calculations
   }
-  foreach::foreach(i = seq(n_replicates), 
-                   .combine = c, 
-                   .inorder = FALSE) %do% {
+  foreach(i = seq(n_replicates), .combine = c, .inorder = FALSE) %dopar% {
+    # simulate_nbinom_scanstatistic(table, regions, window_stats)
     table[, .(mean, phi), by = .(location, duration)] %>%
       generate_nbinom_counts %>%
       compute_nbinom_overdispersion %>%
       window_stats(regions) %>%
       extract_scanstatistic
   }
-}
-
-#' Randomly generate and add negative binomial counts to a table.
-#' 
-#' This function randomly generates counts from a negative binomial distribution
-#' according to the parameters on each row of the input \code{data.table},
-#' and adds the counts to a new column \code{count}. 
-#' @param table A \code{data.table} with at least the columns \code{mean} and
-#'    \code{phi}. The parameter \eqn{\phi} (phi) is the same as \code{size} in
-#'    \code{\link[stats]{rnbinom}}.
-#' @return The same table, with a new column \code{count}.
-generate_nbinom_counts <- function(table) {
-  table[, count := rnbinom(.N, mu = mean, size = phi)][]
 }
 
 #' Computes the overdispersion parameter for a fitted negative binomial model.

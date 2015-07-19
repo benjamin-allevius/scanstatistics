@@ -15,9 +15,11 @@ test_that("nbinom_mcsim", {
   
   actual_hotspot <- nbinom_mcsim(table, regions, nsims, type = "hotspot")
   expect_true(length(actual_hotspot) == nsims)
+  expect_true(!any(is.na(actual_hotspot)))
   
   actual_outbreak <- nbinom_mcsim(table, regions, nsims, type = "outbreak")
   expect_true(length(actual_outbreak) == nsims)
+  expect_true(!any(is.na(actual_outbreak)))
 })
 
 test_that("efficient_score_terms_nbinom: calculates correctly", {
