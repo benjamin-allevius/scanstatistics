@@ -1,22 +1,59 @@
 context("Region-creating functions")
 
-test_that("k_nearest_neighbors: returns correct order", {
-  x <- matrix(c(c(-0.70,  1.01,  1.13, -0.11),
-                c(-0.18,  0.82,  0.81, -0.76), 
-                c(-0.14, -0.21,  0.33, -0.35),
-                c(0.28,   0.65,  1.02,  0.35),
-                c(0.40,   0.18, -0.59,  0.79)),
-              ncol = 4, byrow = TRUE)
+test_that("dist_to_knn: returns correct order", {
+  coords <- matrix(c(c(0, 0),
+                     c(1, 0), 
+                     c(4, 0),
+                     c(1, 2),
+                     c(-0.5, 2)),
+                   ncol = 2, byrow = TRUE)
+  m <- as.matrix(dist(coords, diag = T, upper = T))
   
-  nn <- matrix(c(c(1, 2, 4, 3, 5),
-                 c(2, 1, 3, 4, 5), 
-                 c(3, 2, 4, 1, 5),
-                 c(4, 1, 2, 3, 5),
-                 c(5, 3, 4, 2, 1)),
-               ncol = 5, byrow = TRUE)
+  true_nns <- matrix(c(c(1, 2, 5, 4, 3),
+                       c(2, 1, 4, 5, 3), 
+                       c(3, 2, 4, 1, 5),
+                       c(4, 5, 2, 1, 3),
+                       c(5, 4, 1, 2, 3)),
+                     ncol = 5, byrow = TRUE)
   
-  expect_equal(unname(k_nearest_neighbors(x)), nn)
+  expect_equal(unname(dist_to_knn(m)), true_nns)
 })
+
+test_that("k_nearest_neighbors: returns correct order", {
+  coords <- matrix(c(c(0, 0),
+                     c(1, 0), 
+                     c(4, 0),
+                     c(1, 2),
+                     c(-0.5, 2)),
+                   ncol = 2, byrow = TRUE)
+  
+  true_nns <- matrix(c(c(1, 2, 5, 4, 3),
+                       c(2, 1, 4, 5, 3), 
+                       c(3, 2, 4, 1, 5),
+                       c(4, 5, 2, 1, 3),
+                       c(5, 4, 1, 2, 3)),
+                     ncol = 5, byrow = TRUE)
+  
+  expect_equal(unname(coords_to_knn(coords)), true_nns)
+})
+
+# test_that("k_nearest_neighbors: returns correct order", {
+#   x <- matrix(c(c(-0.70,  1.01,  1.13, -0.11),
+#                 c(-0.18,  0.82,  0.81, -0.76), 
+#                 c(-0.14, -0.21,  0.33, -0.35),
+#                 c(0.28,   0.65,  1.02,  0.35),
+#                 c(0.40,   0.18, -0.59,  0.79)),
+#               ncol = 4, byrow = TRUE)
+#   
+#   nn <- matrix(c(c(1, 2, 4, 3, 5),
+#                  c(2, 1, 3, 4, 5), 
+#                  c(3, 2, 4, 1, 5),
+#                  c(4, 1, 2, 3, 5),
+#                  c(5, 3, 4, 2, 1)),
+#                ncol = 5, byrow = TRUE)
+#   
+#   expect_equal(unname(k_nearest_neighbors(x)), nn)
+# })
 
 
 test_that("closest_subsets: returns correct sets", {

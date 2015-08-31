@@ -1,17 +1,38 @@
 
-#' Get the k nearest neighbors for each point.
+
+
+#' Get the k nearest neighbors for each point, given its coordinates.
 #' 
 #' Get the k nearest neighbors for each point, including the point itself.
 #' This function calls \code{\link[stats]{dist}},
 #' so the options for the distance measure used is the same as for that one.
+#' Distances are calculated between rows.
 #' @param k The number of nearest neighbors, counting the point itself.
 #' @inheritParams stats::dist
-k_nearest_neighbors <- function(x, 
-                                k = min(10, nrow(x)), 
-                                method = "euclidean", 
-                                p = 2) {
-  t(apply(as.matrix(dist(x, method = "euclidean", diag = T, upper = T, p = 2)),
-          2, order))[, seq(k)]
+#' @return A matrix of integers, row \eqn{i} containing the \eqn{k} nearest 
+#'    neighbors of point \eqn{i}, including itself.
+coords_to_knn <- function(x, 
+                          k = min(10, nrow(x)), 
+                          method = "euclidean", 
+                          p = 2) {
+  dist_to_knn(dist(x, method = "euclidean", diag = T, upper = T, p = p), k = k)
+}
+
+#' Given a distance matrix, calculate \eqn{k} nearest neighbors.
+#' 
+#' Given a distance matrix, calculate the \eqn{k} nearest neighbors of each 
+#' point, including the point itself. The matrix should contain only zeros on 
+#' the diagonal, and all other elements should be positive. 
+#' @param x A distance matrix. Elements should be non-negative and the diagonal
+#'    zeros, but this is not checked.
+#' @inheritParams coords_to_knn
+#' @return A matrix of integers, row \eqn{i} containing the \eqn{k} nearest 
+#'    neighbors of point \eqn{i}, including itself.
+dist_to_knn <- function(x, k = min(10, nrow(x))) {
+  if (class(x) == "dist" && (!attr(x, "Diag") || !attr(x, "Upper"))) {
+    stop("If x is a 'dist' object, it must have diag=TRUE and upper=TRUE")
+  }
+  t(apply(as.matrix(x), 2, order))[, seq(k)]
 }
 
 
