@@ -74,6 +74,7 @@ simulate_zip_scanstatistic <- function(table, regions, ...) {
 #'    statistics to generate.
 #' @return A numeric vector of length \code{n_replicates}.
 #' @importFrom magrittr %>%
+#' @importFrom foreach %dopar%
 zip_mcsim <- function(table, regions, n_replicates = 999L, ...) {
   foreach(i = seq(n_replicates), .combine = c, .inorder = FALSE) %dopar% {
     simulate_zip_scanstatistic(table, regions, ...)
@@ -103,6 +104,7 @@ estimate_d_dagger <- function(table) {
 #' @param table A \code{data.table} with columns \code{duration, location, 
 #'    p, mean, count}.
 #' @param maxdur An integer; the maximum duration considered.
+#' @param ... Arguments passed to \code{\link{window_zip_statistic}}.
 #' @return A list with two elements:
 #' \describe{
 #'   \item{duration}{Vector of integers from 1 to \code{maxdur}.}
