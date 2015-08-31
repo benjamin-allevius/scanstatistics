@@ -54,6 +54,11 @@ globalVariables(c(
   "phi",
   "relrisk",
   "statistic",
+  "counts",
+  "ddagger",
+  "p",
+  "score",
+  "event_start_time",
 ## data.table functions---------------------------------------------------------
   "data.table",
   "is.data.table",
