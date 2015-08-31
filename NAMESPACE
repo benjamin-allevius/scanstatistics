@@ -3,4 +3,5 @@
 export(MBSS)
 import(data.table)
 importFrom(foreach,"%do%")
+importFrom(foreach,"%dopar%")
 importFrom(magrittr,"%>%")
