@@ -8,16 +8,16 @@ test_that("nbinom_mcsim", {
   table[, mean := 1:6 + 0.5]
   table[, phi := c(0.2, 0.5, 2.5, 5, 10, 100)]
   table[, count := c(5, 2, 5, 15, 12, 3)]
-  regions <- sets::set(sets::as.set(1L), 
+  zones <- sets::set(sets::as.set(1L), 
                        sets::as.set(2L),
                        sets::as.set(1:2))
   nsims <- 10
   
-  actual_hotspot <- nbinom_mcsim(table, regions, nsims, type = "hotspot")
+  actual_hotspot <- nbinom_mcsim(table, zones, nsims, type = "hotspot")
   expect_true(length(actual_hotspot) == nsims)
   expect_true(!any(is.na(actual_hotspot)))
   
-  actual_outbreak <- nbinom_mcsim(table, regions, nsims, type = "outbreak")
+  actual_outbreak <- nbinom_mcsim(table, zones, nsims, type = "outbreak")
   expect_true(length(actual_outbreak) == nsims)
   expect_true(!any(is.na(actual_outbreak)))
 })
@@ -52,17 +52,17 @@ test_that("efficient_score_terms_poisson: calculates correctly", {
   expect_equal(actual[, denom], expected_den)
 })
 
-test_that("efficient_score_region_sums: calculates correctly", {
+test_that("efficient_score_zone_sums: calculates correctly", {
   table <- table_creator(list(location = 1:2, duration = 1:2), 
                          keys = c("location", "duration"))
   table[, num := 1:4]
   table[, denom := 5:8]
-  regions <- sets::set(sets::as.set(1L), 
+  zones <- sets::set(sets::as.set(1L), 
                        sets::as.set(2L),
                        sets::as.set(1:2))
   expected_num <- c(1:4, 1+3, 2+4)
   expected_denom <- c(5:8, 5+7, 6+8)
-  actual <- efficient_score_region_sums(table, regions)
+  actual <- efficient_score_zone_sums(table, zones)
   expect_equal(actual[, num], expected_num)
   expect_equal(actual[, denom], expected_denom)
 })
@@ -70,7 +70,7 @@ test_that("efficient_score_region_sums: calculates correctly", {
 ### Functions for hotspot model ------------------------------------------------
 
 test_that("hotspot_efficient_score: calculated correctly", {
-  d <- data.table(region = rep(1:3, each = 3),
+  d <- data.table(zone = rep(1:3, each = 3),
                   duration = rep(1:3, 3))
   d[, num := 1:9 - 5]
   d[, denom := 1:9]
@@ -108,7 +108,7 @@ test_that("convolute_denominator: calculated correctly", {
 })
 
 test_that("outbreak_efficient_score: calculated correctly", {
-  d <- data.table(region = rep(1:3, each = 3),
+  d <- data.table(zone = rep(1:3, each = 3),
                   duration = rep(1:3, 3))
   d[, num := 1:9 - 5]
   d[, denom := 1:9]

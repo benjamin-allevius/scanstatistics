@@ -1,6 +1,6 @@
-context("Region utility functions")
+context("zone utility functions")
 
-# regions <- sets::set(sets::as.set(1L),
+# zones <- sets::set(sets::as.set(1L),
 #                      sets::as.set(2L),
 #                      sets::as.set(3L),
 #                      sets::as.set(1:2),              
@@ -8,7 +8,7 @@ context("Region utility functions")
 #                      sets::as.set(c(2L, 3L)))
 # 
 # 
-# regions <- sets::set(sets::as.set(1L),
+# zones <- sets::set(sets::as.set(1L),
 #                      sets::as.set(2L),
 #                      sets::as.set(3L),
 #                      sets::as.set(1:2),              

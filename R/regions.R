@@ -54,7 +54,7 @@ dist_to_knn <- function(x, k = min(10, nrow(x))) {
 #'    own nearest neighbor, so the first column of row \eqn{i} should be (the 
 #'    identifier) of point \eqn{i} itself.
 #' @inheritParams plyr::alply
-regions_upto_k <- function(k_nearest, .parallel = FALSE, .paropts = NULL) {
+zones_upto_k <- function(k_nearest, .parallel = FALSE, .paropts = NULL) {
   Reduce(sets::set_union, 
          plyr::alply(k_nearest, 
                      .margins = 1, 
@@ -77,20 +77,20 @@ closest_subsets <- function(v) {
                       sets::as.set))
 }
 
-#' Computes the flexibly shaped regions as in Tango (2005).
+#' Computes the flexibly shaped zones as in Tango (2005).
 #' 
 #' Given a matrix of \eqn{k} nearest neighbors and an adjacency matrix
-#' for the locations involved, produces the set of flexibly shaped regions
-#' (sets of locations). The regions in these sets are all connected,
-#' in the sense that any location in the region can be reached from another
-#' by traveling through adjacent locations within the region.
+#' for the locations involved, produces the set of flexibly shaped zones
+#' (sets of locations). The zones in these sets are all connected,
+#' in the sense that any location in the zone can be reached from another
+#' by traveling through adjacent locations within the zone.
 #' @param k_nearest A matrix of the \eqn{k} nearest neighbors for each location.
 #'    Each row corresponds to a location, with the first element of each row
 #'    being the location itself. Locations should preferably be given as 
 #'    integers.
 #' @inheritParams connected_to
 #' @inheritParams plyr::alply
-flexible_regions <- function(k_nearest, 
+flexible_zones <- function(k_nearest, 
                              adjacency_matrix,
                              .parallel = FALSE, 
                              .paropts = NULL) {

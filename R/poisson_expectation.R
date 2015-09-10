@@ -1,18 +1,18 @@
 # Main functions ---------------------------------------------------------------
 
-poisson_scanstatistic <- function(table, regions, n_replicates) {
+poisson_scanstatistic <- function(table, zones, n_replicates) {
   # input validation
   
   # Calculate statistics for observed data
   # extract max value
-  observed_statistics <- poisson_calculations(table, regions)
+  observed_statistics <- poisson_calculations(table, zones)
   scan_obs <- extract_scanstatistic(observed_statistics)
   
-  replicate_scanstats <- poisson_mcsim(table, regions, n_replicates)
+  replicate_scanstats <- poisson_mcsim(table, zones, n_replicates)
   pval <- mc_pvalue(scan_obs, replicate_scanstats)
   
   list(data = table,
-       regions = regions,
+       zones = zones,
        n_replicates = n_replicates,
        replicates = replicate_scanstats,
        observed = observed_statistics,
@@ -41,13 +41,13 @@ generate_poisson_counts <- function(table) {
 #' calculate the value of the expectation-based Poisson scan statistic.
 #' @param table A \code{data.table} with columns \code{location, duration, 
 #'    mean}.
-#' @inheritParams partition_regions
+#' @inheritParams partition_zones
 #' @return A scalar; the scan statistic for the simulated data.
 #' @importFrom magrittr %>%
-simulate_poisson_scanstatistic <- function(table, regions) {
+simulate_poisson_scanstatistic <- function(table, zones) {
   table[, .(mean), by = .(location, duration)] %>%
     generate_poisson_counts %>% 
-    poisson_calculations(regions = regions) %>%
+    poisson_calculations(zones = zones) %>%
     extract_scanstatistic
 }
 
@@ -56,16 +56,16 @@ simulate_poisson_scanstatistic <- function(table, regions) {
 #' This function generates \code{n_replicates} Poisson-distributed data sets 
 #' according to the parameters in the input table, and calculates the value of
 #' the scan statistic for each generated data set using the supplied 
-#' \code{regions}.
+#' \code{zones}.
 #' @inheritParams simulate_poisson_scanstatistic
-#' @inheritParams partition_regions
+#' @inheritParams partition_zones
 #' @param n_replicates A positive integer; the number of replicate scan 
 #'    statistics to generate.
 #' @return A numeric vector of length \code{n_replicates}.
 #' @importFrom foreach %dopar%
-poisson_mcsim <- function(table, regions, n_replicates = 999L) {
+poisson_mcsim <- function(table, zones, n_replicates = 999L) {
   foreach(i = seq(n_replicates), .combine = c, .inorder = FALSE) %dopar% {
-    simulate_poisson_scanstatistic(table, regions)
+    simulate_poisson_scanstatistic(table, zones)
   }
 }
 
@@ -78,17 +78,17 @@ poisson_mcsim <- function(table, regions, n_replicates = 999L) {
 #' given the initial data of counts and means.
 #' @param table A \code{data.table} with columns \code{location, duration, 
 #'    count, mean}.
-#' @param regions A \code{list} or \code{set} of regions, each region itself a 
+#' @param zones A \code{list} or \code{set} of zones, each zone itself a 
 #'    set containing one or more locations of those found in \code{table}.
-#' @return A \code{data.table} with columns \code{region, duration, statistic}.
+#' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #'    The column \code{statistic} contains the logarithm of the statistic for 
-#'    each region-duration combination.
+#'    each zone-duration combination.
 #' @importFrom magrittr %>%
-poisson_calculations <- function(table, regions) {
+poisson_calculations <- function(table, zones) {
   table %>% 
-    region_joiner(regions = regions, keys = c("region", "duration")) %>%
-    region_sum(sumcols = c("count", "mean")) %>%
-    cumsum_duration(sumcols = c("count", "mean"), bycols = c("region")) %>%
+    zone_joiner(zones = zones, keys = c("zone", "duration")) %>%
+    zone_sum(sumcols = c("count", "mean")) %>%
+    cumsum_duration(sumcols = c("count", "mean"), bycols = c("zone")) %>%
     poisson_relrisk %>%
     poisson_statistic
 }
@@ -98,29 +98,29 @@ poisson_calculations <- function(table, regions) {
 #' This function calculates the logarithm of the expectation-based Poisson 
 #' statistic for each space-time window, given already calculated relative risks
 #' and aggregate counts and means.
-#' @param table A \code{data.table} with columns \code{region, duration, count,
+#' @param table A \code{data.table} with columns \code{zone, duration, count,
 #'    mean, relrisk}. The columns \code{count} and \code{mean} contain the sums
-#'    of the counts and means for the locations inside each region and up to the
+#'    of the counts and means for the locations inside each zone and up to the
 #'    given duration. The column \code{relrisk} contains the maximum likelihood
-#'    estimate for the relative risk for each region-duration combination.
-#' @return A \code{data.table} with columns \code{region, duration, statistic}.
+#'    estimate for the relative risk for each zone-duration combination.
+#' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #'    The column \code{statistic} contains the logarithm of the statistic for 
-#'    each region-duration combination.
+#'    each zone-duration combination.
 poisson_statistic <- function(table) {
   table[, .(statistic = log(relrisk) * count - (relrisk - 1) * mean),
-        by = .(region, duration)]
+        by = .(zone, duration)]
 }
 
 #' Add column for relative risk MLE to table with aggregate counts and means.
 #' 
 #' This function adds a column for the maximum likelihood estimate for the
 #' relative risk (assumed to be 1 or greater). The table should contain the
-#' aggregates (sums) of the counts and means for each region and duration.
-#' @param table A \code{data.table} with columns \code{region, duration, count,
+#' aggregates (sums) of the counts and means for each zone and duration.
+#' @param table A \code{data.table} with columns \code{zone, duration, count,
 #'    mean}. The latter two are the sums of counts and means for the locations
-#'    comprising the region and up to the given duration (i.e. cumulative sum 
+#'    comprising the zone and up to the given duration (i.e. cumulative sum 
 #'    for the duration).
 #' @return The same table, with an extra column \code{relrisk}.
 poisson_relrisk <- function(table) {
-  table[, relrisk := max(1, count / mean), by = .(region, duration)]
+  table[, relrisk := max(1, count / mean), by = .(zone, duration)]
 }

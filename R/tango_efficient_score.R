@@ -1,7 +1,7 @@
 ### Main functions -------------------------------------------------------------
 
 nbinom_score_scanstatistic <- function(
-  table, regions, n_replicates, type = "hotspot") {
+  table, zones, n_replicates, type = "hotspot") {
   # input validation
   
   if (type == "outbreak") {
@@ -12,14 +12,14 @@ nbinom_score_scanstatistic <- function(
   
   # Calculate statistics for observed data
   # extract max value
-  observed_statistics <- window_stats(table, regions)
+  observed_statistics <- window_stats(table, zones)
   scan_obs <- extract_scanstatistic(observed_statistics)
   
-  replicate_scanstats <- nbinom_mcsim(table, regions, n_replicates, type)
+  replicate_scanstats <- nbinom_mcsim(table, zones, n_replicates, type)
   pval <- mc_pvalue(scan_obs, replicate_scanstats)
   
   list(data = table,
-       regions = regions,
+       zones = zones,
        n_replicates = n_replicates,
        replicates = replicate_scanstats,
        observed = observed_statistics,
@@ -51,15 +51,15 @@ generate_nbinom_counts <- function(table) {
 #' parameters and calculate the value of the efficient score scan statistic, 
 #' according to the specified model.
 #' @inheritParams generate_nbinom_counts
-#' @inheritParams partition_regions
+#' @inheritParams partition_zones
 #' @param wstat_fun The function that calculates the statistic for each window.
 #' @return A scalar; the scan statistic for the simulated data.
 #' @importFrom magrittr %>%
-simulate_nbinom_scanstatistic <- function(table, regions, wstat_fun) {
+simulate_nbinom_scanstatistic <- function(table, zones, wstat_fun) {
   table[, .(mean, phi), by = .(location, duration)] %>%
     generate_nbinom_counts %>%
     compute_nbinom_overdispersion %>%
-    wstat_fun(regions) %>%
+    wstat_fun(zones) %>%
     extract_scanstatistic
 }
 
@@ -68,27 +68,27 @@ simulate_nbinom_scanstatistic <- function(table, regions, wstat_fun) {
 #' This function generates \code{n_replicates} negative binomial-distributed 
 #' data sets according to the parameters in the input table, and calculates the 
 #' value of the efficient score scan statistic for each generated data set using 
-#' the supplied \code{regions}. The score can be calculated either according to
+#' the supplied \code{zones}. The score can be calculated either according to
 #' the hotspot cluster model or the emerging outbreak model.
 #' @inheritParams generate_nbinom_counts
-#' @inheritParams partition_regions
+#' @inheritParams partition_zones
 #' @param n_replicates A positive integer; the number of replicate scan 
 #'    statistics to generate.
 #' @param type Either "hotspot" or "outbreak".
 #' @return A numeric vector of length \code{n_replicates}.
 #' @importFrom magrittr %>%
-nbinom_mcsim <- function(table, regions, n_replicates, type = "hotspot") {
+nbinom_mcsim <- function(table, zones, n_replicates, type = "hotspot") {
   if (type == "outbreak") {
     window_stats <- outbreak_calculations
   } else {
     window_stats <- hotspot_calculations
   }
   foreach(i = seq(n_replicates), .combine = c, .inorder = FALSE) %dopar% {
-    # simulate_nbinom_scanstatistic(table, regions, window_stats)
+    # simulate_nbinom_scanstatistic(table, zones, window_stats)
     table[, .(mean, phi), by = .(location, duration)] %>%
       generate_nbinom_counts %>%
       compute_nbinom_overdispersion %>%
-      window_stats(regions) %>%
+      window_stats(zones) %>%
       extract_scanstatistic
   }
 }
@@ -143,19 +143,19 @@ efficient_score_terms_poisson <- function(table) {
         by = .(location, duration)]
 }
 
-#' Sums the numerator and denominator terms over all locations in each region.
+#' Sums the numerator and denominator terms over all locations in each zone.
 #' 
 #' Computes the sum of the numerator and denominator terms over all locations in
-#' each region, as part of the efficient score calculation.
+#' each zone, as part of the efficient score calculation.
 #' @param table A \code{data.table} with columns \code{location, duration, num,
 #'    denom}; the output from \code{\link{efficient_score_terms_nbinom}}.
-#' @inheritParams partition_regions
-#' @return A \code{data.table} with columns \code{region, duration, num, denom}.
+#' @inheritParams partition_zones
+#' @return A \code{data.table} with columns \code{zone, duration, num, denom}.
 #' @importFrom magrittr %>%
-efficient_score_region_sums <- function(table, regions) {
+efficient_score_zone_sums <- function(table, zones) {
   table %>% 
-    region_joiner(regions = regions, keys = c("region", "duration")) %>%
-    region_sum(sumcols = c("num", "denom"))
+    zone_joiner(zones = zones, keys = c("zone", "duration")) %>%
+    zone_sum(sumcols = c("num", "denom"))
 }
 
 
@@ -166,13 +166,13 @@ efficient_score_region_sums <- function(table, regions) {
 #' Calculate the hotspot efficient score for each space-time window, given the 
 #' initial data of counts, means, and overdispersion parameters.
 #' @inheritParams efficient_score_terms_nbinom
-#' @inheritParams partition_regions
-#' @return A \code{data.table} with columns \code{region, duration, statistic}.
+#' @inheritParams partition_zones
+#' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @importFrom magrittr %>%
-hotspot_calculations <- function(table, regions) {
+hotspot_calculations <- function(table, zones) {
   table %>% 
     efficient_score_terms_nbinom %>%
-    efficient_score_region_sums(regions) %>%
+    efficient_score_zone_sums(zones) %>%
     hotspot_efficient_score
 }
 
@@ -181,14 +181,14 @@ hotspot_calculations <- function(table, regions) {
 #' Computes the efficient score statistic for each space-time window, assuming a 
 #' hotspot outbreak model and either a Poisson or a negative binomial 
 #' distribution for the counts.
-#' @param table A \code{data.table} with columns \code{region, duration, num, 
+#' @param table A \code{data.table} with columns \code{zone, duration, num, 
 #'    denom}.
-#' @return A \code{data.table} with columns \code{region, duration, statistic}.
+#' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 hotspot_efficient_score <- function(table) {
   table[,
         .(duration = duration,
           statistic = cumsum(num) / sqrt(cumsum(denom))),
-        by = .(region)]
+        by = .(zone)]
 }
 
 ### Functions for outbreak model -----------------------------------------------
@@ -198,13 +198,13 @@ hotspot_efficient_score <- function(table) {
 #' Calculate the outbreak efficient score for each space-time window, given the 
 #' initial data of counts, means, and overdispersion parameters.
 #' @inheritParams efficient_score_terms_nbinom
-#' @inheritParams partition_regions
-#' @return A \code{data.table} with columns \code{region, duration, statistic}.
+#' @inheritParams partition_zones
+#' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @importFrom magrittr %>%
-outbreak_calculations <- function(table, regions) {
+outbreak_calculations <- function(table, zones) {
   table %>% 
     efficient_score_terms_nbinom %>%
-    efficient_score_region_sums(regions) %>%
+    efficient_score_zone_sums(zones) %>%
     outbreak_efficient_score
 }
 
@@ -214,18 +214,18 @@ outbreak_calculations <- function(table, regions) {
 #' an (emergent) outbreak model and either a Poisson or a negative binomial 
 #' distribution for the counts.
 #' @inheritParams hotspot_efficient_score
-#' @return A \code{data.table} with columns \code{region, duration, statistic}.
+#' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 outbreak_efficient_score <- function(table) {
   table[,
     .(duration = duration,
       statistic = convolute_numerator(num, duration)
       / sqrt(convolute_denominator(denom, duration))), 
-    by = .(region)]
+    by = .(zone)]
 }
 
 #' Computes the sum in the outbreak efficient score numerator.
 #' 
-#' @param x A vector of normalized counts summed over a single region.
+#' @param x A vector of normalized counts summed over a single zone.
 #' @param d A vector of outbreak durations considered.
 #' @return A vector of length \code{length(d)}.
 convolute_numerator <- Vectorize(

@@ -150,13 +150,3 @@ get_set <- function(set_of_sets, index) {
     i <- i + 1
   }
 }
-
-get_region <- function(regions, number) {
-  i <- 1
-  for (s in regions) {
-    if (i == number) {
-      return(s)
-    }
-    i <- i + 1
-  }
-}

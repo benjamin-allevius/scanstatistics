@@ -1,4 +1,4 @@
-context("Region-creating functions")
+context("zone-creating functions")
 
 test_that("dist_to_knn: returns correct order", {
   coords <- matrix(c(c(0, 0),
@@ -64,7 +64,7 @@ test_that("closest_subsets: returns correct sets", {
   expect_equal(closest_subsets(1:4), expres)
 })
 
-test_that("regions_upto_k: returns correct sets", {
+test_that("zones_upto_k: returns correct sets", {
   nn <- matrix(c(c(1L, 2L, 4L, 3L, 5L),
                  c(2L, 1L, 3L, 4L, 5L), 
                  c(3L, 2L, 4L, 1L, 5L),
@@ -80,12 +80,12 @@ test_that("regions_upto_k: returns correct sets", {
                     sets::as.set(c(3L, 2L)),
                     sets::as.set(c(4L, 1L)),
                     sets::as.set(c(5L, 3L)))
-  expect_equal(regions_upto_k(nn[, 1:2]), regs)
+  expect_equal(zones_upto_k(nn[, 1:2]), regs)
 })
 
-# Flexible region shape (Tango 2005) -------------------------------------------
+# Flexible zone shape (Tango 2005) -------------------------------------------
 
-test_that("flexible_regions: works", {
+test_that("flexible_zones: works", {
   A <- matrix(c(0,1,0,0,0,0,
                 1,0,1,0,0,0,
                 0,1,0,0,0,0,
@@ -102,7 +102,7 @@ test_that("flexible_regions: works", {
                  5,4,6,1,3,2,
                  6,5,4,1,3,2)),
                nrow = 6, byrow = TRUE)
-  expect_equal(flexible_regions(kn, A),
+  expect_equal(flexible_zones(kn, A),
                sets::set(sets::set(1L),
                          sets::set(2L),
                          sets::set(3L),

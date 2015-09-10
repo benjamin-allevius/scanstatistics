@@ -6,22 +6,22 @@ test_that("poisson_mcsim", {
                          keys = c("location", "duration"))
   table[, mean := 1:6 + 0.5]
   table[, count := c(1,3,2, 7, 3, 10)]
-  regions <- sets::set(sets::as.set(1L), 
+  zones <- sets::set(sets::as.set(1L), 
                        sets::as.set(2L),
                        sets::as.set(1:2))
   
   nsims <- 10
-  actual <- poisson_mcsim(table, regions, nsims)
+  actual <- poisson_mcsim(table, zones, nsims)
   expect_true(!any(actual < 0))
   expect_true(length(actual) == nsims)
 })
 
 test_that("poisson_statistic: calculates correctly", {
-  table <- table_creator(list(region = 1:3, duration = 1:2), 
-                         keys = c("region", "duration"))
+  table <- table_creator(list(zone = 1:3, duration = 1:2), 
+                         keys = c("zone", "duration"))
   table[, mean := 1:6 + 0.5]
   table[, count := c(1,3,2, 7, 3, 10)]
-  table[, relrisk := max(1, count / mean), by = .(region, duration)]
+  table[, relrisk := max(1, count / mean), by = .(zone, duration)]
   
   actual <- poisson_statistic(table)[, statistic]
   expected <- c(0, 
@@ -34,8 +34,8 @@ test_that("poisson_statistic: calculates correctly", {
 })
 
 test_that("poisson_relrisk: calculates correctly", {
-  table <- table_creator(list(region = 1:3, duration = 1:2), 
-                         keys = c("region", "duration"))
+  table <- table_creator(list(zone = 1:3, duration = 1:2), 
+                         keys = c("zone", "duration"))
   table[, mean := 1:6 + 0.5]
   table[, count := c(1,3,2, 7, 3, 10)]
   

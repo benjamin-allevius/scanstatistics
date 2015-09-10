@@ -1,23 +1,23 @@
 # Main functions ---------------------------------------------------------------
 
-zip_scanstatistic <- function(table, regions, n_replicates, ...) {
+zip_scanstatistic <- function(table, zones, n_replicates, ...) {
   # input validation
   
   # Calculate statistics for observed data
   # extract max value
   maxdur <- table[, max(duration)]
-  observed_statistics <- zip_calculations(table, regions, maxdur = maxdur, ...)
+  observed_statistics <- zip_calculations(table, zones, maxdur = maxdur, ...)
   scan_obs <- extract_scanstatistic(observed_statistics)
   
   replicate_scanstats <- zip_mcsim(table, 
-                                   regions, 
+                                   zones, 
                                    n_replicates, 
                                    maxdur = maxdur,
                                    ...)
   pval <- mc_pvalue(scan_obs, replicate_scanstats)
   
   list(data = table,
-       regions = regions,
+       zones = zones,
        n_replicates = n_replicates,
        replicates = replicate_scanstats,
        observed = observed_statistics,
@@ -54,15 +54,15 @@ generate_zip_counts <- function(table, abs_tol = 1e08) {
 #' @param table A \code{data.table} with columns \code{location, duration, p,
 #'    mean}. The column \code{mean} contains the Poisson means, the column 
 #'    \code{p} contains the excess zero probabilities.
-#' @inheritParams partition_regions
+#' @inheritParams partition_zones
 #' @param ... Arguments passed to \code{\link{zip_calculations}}.
 #' @return A scalar; the expectation-based ZIP-EM scan statistic for the 
 #'    simulated data.
 #' @importFrom magrittr %>%
-simulate_zip_scanstatistic <- function(table, regions, ...) {
+simulate_zip_scanstatistic <- function(table, zones, ...) {
   table[, .(p, mean), by = .(location, duration)] %>%
     generate_zip_counts %>% 
-    zip_calculations(regions = regions, ...) %>%
+    zip_calculations(zones = zones, ...) %>%
     extract_scanstatistic
 }
 
@@ -71,19 +71,19 @@ simulate_zip_scanstatistic <- function(table, regions, ...) {
 #' This function generates \code{n_replicates} Poisson-distributed data sets 
 #' according to the parameters in the input table, and calculates the value of
 #' the scan statistic for each generated data set using the supplied 
-#' \code{regions}.
+#' \code{zones}.
 #' @param table A \code{data.table} with columns \code{location, duration, p,
 #'    mean}.
-#' @inheritParams partition_regions
+#' @inheritParams partition_zones
 #' @param n_replicates A positive integer; the number of replicate scan 
 #'    statistics to generate.
 #' @param ... Arguments passed to \code{\link{simulate_zip_scanstatistic}}.
 #' @return A numeric vector of length \code{n_replicates}.
 #' @importFrom magrittr %>%
 #' @importFrom foreach %dopar%
-zip_mcsim <- function(table, regions, n_replicates = 999L, ...) {
+zip_mcsim <- function(table, zones, n_replicates = 999L, ...) {
   foreach(i = seq(n_replicates), .combine = c, .inorder = FALSE) %dopar% {
-    simulate_zip_scanstatistic(table, regions, ...)
+    simulate_zip_scanstatistic(table, zones, ...)
   }
 }
 
@@ -103,10 +103,10 @@ estimate_d_dagger <- function(table) {
   table[, ddagger := estimate_d(p, mean, count)][]
 }
 
-#' Calculate the ZIP window statistic over all durations, for a given region.
+#' Calculate the ZIP window statistic over all durations, for a given zone.
 #' 
 #' This function calculates the zero-inflated Poisson statistic for a given 
-#' spatial region, for all durations considered.
+#' spatial zone, for all durations considered.
 #' @param table A \code{data.table} with columns \code{duration, location, 
 #'    p, mean, count}.
 #' @param maxdur An integer; the maximum duration considered.
@@ -129,7 +129,7 @@ calc_zipstat_over_duration <- function(table, maxdur, ...) {
 #' 
 #' Calculates the zero-inflated Poisson statistic for each space-time window,
 #' using the EM algorithm.
-#' @param table A \code{data.table} with columns \code{region, location, 
+#' @param table A \code{data.table} with columns \code{zone, location, 
 #'    duration, p, mean, count}.
 #' @param ... Any of the following named parameters:
 #' \describe{
@@ -137,9 +137,9 @@ calc_zipstat_over_duration <- function(table, maxdur, ...) {
 #'   \item{d_init}{As in \code{link{window_zip_statistic}}.}
 #'   \item{tol}{As in \code{link{window_zip_statistic}}.}
 #' }
-#' @return A \code{data.table} with columns \code{region, duration, statistic}.
+#' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 zip_statistic <- function(table, ...) {
-  table[, calc_zipstat_over_duration(.SD, ...), by = .(region)]
+  table[, calc_zipstat_over_duration(.SD, ...), by = .(zone)]
 }
 
 #' Calculate the (logarithm of the) ZIP statistic for each space-time window.
@@ -149,13 +149,13 @@ zip_statistic <- function(table, ...) {
 #' @param table A \code{data.table} with columns \code{location, duration, mean,
 #'    p, count}. The column \code{mean} contains the Poisson means, the column
 #'    \code{p} contains the excess zero probabilities.
-#' @inheritParams partition_regions
+#' @inheritParams partition_zones
 #' @param ... Arguments passed to \code{\link{simulate_zip_scanstatistic}}.
-#' @return A \code{data.table} with columns \code{region, duration, statistic}.
+#' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @importFrom magrittr %>%
-zip_calculations <- function(table, regions, ...) {
+zip_calculations <- function(table, zones, ...) {
   table %>%
-    region_joiner(regions = regions, keys = c("region", "duration")) %>%
+    zone_joiner(zones = zones, keys = c("zone", "duration")) %>%
     zip_statistic(...)
 }
 

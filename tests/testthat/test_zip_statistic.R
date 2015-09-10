@@ -98,12 +98,12 @@ test_that("zip_statistic: works", {
   # Counts should correspond to outbreak with duration 2 at location 1
   table[, count := c(5, 10, 1, 4, 5, 0)] 
   # table[, gamlss.dist::dZIP(count, mean, p)]
-  regions <- sets::set(sets::as.set(1L), 
+  zones <- sets::set(sets::as.set(1L), 
                        sets::as.set(2L),
                        sets::as.set(1:2))
-  dt <- region_joiner(table, regions = regions, keys = c("region", "duration"))
+  dt <- zone_joiner(table, zones = zones, keys = c("zone", "duration"))
   actual <- zip_statistic(dt, maxdur = 3)
-  # actual <- dt[, calc_zipstat_over_duration(.SD, 3), by = .(region)]
+  # actual <- dt[, calc_zipstat_over_duration(.SD, 3), by = .(zone)]
   expected <- c(
     dt[1L, window_zip_statistic(p, mean, count)],
     dt[1:2, window_zip_statistic(p, mean, count)],
@@ -123,12 +123,12 @@ test_that("zip_mcsim", {
                          keys = c("location", "duration"))
   table[, mean := 1:6 + 0.5]
   table[, p := 1:6 / 20]
-  regions <- sets::set(sets::as.set(1L), 
+  zones <- sets::set(sets::as.set(1L), 
                        sets::as.set(2L),
                        sets::as.set(1:2))
   nsims <- 10
   # set.seed(25)
-  actual <- zip_mcsim(table, regions, nsims, maxdur = 3)
+  actual <- zip_mcsim(table, zones, nsims, maxdur = 3)
   expect_true(length(actual) == nsims)
   # expect_true(!any(actual < 0))
 })
@@ -141,11 +141,11 @@ test_that("zip_scanstatistic", {
   # Counts should correspond to outbreak with duration 2 at location 1
   table[, count := c(5, 10, 1, 4, 5, 0)] 
   # table[, gamlss.dist::dZIP(count, mean, p)]
-  regions <- sets::set(sets::as.set(1L), 
+  zones <- sets::set(sets::as.set(1L), 
                        sets::as.set(2L),
                        sets::as.set(1:2))
   nsims <- 9
-  actual <- zip_scanstatistic(table, regions, nsims)
-  expect_equal(actual$mlc[, region], 1L)
+  actual <- zip_scanstatistic(table, zones, nsims)
+  expect_equal(actual$mlc[, zone], 1L)
   expect_equal(actual$mlc[, duration], 2L)
   })
