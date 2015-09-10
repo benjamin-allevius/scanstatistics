@@ -14,7 +14,7 @@ zip_scanstatistic <- function(table, regions, n_replicates, ...) {
                                    n_replicates, 
                                    maxdur = maxdur,
                                    ...)
-  pval <- (1 + sum(replicate_scanstats > scan_obs)) / (1 + n_replicates)
+  pval <- mc_pvalue(scan_obs, replicate_scanstats)
   
   list(data = table,
        regions = regions,
@@ -37,20 +37,25 @@ zip_scanstatistic <- function(table, regions, n_replicates, ...) {
 #'    correspond to the parameters \code{mu} and \code{sigma} in 
 #'    \code{\link[gamlss.dist]{rZIP}}; the former is the Poisson mean and the 
 #'    latter is the excess zero probability.
+#' @param abs_tol A scalar; if the excess zero probability is less than this 
+#'    value the count will be generated from a Poisson distribution.
 #' @return The same table, with a new column \code{count}.
-generate_zip_counts <- function(table) {
+generate_zip_counts <- function(table, abs_tol = 1e08) {
   # Note: rZIP returns a numeric vector
-  table[, count := gamlss.dist::rZIP(.N, mu = mean, sigma = p)][]
+  table[, count := 0]
+  table[p < abs_tol, count := as.numeric(rpois(.N, mean))]
+  table[p >= abs_tol, count := gamlss.dist::rZIP(.N, mu = mean, sigma = p)][]
 }
 
 #' Simulate a single expectation-based ZIP-EM scan statistic.
 #' 
 #' Simulate zero-inflated -distributed data according to the supplied parameters 
 #' and calculate the value of the expectation-based Poisson scan statistic.
-#' @param table A \code{data.table} with columns \code{location, duration, 
+#' @param table A \code{data.table} with columns \code{location, duration, p,
 #'    mean}. The column \code{mean} contains the Poisson means, the column 
 #'    \code{p} contains the excess zero probabilities.
 #' @inheritParams partition_regions
+#' @param ... Arguments passed to \code{\link{zip_calculations}}.
 #' @return A scalar; the expectation-based ZIP-EM scan statistic for the 
 #'    simulated data.
 #' @importFrom magrittr %>%
@@ -67,11 +72,12 @@ simulate_zip_scanstatistic <- function(table, regions, ...) {
 #' according to the parameters in the input table, and calculates the value of
 #' the scan statistic for each generated data set using the supplied 
 #' \code{regions}.
-#' @param table A \code{data.table} with columns \code{location, duration, 
+#' @param table A \code{data.table} with columns \code{location, duration, p,
 #'    mean}.
 #' @inheritParams partition_regions
 #' @param n_replicates A positive integer; the number of replicate scan 
 #'    statistics to generate.
+#' @param ... Arguments passed to \code{\link{simulate_zip_scanstatistic}}.
 #' @return A numeric vector of length \code{n_replicates}.
 #' @importFrom magrittr %>%
 #' @importFrom foreach %dopar%
@@ -143,6 +149,8 @@ zip_statistic <- function(table, ...) {
 #' @param table A \code{data.table} with columns \code{location, duration, mean,
 #'    p, count}. The column \code{mean} contains the Poisson means, the column
 #'    \code{p} contains the excess zero probabilities.
+#' @inheritParams partition_regions
+#' @param ... Arguments passed to \code{\link{simulate_zip_scanstatistic}}.
 #' @return A \code{data.table} with columns \code{region, duration, statistic}.
 #' @importFrom magrittr %>%
 zip_calculations <- function(table, regions, ...) {
@@ -182,10 +190,10 @@ estimate_zip_relrisk <- function(d, mu, y) {
 #'    \code{p}.
 #' @return A numeric vector, of same length as the input vector \code{p}.
 estimate_d <- function(p, mu, y) {
-  res <- rep(0, length(y))
+  d <- rep(0, length(y))
   zero <- y == 0L
-  res[zero] <- p[zero] / (p[zero] + (1 - p[zero]) * exp(-mu[zero]))
-  res
+  d[zero] <- p[zero] / (p[zero] + (1 - p[zero]) * exp(-mu[zero]))
+  d
 }
 
 #' Calculate a term in the sum of the logarithm of the ZIP window statistic.
