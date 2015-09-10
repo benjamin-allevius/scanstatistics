@@ -16,7 +16,7 @@ nbinom_score_scanstatistic <- function(
   scan_obs <- extract_scanstatistic(observed_statistics)
   
   replicate_scanstats <- nbinom_mcsim(table, regions, n_replicates, type)
-  pval <- (1 + sum(replicate_scanstats > scan_obs)) / (1 + n_replicates)
+  pval <- mc_pvalue(scan_obs, replicate_scanstats)
   
   list(data = table,
        regions = regions,
@@ -41,7 +41,7 @@ nbinom_score_scanstatistic <- function(
 #'    \code{\link[stats]{rnbinom}}.
 #' @return The same table, with a new column \code{count}.
 generate_nbinom_counts <- function(table) {
-  table[is.finite(phi), count := rnbinom(.N, mu = mean, size = phi)]
+  table[is.finite(phi), count := as.integer(rnbinom(.N, mu = mean, size = phi))]
   table[is.infinite(phi), count := rpois(.N, mean)][]
 }
 
@@ -74,6 +74,7 @@ simulate_nbinom_scanstatistic <- function(table, regions, wstat_fun) {
 #' @inheritParams partition_regions
 #' @param n_replicates A positive integer; the number of replicate scan 
 #'    statistics to generate.
+#' @param type Either "hotspot" or "outbreak".
 #' @return A numeric vector of length \code{n_replicates}.
 #' @importFrom magrittr %>%
 nbinom_mcsim <- function(table, regions, n_replicates, type = "hotspot") {
