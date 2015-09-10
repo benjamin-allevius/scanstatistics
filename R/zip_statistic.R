@@ -211,8 +211,32 @@ estimate_d <- function(p, mu, y) {
 #' @param y Integer vector of observed counts. Of same length as \code{p}.
 #' @return A numeric vector of same length as input vector \code{p}.
 zip_statistic_term <- function(q, p, dstar, ddagger, mu, y) {
-  (dstar - ddagger) * (log(p) - log(1 - p) - y * log(mu) + lfactorial(y)) +
-    (1 - dstar) * (y * log(q) - q * mu) + (1 - ddagger) * mu
+  zip_statistic_factor(p, dstar, q * mu, y) - 
+    zip_statistic_factor(p, ddagger, mu, y)
+  # (dstar - ddagger) * (log(p) - log(1 - p) - y * log(mu) + lfactorial(y)) +
+    # (1 - dstar) * (y * log(q) - q * mu) + (1 - ddagger) * mu
+}
+
+#' Factor(s) in the product of the EB-ZIP window statistic.
+#' 
+#' Computes one or more factors in the product of the numerator or denominator
+#' of the EB-ZIP window statistic (i.e. the one calculated for a given 
+#' space-time window W). Should be able to handle cases where p = 0.
+#' @param p Numeric vector of excess zero probabilities.
+#' @param d Numeric vector of estimates of the excess zero indicators. Of same 
+#'    length as \code{p}.
+#' @param mu Numeric vector of given/estimated Poisson means. Of same length as 
+#'    \code{p}.
+#' @param y Integer vector of observed counts. Of same length as \code{p}.
+#' @return A numeric vector of same length as input vector \code{p}.
+zip_statistic_factor <- function(p, d, mu, y, tol = 1e-08) {
+  res <- rep(0, length(p))
+  p_is_zero <- p < tol
+  res[p_is_zero] <- dpois(y[p_is_zero], mu[p_is_zero], log = TRUE)
+  res[!p_is_zero] <- d[!p_is_zero] * log(p[!p_is_zero]) + 
+    (1 - d[!p_is_zero]) * (log(1 - p[!p_is_zero]) + 
+                             dpois(y[!p_is_zero], mu[!p_is_zero], log = TRUE))
+  res
 }
 
 #' Estimates the ZIP relative risk and excess zero indicators for a window.
