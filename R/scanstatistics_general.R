@@ -1,5 +1,4 @@
 
-
 #' Extract value of scan statistic from per-window statistics.
 #' 
 #' This function extracts the value of the scan statistic, which is the maximum
@@ -22,4 +21,12 @@ extract_scanstatistic <- function(table) {
 #'    \code{statistic}.
 extract_mlc <- function(table) {
   table[which.max(statistic), ]
+}
+
+#' Calculate the Monte Carlo p-value for a scan statistic.
+#' @param observed A scalar; the observed value of the scan statistic.
+#' @param replicates A vector of Monte Carlo replicates of the scan statistic.
+#' @return A scalar; the p-value corresponding to the observed scan statistic.
+mc_pvalue <- function(observed, replicates) {
+  (1 + sum(replicates > observed)) / (1 + length(replicates))
 }

@@ -9,7 +9,7 @@ poisson_scanstatistic <- function(table, regions, n_replicates) {
   scan_obs <- extract_scanstatistic(observed_statistics)
   
   replicate_scanstats <- poisson_mcsim(table, regions, n_replicates)
-  pval <- (1 + sum(replicate_scanstats > scan_obs)) / (1 + n_replicates)
+  pval <- mc_pvalue(scan_obs, replicate_scanstats)
   
   list(data = table,
        regions = regions,
