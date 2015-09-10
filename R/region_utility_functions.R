@@ -169,7 +169,9 @@ region_table_creator <- function(regions, keys = NULL, offset = 0L) {
 #' Extract a spatial zone from the set of all zones.
 #' 
 #' Extract a spatial zone from the set of all zones, using its number.
-#' @
+#' @param zone An integer; the zone you wish to retrieve.
+#' @param all_zones The set of all zones.
+#' @return An element of \code{all_zones} matching the argument \code{zone}.
 get_zone <- function(zone, all_zones) {
   i <- 1
   for (z in all_zones) {
