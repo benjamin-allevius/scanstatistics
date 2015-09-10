@@ -1,8 +1,8 @@
 
 #' Sum columns over all location in each zone, for each duration.
 #' 
-#' @param table A \code{data.table} with columns \code{zone, location, 
-#'    duration} and those given in the argument \code{sumcols}.
+#' @param table A \code{data.table} with columns \code{zone, location, duration} 
+#'    and those given in the argument \code{sumcols}.
 #' @param sumcols Character vector of column names, the columns to be summed 
 #'    over each zone and duration.
 zone_sum <- function(table, sumcols) {

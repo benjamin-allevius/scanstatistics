@@ -11,12 +11,12 @@ auto_zone_partition_size <- function(zones) {
 
 #' Partition a set of zones.
 #' 
-#' Partition a set of zones such that each part contains about the same
-#' number of locations, when the number of locations in each zone for the
-#' part are summed over all zones in the part.
+#' Partition a set of zones such that each part contains about the same number 
+#' of locations, when the number of locations in each zone for the part are 
+#' summed over all zones in the part.
 #' @param zones A \code{set} of zones, each zone itself being a \code{set}
 #'    containing locations.
-#' @param n_parts An integer; the number of parts to split the \code{zones}
+#' @param n_parts An integer; the number of parts to split the \code{zones} 
 #'    into.
 #' @return A list with two elements:
 #'    \itemize{
@@ -71,15 +71,14 @@ partition_zones <- function(zones, n_parts = min(10L, length(zones))) {
 #' \code{location_table} according to the zones in \code{zone_partition}.
 #' @param location_table A \code{data.table} with key column \code{location},
 #'    and others which may be used by the supplied function.
-#' @param zone_partition A list as outputted by 
-#'    \code{\link{partition_zones}}. Has two elements:
+#' @param zone_partition A list as outputted by \code{\link{partition_zones}}. 
+#'    Has two elements:
 #'    \describe{
 #'      \item{\code{partition}}{A list, each element of which is a \code{set} 
 #'        containing one or more zones (\code{set} containing locations).}
 #'      \item{\code{offsets}}{An integer vector containing offset numbers to the
-#'         zone numbering. For example, the first zone in 
-#'         \code{partition[i]} will have will be zone number 
-#'         \code{offsets[i] + 1}.}
+#'         zone numbering. For example, the first zone in \code{partition[i]} 
+#'         will have will be zone number \code{offsets[i] + 1}.}
 #'    }
 #' @param f A function to apply after expanding \code{location_table} by the
 #'    zones in a given element of \code{zone_partition$partition}.
