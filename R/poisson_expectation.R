@@ -1,26 +1,5 @@
 # Main functions ---------------------------------------------------------------
 
-poisson_scanstatistic <- function(table, zones, n_replicates) {
-  # input validation
-  
-  # Calculate statistics for observed data
-  # extract max value
-  observed_statistics <- poisson_calculations(table, zones)
-  scan_obs <- extract_scanstatistic(observed_statistics)
-  
-  replicate_scanstats <- poisson_mcsim(table, zones, n_replicates)
-  pval <- mc_pvalue(scan_obs, replicate_scanstats)
-  
-  list(data = table,
-       zones = zones,
-       n_replicates = n_replicates,
-       replicates = replicate_scanstats,
-       observed = observed_statistics,
-       mlc = extract_mlc(observed_statistics),
-       pvalue = pval)
-}
-
-
 # Simulation and hypothesis testing functions ----------------------------------
 
 #' Randomly generate and add Poisson counts to a table.

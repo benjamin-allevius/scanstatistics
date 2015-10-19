@@ -1,93 +1,64 @@
-### Main functions -------------------------------------------------------------
-
-nbinom_score_scanstatistic <- function(
-  table, zones, n_replicates, type = "hotspot") {
-  # input validation
-  
-  if (type == "outbreak") {
-    window_stats <- outbreak_calculations
-  } else {
-    window_stats <- hotspot_calculations
-  }
-  
-  # Calculate statistics for observed data
-  # extract max value
-  observed_statistics <- window_stats(table, zones)
-  scan_obs <- extract_scanstatistic(observed_statistics)
-  
-  replicate_scanstats <- nbinom_mcsim(table, zones, n_replicates, type)
-  pval <- mc_pvalue(scan_obs, replicate_scanstats)
-  
-  list(data = table,
-       zones = zones,
-       n_replicates = n_replicates,
-       replicates = replicate_scanstats,
-       observed = observed_statistics,
-       mlc = extract_mlc(observed_statistics),
-       pvalue = pval,
-       replicates = replicate_scanstats)
-}
-
 
 # Simulation and hypothesis testing functions ----------------------------------
 
 #' Randomly generate and add negative binomial counts to a table.
 #' 
 #' This function randomly generates counts from a negative binomial distribution
-#' according to the parameters on each row of the input \code{data.table},
-#' and adds the counts to a new column \code{count}. 
+#' according to the parameters on each row of the input \code{data.table}, and 
+#' adds the counts to a new column \code{count}. 
 #' @param table A \code{data.table} with at least the columns \code{mean} and
 #'    \code{phi}. The parameter \eqn{\phi} (phi) is the same as \code{size} in
 #'    \code{\link[stats]{rnbinom}}.
 #' @return The same table, with a new column \code{count}.
-generate_nbinom_counts <- function(table) {
+generate_nb_counts <- function(table) {
   table[is.finite(phi), count := as.integer(rnbinom(.N, mu = mean, size = phi))]
   table[is.infinite(phi), count := rpois(.N, mean)][]
 }
 
-#' Simulate a single negative binomial efficient score scan statistic.
+#' Simulate a single negative binomial score scan statistic.
 #' 
 #' Simulate negative binomial-distributed data according to the supplied 
-#' parameters and calculate the value of the efficient score scan statistic, 
-#' according to the specified model.
-#' @inheritParams generate_nbinom_counts
+#' parameters and calculate the value of the score scan statistic, according to 
+#' the specified model.
+#' @inheritParams generate_nb_counts
 #' @inheritParams partition_zones
 #' @param wstat_fun The function that calculates the statistic for each window.
 #' @return A scalar; the scan statistic for the simulated data.
 #' @importFrom magrittr %>%
-simulate_nbinom_scanstatistic <- function(table, zones, wstat_fun) {
+simulate_nb_scanstatistic <- function(table, zones, wstat_fun) {
   table[, .(mean, phi), by = .(location, duration)] %>%
-    generate_nbinom_counts %>%
-    compute_nbinom_overdispersion %>%
+    generate_nb_counts %>%
+    nb_overdispersion %>%
     wstat_fun(zones) %>%
     extract_scanstatistic
 }
 
-#' Monte Carlo simulation of negative binomial efficient score scan statistics.
+#' Monte Carlo simulation of negative binomial score scan statistics.
 #' 
 #' This function generates \code{n_replicates} negative binomial-distributed 
 #' data sets according to the parameters in the input table, and calculates the 
-#' value of the efficient score scan statistic for each generated data set using 
-#' the supplied \code{zones}. The score can be calculated either according to
-#' the hotspot cluster model or the emerging outbreak model.
-#' @inheritParams generate_nbinom_counts
+#' value of the score scan statistic for each generated data set using the 
+#' supplied \code{zones}. The score can be calculated either according to the 
+#' hotspot cluster model or the emerging outbreak model.
+#' @inheritParams generate_nb_counts
 #' @inheritParams partition_zones
 #' @param n_replicates A positive integer; the number of replicate scan 
 #'    statistics to generate.
-#' @param type Either "hotspot" or "outbreak".
+#' @param type Either "hotspot" or "emerging".
 #' @return A numeric vector of length \code{n_replicates}.
 #' @importFrom magrittr %>%
-nbinom_mcsim <- function(table, zones, n_replicates, type = "hotspot") {
-  if (type == "outbreak") {
-    window_stats <- outbreak_calculations
+#' @importFrom foreach foreach
+nb_mcsim <- function(table, zones, n_replicates, type = "hotspot") {
+  if (type == "emerging") {
+    window_stats <- nb_emerging_calculations
   } else {
-    window_stats <- hotspot_calculations
+    window_stats <- nb_hotspot_calculations
   }
   foreach(i = seq(n_replicates), .combine = c, .inorder = FALSE) %dopar% {
-    # simulate_nbinom_scanstatistic(table, zones, window_stats)
+    # simulate_nb_scanstatistic(table, zones, window_stats)
     table[, .(mean, phi), by = .(location, duration)] %>%
-      generate_nbinom_counts %>%
-      compute_nbinom_overdispersion %>%
+      generate_nb_counts %>%
+      nb_overdispersion %>%
       window_stats(zones) %>%
       extract_scanstatistic
   }
@@ -103,15 +74,15 @@ nbinom_mcsim <- function(table, zones, n_replicates, type = "hotspot") {
 #' @param table A \code{data.table} with columns \code{mean, phi} and possibly
 #'    others.
 #' @return The same table, with a new column \code{overdispersion}.
-compute_nbinom_overdispersion <- function(table) {
+nb_overdispersion <- function(table) {
   table[, overdispersion := 1 + mean / phi][]
 }
 
 
-#' Computes the numerator and denominator terms for the hotspot efficient score.
+#' Computes the numerator and denominator terms for the hotspot score.
 #' 
 #' This function calculates the terms found in the numerator and denominator 
-#' sums for the hotspot version of the negative binomial efficient score. 
+#' sums for the hotspot version of the negative binomial score. 
 #' @param table A \code{data.table} with columns \code{location, duration, mean,
 #'    overdispersion, count}. If \eqn{\mu} is the mean of the negative binomial 
 #'    distribution and \eqn{\phi} is the parameter such that the variance of the 
@@ -121,22 +92,22 @@ compute_nbinom_overdispersion <- function(table) {
 #'    in \code{\link[MASS]{negative.binomial}}.
 #' @return A \code{data.table} with columns \code{location, duration, num, 
 #'    denom}.
-efficient_score_terms_nbinom <- function(table) {
+nb_score_terms <- function(table) {
   table[, 
         .(num = sum((count - mean) / overdispersion),
           denom = sum(mean / overdispersion)),
         by = .(location, duration)]
 }
 
-#' Computes the numerator and denominator terms for the hotspot efficient score.
+#' Computes the numerator and denominator terms for the hotspot score.
 #' 
 #' This function calculates the terms found in the numerator and denominator 
-#' sums for the hotspot version of the Poisson efficient score. 
+#' sums for the hotspot version of the Poisson score. 
 #' @param table A \code{data.table} with columns \code{location, duration, mean,
 #'    count}.
 #' @return A \code{data.table} with columns \code{location, duration, num, 
 #'    denom}.
-efficient_score_terms_poisson <- function(table) {
+poisson_score_terms <- function(table) {
   table[,
         .(num = sum((count - mean)),
           denom = sum(mean)),
@@ -146,13 +117,13 @@ efficient_score_terms_poisson <- function(table) {
 #' Sums the numerator and denominator terms over all locations in each zone.
 #' 
 #' Computes the sum of the numerator and denominator terms over all locations in
-#' each zone, as part of the efficient score calculation.
+#' each zone, as part of the score calculation.
 #' @param table A \code{data.table} with columns \code{location, duration, num,
-#'    denom}; the output from \code{\link{efficient_score_terms_nbinom}}.
+#'    denom}; the output from \code{\link{nb_score_terms}}.
 #' @inheritParams partition_zones
 #' @return A \code{data.table} with columns \code{zone, duration, num, denom}.
 #' @importFrom magrittr %>%
-efficient_score_zone_sums <- function(table, zones) {
+score_zone_sums <- function(table, zones) {
   table %>% 
     zone_joiner(zones = zones, keys = c("zone", "duration")) %>%
     zone_sum(sumcols = c("num", "denom"))
@@ -161,30 +132,30 @@ efficient_score_zone_sums <- function(table, zones) {
 
 ### Functions for hotspot model ------------------------------------------------
 
-#' Calculate the hotspot efficient score for each space-time window.
+#' Calculate the hotspot score for each space-time window.
 #' 
-#' Calculate the hotspot efficient score for each space-time window, given the 
-#' initial data of counts, means, and overdispersion parameters.
-#' @inheritParams efficient_score_terms_nbinom
+#' Calculate the hotspot score for each space-time window, given the initial 
+#' data of counts, means, and overdispersion parameters.
+#' @inheritParams nb_score_terms
 #' @inheritParams partition_zones
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @importFrom magrittr %>%
-hotspot_calculations <- function(table, zones) {
+nb_hotspot_calculations <- function(table, zones) {
   table %>% 
-    efficient_score_terms_nbinom %>%
-    efficient_score_zone_sums(zones) %>%
-    hotspot_efficient_score
+    nb_score_terms %>%
+    score_zone_sums(zones) %>%
+    nb_hotspot_score
 }
 
-#' Computes the hotspot efficient score for each space-time window.
+#' Computes the hotspot score for each space-time window.
 #' 
-#' Computes the efficient score statistic for each space-time window, assuming a 
+#' Computes the score statistic for each space-time window, assuming a 
 #' hotspot outbreak model and either a Poisson or a negative binomial 
 #' distribution for the counts.
 #' @param table A \code{data.table} with columns \code{zone, duration, num, 
 #'    denom}.
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
-hotspot_efficient_score <- function(table) {
+nb_hotspot_score <- function(table) {
   table[,
         .(duration = duration,
           statistic = cumsum(num) / sqrt(cumsum(denom))),
@@ -193,29 +164,29 @@ hotspot_efficient_score <- function(table) {
 
 ### Functions for outbreak model -----------------------------------------------
 
-#' Calculate the outbreak efficient score for each space-time window.
+#' Calculate the outbreak score for each space-time window.
 #' 
-#' Calculate the outbreak efficient score for each space-time window, given the 
-#' initial data of counts, means, and overdispersion parameters.
-#' @inheritParams efficient_score_terms_nbinom
+#' Calculate the outbreak score for each space-time window, given the initial 
+#' data of counts, means, and overdispersion parameters.
+#' @inheritParams nb_score_terms
 #' @inheritParams partition_zones
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @importFrom magrittr %>%
-outbreak_calculations <- function(table, zones) {
+nb_emerging_calculations <- function(table, zones) {
   table %>% 
-    efficient_score_terms_nbinom %>%
-    efficient_score_zone_sums(zones) %>%
-    outbreak_efficient_score
+    nb_score_terms %>%
+    score_zone_sums(zones) %>%
+    nb_emerging_score
 }
 
-#' Calculate the outbreak efficient score for each space-time window.
+#' Calculate the outbreak score for each space-time window.
 #' 
-#' Computes the efficient score statistic for each space-time window, assuming 
-#' an (emergent) outbreak model and either a Poisson or a negative binomial 
+#' Computes the score statistic for each space-time window, assuming an 
+#' emergent outbreak model and either a Poisson or a negative binomial 
 #' distribution for the counts.
-#' @inheritParams hotspot_efficient_score
+#' @inheritParams nb_hotspot_score
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
-outbreak_efficient_score <- function(table) {
+nb_emerging_score <- function(table) {
   table[,
     .(duration = duration,
       statistic = convolute_numerator(num, duration)
@@ -223,7 +194,7 @@ outbreak_efficient_score <- function(table) {
     by = .(zone)]
 }
 
-#' Computes the sum in the outbreak efficient score numerator.
+#' Computes the sum in the outbreak score numerator.
 #' 
 #' @param x A vector of normalized counts summed over a single zone.
 #' @param d A vector of outbreak durations considered.
@@ -231,7 +202,7 @@ outbreak_efficient_score <- function(table) {
 convolute_numerator <- Vectorize(
   function(x, d) sum(d:1 * x[1:d]), vectorize.args = "d")
 
-#' Computes the sum in the outbreak efficient score denominator.
+#' Computes the sum in the outbreak score denominator.
 #' @inheritParams convolute_numerator
 #' @return A vector of length \code{length(d)}.
 convolute_denominator <- Vectorize(

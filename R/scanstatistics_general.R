@@ -1,3 +1,55 @@
+#' Calculate a scan statistic and its corresponding p-value, MLC, etc
+#' @param scanstatistic The type of scan statistic. Can be "poisson", 
+#'    "nb-hotspot", "nb-emerging", "zip". See details.
+#' @param table A \code{data.table} with columns \code{duration, location, 
+#'    count} and columns for distribution parameters that match the chosen type
+#'    of scan statistic. See details.
+#' @param zones A \code{set} of \code{set}s, the inner sets containing integer
+#'    values that match those in the column \code{location} of the \code{table}
+#'    argument of this function.
+#' @param n_replicates The number of Monte Carlo replications to perform in 
+#'    order to calculate a p-value.
+#' @param ... Arguments passed to 
+#' @export
+calculate_scanstatistic <- function(scanstatistic = "poisson",
+                                    table, zones, n_replicates, ...) {
+  # Input validation
+  allowed_types <- c("poisson", "nb-hotspot", "nb-emerging", "zip")
+  if (scanstatistic %notin% allowed_types) {
+    stop(paste0("Argument scanstatistic must be one of ",
+                toString(allowed_types), "."))
+  }
+  
+  # Calculate the chosen type of scanstatistic
+  if (scanstatistic == "poisson") {
+    observed_statistics <- poisson_calculations(table, zones)
+    replicate_scanstats <- poisson_mcsim(table, zones, n_replicates)
+  } else if (scanstatistic == "nb-hotspot") {
+      observed_statistics <- nb_hotspot_calculations(table, zones)
+      replicate_scanstats <- nb_mcsim(table, zones, n_replicates, "hotspot")
+  } else if (scanstatistic == "nb-emerging") {
+      observed_statistics <- nb_emerging_calculations(table, zones)
+      replicate_scanstats <- nb_mcsim(table, zones, n_replicates, "emerging")
+  } else if (scanstatistic == "zip") {
+    maxdur <- table[, max(duration)]
+    observed_statistics <- zip_calculations(table, zones, maxdur = maxdur, ...)
+    replicate_scanstats <- zip_mcsim(
+      table, zones, n_replicates, maxdur = maxdur, ...)
+  }
+  
+  scan_obs <- extract_scanstatistic(observed_statistics)
+  pval <- mc_pvalue(scan_obs, replicate_scanstats)
+  mlc <- extract_mlc(observed_statistics)
+  
+  list(observed_scanstatistic = mlc[, statistic],
+       pvalue = pval,
+       outbreak_zone = mlc[, zone],
+       outbreak_locations = get_zone(mlc[, zone], zones),
+       outbreak_duration = mlc[, duration],
+       observed_statistics = observed_statistics,
+       replicate_scanstatistics = replicate_scanstats)
+}
+
 
 #' Extract value of scan statistic from per-window statistics.
 #' 

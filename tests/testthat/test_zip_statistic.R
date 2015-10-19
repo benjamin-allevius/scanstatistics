@@ -133,19 +133,19 @@ test_that("zip_mcsim", {
   # expect_true(!any(actual < 0))
 })
 
-test_that("zip_scanstatistic", {
-  table <- table_creator(list(location = 1:2, duration = 1:3), 
-                         keys = c("location", "duration"))
-  table[, mean := 1:6 + 0.5]
-  table[, p := 1:6 / 20]
-  # Counts should correspond to outbreak with duration 2 at location 1
-  table[, count := c(5, 10, 1, 4, 5, 0)] 
-  # table[, gamlss.dist::dZIP(count, mean, p)]
-  zones <- sets::set(sets::as.set(1L), 
-                       sets::as.set(2L),
-                       sets::as.set(1:2))
-  nsims <- 9
-  actual <- zip_scanstatistic(table, zones, nsims)
-  expect_equal(actual$mlc[, zone], 1L)
-  expect_equal(actual$mlc[, duration], 2L)
-  })
+# test_that("zip_scanstatistic", {
+#   table <- table_creator(list(location = 1:2, duration = 1:3), 
+#                          keys = c("location", "duration"))
+#   table[, mean := 1:6 + 0.5]
+#   table[, p := 1:6 / 20]
+#   # Counts should correspond to outbreak with duration 2 at location 1
+#   table[, count := c(5, 10, 1, 4, 5, 0)] 
+#   # table[, gamlss.dist::dZIP(count, mean, p)]
+#   zones <- sets::set(sets::as.set(1L), 
+#                        sets::as.set(2L),
+#                        sets::as.set(1:2))
+#   nsims <- 9
+#   actual <- zip_scanstatistic(table, zones, nsims)
+#   expect_equal(actual$mlc[, zone], 1L)
+#   expect_equal(actual$mlc[, duration], 2L)
+#   })

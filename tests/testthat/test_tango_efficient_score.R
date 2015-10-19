@@ -2,7 +2,7 @@ context("Tango 2011 efficient score functions")
 
 ### General functions ----------------------------------------------------------
 
-test_that("nbinom_mcsim", {
+test_that("nb_mcsim", {
   table <- table_creator(list(location = 1:2, duration = 1:3), 
                          keys = c("location", "duration"))
   table[, mean := 1:6 + 0.5]
@@ -13,16 +13,16 @@ test_that("nbinom_mcsim", {
                        sets::as.set(1:2))
   nsims <- 10
   
-  actual_hotspot <- nbinom_mcsim(table, zones, nsims, type = "hotspot")
+  actual_hotspot <- nb_mcsim(table, zones, nsims, type = "hotspot")
   expect_true(length(actual_hotspot) == nsims)
   expect_true(!any(is.na(actual_hotspot)))
   
-  actual_outbreak <- nbinom_mcsim(table, zones, nsims, type = "outbreak")
+  actual_outbreak <- nb_mcsim(table, zones, nsims, type = "outbreak")
   expect_true(length(actual_outbreak) == nsims)
   expect_true(!any(is.na(actual_outbreak)))
 })
 
-test_that("efficient_score_terms_nbinom: calculates correctly", {
+test_that("nb_score_terms: calculates correctly", {
   table <- table_creator(list(location = 1:2, duration = 1:2), 
                          keys = c("location", "duration"))
   x <- c(1, 3, 5, 7)
@@ -33,12 +33,12 @@ test_that("efficient_score_terms_nbinom: calculates correctly", {
   table[, overdispersion := s]
   expected_num <- (x - m) / s
   expected_den <- m / s
-  actual <- efficient_score_terms_nbinom(table)
+  actual <- nb_score_terms(table)
   expect_equal(actual[, num], expected_num)
   expect_equal(actual[, denom], expected_den)
 })
 
-test_that("efficient_score_terms_poisson: calculates correctly", {
+test_that("poisson_score_terms: calculates correctly", {
   table <- table_creator(list(location = 1:2, duration = 1:2), 
                          keys = c("location", "duration"))
   x <- c(1, 3, 5, 7)
@@ -47,12 +47,12 @@ test_that("efficient_score_terms_poisson: calculates correctly", {
   table[, mean := m]
   expected_num <- x - m
   expected_den <- m
-  actual <- efficient_score_terms_poisson(table)
+  actual <- poisson_score_terms(table)
   expect_equal(actual[, num], expected_num)
   expect_equal(actual[, denom], expected_den)
 })
 
-test_that("efficient_score_zone_sums: calculates correctly", {
+test_that("score_zone_sums: calculates correctly", {
   table <- table_creator(list(location = 1:2, duration = 1:2), 
                          keys = c("location", "duration"))
   table[, num := 1:4]
@@ -62,14 +62,14 @@ test_that("efficient_score_zone_sums: calculates correctly", {
                        sets::as.set(1:2))
   expected_num <- c(1:4, 1+3, 2+4)
   expected_denom <- c(5:8, 5+7, 6+8)
-  actual <- efficient_score_zone_sums(table, zones)
+  actual <- score_zone_sums(table, zones)
   expect_equal(actual[, num], expected_num)
   expect_equal(actual[, denom], expected_denom)
 })
 
 ### Functions for hotspot model ------------------------------------------------
 
-test_that("hotspot_efficient_score: calculated correctly", {
+test_that("nb_hotspot_score: calculated correctly", {
   d <- data.table(zone = rep(1:3, each = 3),
                   duration = rep(1:3, 3))
   d[, num := 1:9 - 5]
@@ -81,7 +81,7 @@ test_that("hotspot_efficient_score: calculated correctly", {
                         cumsum(4:6),
                         cumsum(7:9)))
   expected <- score_num / score_denom
-  actual <- hotspot_efficient_score(d)
+  actual <- nb_hotspot_score(d)
   expect_equal(actual[, statistic], expected)
 })
 
@@ -107,7 +107,7 @@ test_that("convolute_denominator: calculated correctly", {
   expect_equal(actual, expected)
 })
 
-test_that("outbreak_efficient_score: calculated correctly", {
+test_that("nb_emerging_score: calculated correctly", {
   d <- data.table(zone = rep(1:3, each = 3),
                   duration = rep(1:3, 3))
   d[, num := 1:9 - 5]
@@ -119,6 +119,6 @@ test_that("outbreak_efficient_score: calculated correctly", {
                         4, 2^2*4 + 1^2*5, 3^2*4 + 2^2*5 + 1^2*6,
                         7, 2^2*7 + 1^2*8, 3^2*7 + 2^2*8 + 1^2*9))
   expected <- score_num / score_denom
-  actual <- outbreak_efficient_score(d)
+  actual <- nb_emerging_score(d)
   expect_equal(actual[, statistic], expected)
 })
