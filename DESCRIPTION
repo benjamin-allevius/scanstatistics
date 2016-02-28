@@ -14,7 +14,7 @@ License: GPL (>= 3)
 URL: https://github.com/BenjaK/scanstatistics
 BugReports: https://github.com/BenjaK/scanstatistics/issues
 Depends: data.table, foreach
-Imports: magrittr
+Imports: magrittr, gamlss.dist
 Suggests: knitr,
     testthat,
     sets,
@@ -22,5 +22,5 @@ Suggests: knitr,
     reshape2,
     plyr,
     doParallel,
-    lubridate
+    lubridate,
 VignetteBuilder: knitr

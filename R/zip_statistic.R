@@ -40,6 +40,7 @@
 #' @param abs_tol A scalar; if the excess zero probability is less than this 
 #'    value the count will be generated from a Poisson distribution.
 #' @return The same table, with a new column \code{count}.
+#' @importFrom gamlss.dist rZIP
 generate_zip_counts <- function(table, abs_tol = 1e08) {
   # Note: rZIP returns a numeric vector
   table[, count := 0]
