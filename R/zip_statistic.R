@@ -229,6 +229,7 @@ zip_statistic_term <- function(q, p, dstar, ddagger, mu, y) {
 #' @param mu Numeric vector of given/estimated Poisson means. Of same length as 
 #'    \code{p}.
 #' @param y Integer vector of observed counts. Of same length as \code{p}.
+#' @param tol Scalar; probability p below this is considered equal to zero.
 #' @return A numeric vector of same length as input vector \code{p}.
 zip_statistic_factor <- function(p, d, mu, y, tol = 1e-08) {
   res <- rep(0, length(p))
