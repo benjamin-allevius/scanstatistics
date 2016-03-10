@@ -13,6 +13,7 @@
 #' cols <- list(location = 1:2, time = 0:2, stream = 1:2)
 #' table_creator(cols)
 #' }
+#' @keywords internal
 table_creator <- function(col_list, keys = NULL) {
   data.table(do.call(expand.grid, c(col_list, stringsAsFactors = FALSE)),
              key = keys)
@@ -26,6 +27,7 @@ table_creator <- function(col_list, keys = NULL) {
 #' @param data_table A \code{data.table}.
 #' @param keys A character vector.
 #' @return \code{TRUE} if keys match, \code{FALSE} otherwise.
+#' @keywords internal
 first_keys_match <- function(data_table, keys) {
   table_keys <- getkeys(data_table)
   if (is.null(table_keys) || length(keys) > length(table_keys)) {
@@ -40,6 +42,7 @@ first_keys_match <- function(data_table, keys) {
 #' @inheritParams first_keys_match
 #' @return \code{TRUE} if the table has all the given keys, \code{FALSE} 
 #'    otherwise.
+#' @keywords internal
 haskeys <- function(data_table, keys) {
   all(keys %in% getkeys(data_table))
 }
@@ -48,7 +51,8 @@ haskeys <- function(data_table, keys) {
 #' 
 #' @param data_table A \code{data.table}.
 #' @return NULL if the supplied \code{data.table} has no keys,
-#'         else a character vector containing the keys.
+#'    else a character vector containing the keys.
+#' @keywords internal
 getkeys <- function(data_table) {
   attributes(data_table)$sorted
 }
@@ -60,6 +64,7 @@ getkeys <- function(data_table) {
 #' @param table A \code{data.table}.
 #' @param colname The name of a column in the table.
 #' @return The values of the column as a vector.
+#' @keywords internal
 get_column_values <- function(table, colname) {
   if (colname %notin% names(table)) {
     stop("The table does not contain a column named ", colname)
@@ -79,6 +84,7 @@ get_column_values <- function(table, colname) {
 #' @return A list with the sorted and unique values of the column; the original
 #'    values of the column are the list names, and the value for each name is 
 #'    the number for that name (numbering starts at 1).
+#' @keywords internal
 enumerate_character <- function(table, colname) {
   if (colname %notin% names(table)) {
     stop(colname, " is not a name of a column in the table.")

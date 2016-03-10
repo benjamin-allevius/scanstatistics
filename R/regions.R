@@ -54,14 +54,16 @@ dist_to_knn <- function(x, k = min(10, nrow(x))) {
 #'    own nearest neighbor, so the first column of row \eqn{i} should be (the 
 #'    identifier) of point \eqn{i} itself.
 #' @inheritParams plyr::alply
+#' @importFrom sets set_union
+#' @importFrom plyr alply
 zones_upto_k <- function(k_nearest, .parallel = FALSE, .paropts = NULL) {
-  Reduce(sets::set_union, 
-         plyr::alply(k_nearest, 
-                     .margins = 1, 
-                     .fun = closest_subsets, 
-                     .expand = F, 
-                     .parallel = FALSE, 
-                     .paropts = NULL))
+  Reduce(set_union, 
+         alply(k_nearest, 
+               .margins = 1, 
+               .fun = closest_subsets, 
+               .expand = F, 
+               .parallel = FALSE, 
+               .paropts = NULL))
 }
 
 
@@ -72,9 +74,10 @@ zones_upto_k <- function(k_nearest, .parallel = FALSE, .paropts = NULL) {
 #' the second set the first and second elements of \code{v}, and so on.
 #' @param v A vector. Meant to represent the \eqn{k} nearest neighbors
 #'    of a point, the first element being (an identifier) of the point itself.
+#' @importFrom sets as.set
+#' @keywords internal
 closest_subsets <- function(v) {
-  sets::as.set(lapply(lapply(seq_along(v), function(x) v[seq(x)]), 
-                      sets::as.set))
+  as.set(lapply(lapply(seq_along(v), function(x) v[seq(x)]), as.set))
 }
 
 #' Computes the flexibly shaped zones as in Tango (2005).
@@ -90,17 +93,19 @@ closest_subsets <- function(v) {
 #'    integers.
 #' @inheritParams connected_to
 #' @inheritParams plyr::alply
+#' @importFrom sets set_union as.set
+#' @importFrom plyr alply
 flexible_zones <- function(k_nearest, 
                              adjacency_matrix,
                              .parallel = FALSE, 
                              .paropts = NULL) {
-  Reduce(sets::set_union,
-         sets::as.set(plyr::alply(k_nearest,
-                                  .margins = 1,
-                                  .fun = connected_neighbors,
-                                  adjacency_matrix = adjacency_matrix,
-                                  .parallel = .parallel,
-                                  .paropts = .paropts)))
+  Reduce(set_union,
+         as.set(alply(k_nearest,
+                      .margins = 1,
+                      .fun = connected_neighbors,
+                      adjacency_matrix = adjacency_matrix,
+                      .parallel = .parallel,
+                      .paropts = .paropts)))
 }
 
 #' Returns the connected sets for a location and its \eqn{k} nearest neighbors,
@@ -112,17 +117,18 @@ flexible_zones <- function(k_nearest,
 #'    of the vector being the specific location, and the other elements its 
 #'    other nearest neighbors. Locations should preferably be integers.
 #' @inheritParams connected_to
+#' @importFrom sets set_power as.set set_union
+#' @keywords internal
 connected_neighbors <- function(neighbors, adjacency_matrix) {
   location <- neighbors[1]
   its_neighbors <- neighbors[-1]
-  pset <- sets::set_power(sets::as.set(its_neighbors)) - sets::set(sets::set())
-  sets::set_union(
-    sets::set(sets::set(location)),
-      sets::as.set(
-        lapply(pset, 
-               if_connected, 
-               location = location,
-               adjacency_matrix = adjacency_matrix))) - sets::set(sets::set())
+  pset <- set_power(as.set(its_neighbors)) - sets::set(sets::set())
+  set_union(sets::set(sets::set(location)),
+            as.set(lapply(pset, 
+                          if_connected, 
+                          location = location,
+                          adjacency_matrix = adjacency_matrix))) - 
+    sets::set(sets::set())
 }
 
 
@@ -138,10 +144,11 @@ connected_neighbors <- function(neighbors, adjacency_matrix) {
 #' @inheritParams connected_to
 #' @return A \code{set} of the given location and the neighbors if they are
 #'    connected, else returns the empty set.
+#' @importFrom sets set_union
+#' @keywords internal
 if_connected <- function(distinct_neighbors, location, adjacency_matrix) {
   if (is_connected(distinct_neighbors, location, adjacency_matrix)) {
-    return(sets::set_union(sets::set(location),
-                           distinct_neighbors))
+    return(set_union(sets::set(location), distinct_neighbors))
   } else {
     return(sets::set())
   }
@@ -156,16 +163,18 @@ if_connected <- function(distinct_neighbors, location, adjacency_matrix) {
 #' @param location A location, preferably given as an integer.
 #' @inheritParams connected_to
 #' @return Boolean: is the neighbors connected to the given location?
+#' @keywords internal
+#' @importFrom sets set_is_empty
 is_connected <- function(neighbor_locations, location, adjacency_matrix) {
   Z_0 <- sets::set(location)
   Z_1 <- neighbor_locations
   while (TRUE) {
     Z_0 <- connected_to(Z_0, Z_1, adjacency_matrix)
-    if (sets::set_is_empty(Z_0)) {
+    if (set_is_empty(Z_0)) {
       return(FALSE)
     }
     Z_1 <- Z_1 - Z_0
-    if (sets::set_is_empty(Z_1)) {
+    if (set_is_empty(Z_1)) {
       return(TRUE)
     }
   }
@@ -182,11 +191,13 @@ is_connected <- function(neighbor_locations, location, adjacency_matrix) {
 #'    to TRUE if location \eqn{j} is adjacent to location \eqn{i}.
 #' @return A set, possibly empty, containing those locations in \eqn{Z_1}
 #'         that are connected to any of the locations in \eqn{Z_0}.
+#' @importFrom sets set_union
+#' @keywords internal
 connected_to <- function(Z_0, Z_1, adjacency_matrix) {
   connected <- sets::set()
   for (loc in Z_1) {
     if (any(Z_0 %in% which(adjacency_matrix[loc, ]))) {
-      connected <- sets::set_union(connected, loc)
+      connected <- set_union(connected, loc)
     }
   }
   return(connected)

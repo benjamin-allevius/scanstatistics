@@ -5,6 +5,7 @@
 #' some function(s) over each part. Few parts can lead to memory problems for 
 #' large data sets, while many parts lead to longer computation times.
 #' @inheritParams partition_zones
+#' @keywords internal
 auto_zone_partition_size <- function(zones) {
   min(length(zones), floor(log(sum(vapply(zones, length, integer(1))))))
 }
@@ -27,6 +28,8 @@ auto_zone_partition_size <- function(zones) {
 #'        \code{partition[i]} will have will be zone number 
 #'        \code{offset[i] + 1}.
 #'    }
+#' @importFrom sets as.set
+#' @keywords internal
 partition_zones <- function(zones, n_parts = min(10L, length(zones))) {
   if (n_parts < 1 || n_parts %% 1 != 0) {
     stop("n_parts has to be a positive integer.")
@@ -59,7 +62,7 @@ partition_zones <- function(zones, n_parts = min(10L, length(zones))) {
   os <- 0L
   for (r in ranges) {
     zone_partition <- c(zone_partition, 
-                          sets::set(sets::as.set(regs[(os + 1L):r])))
+                          sets::set(as.set(regs[(os + 1L):r])))
     os <- r
   }
   list(partition = zone_partition, offsets = offsets)
@@ -86,16 +89,17 @@ partition_zones <- function(zones, n_parts = min(10L, length(zones))) {
 #'    zone-location table by before applying the function \code{f}.
 #' @return A \code{data.table}, containing the results of applying the supplied
 #'    function over all zones.
-#' @importFrom foreach %do%
+#' @importFrom foreach foreach %do%
+#' @keywords internal
 zone_apply <- function(location_table, zone_partition, f, keys = NULL) {
-  foreach::foreach(zones_in_part = zone_partition$partition, 
-                   offset = zone_partition$offsets,
-                   .combine = rbind,
-                   .packages = c("data.table", "magrittr")) %do% {
+  foreach(zones_in_part = zone_partition$partition, 
+          offset = zone_partition$offsets,
+          .combine = rbind,
+          .packages = c("data.table", "magrittr")) %do% {
     locations <- unique(unlist(zones_in_part))
     zone_table <- zone_table_creator(zones_in_part, 
-                                         keys = c("location"), 
-                                         offset = offset)
+                                     keys = c("location"), 
+                                     offset = offset)
     merge(location_table[location %in% locations, ],
           zone_table,
           by = "location",
@@ -127,6 +131,7 @@ zone_apply <- function(location_table, zone_partition, f, keys = NULL) {
 #' locs_etc <- table_creator(list(location = 1:2, duration = 1:3, stream = 1:2))
 #' zone_joiner(locs_etc, list(1, 2, 1:2), keys = c("duration", "zone"))
 #' }
+#' @keywords internal
 zone_joiner <- function(locations_etc, zones, keys = c("zone")) {
   zone_table_creator(zones, keys = "location")[
     locations_etc, allow.cartesian = TRUE][, .SD, keyby = keys]
@@ -153,6 +158,7 @@ zone_joiner <- function(locations_etc, zones, keys = c("zone")) {
 #' zone_table_creator(list(1L, 2L, 1:2), keys = "zone")
 #' zone_table_creator(list(a = "x", b = "y", c = c("x", "y")))
 #' }
+#' @keywords internal
 zone_table_creator <- function(zones, keys = NULL, offset = 0L) {
   zone_names <- names(zones)
   if (is.null(zone_names)) {
@@ -171,6 +177,7 @@ zone_table_creator <- function(zones, keys = NULL, offset = 0L) {
 #' @param zone An integer; the zone you wish to retrieve.
 #' @param all_zones The set of all zones.
 #' @return An element of \code{all_zones} matching the argument \code{zone}.
+#' @export
 get_zone <- function(zone, all_zones) {
   i <- 1
   for (z in all_zones) {

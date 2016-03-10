@@ -4,6 +4,7 @@
 #' From a \code{data.table} with a column \code{stream}, extract the unique and
 #' sorted values from this column as a vector. 
 #' @param d A \code{data.table} containing a column \code{stream}.
+#' @keywords internal
 get_all_streams <- function(d) {
   if ("stream" %notin% names(d)) stop("data.table must have column 'stream'.")
   sort(unique(d[, stream]))
@@ -15,6 +16,7 @@ get_all_streams <- function(d) {
 get_package_names <- function() {
   gsub("package:", "", search()[grep("package:", search())])
 }
+
 
 # May over/underflow
 logsumexp_unstable <- function(x) {
@@ -40,7 +42,12 @@ logsumexp <- function(x) {
 #'                length.out = 4*24+1, by = "15 mins"))
 #' x[1] == x[length(x)]
 #' }
+#' @keywords internal
 dayperiod <- function(t) {
+  if (!requireNamespace("lubridate", quietly = TRUE)) {
+    stop("lubridate needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
   2*pi*(lubridate::hour(t) + lubridate::minute(t)/60)/24
 }
 
@@ -52,6 +59,7 @@ dayperiod <- function(t) {
 #' @param previous A scalar; the second most recent value of the sequence, or a
 #'    reference value.
 #' @param tol The tolerance, a positive scalar near zero.
+#' @keywords internal
 has_converged <- function(current, previous, tol = 0.01) {
   rel_change <- (current - previous) / abs(previous)
   rel_change > 0 && rel_change < tol
@@ -73,6 +81,7 @@ has_converged <- function(current, previous, tol = 0.01) {
 #'    (silent = TRUE), or should the function return the modified table (silent
 #'    = FALSE).
 #' @return The input \code{data.table}, with a column \code{duration} added.
+#' @keywords internal
 add_duration <- function(d, keys = NULL, silent = TRUE) {
   td <- times_and_durations(d)
   # Can't test directly for POSIXct equality in current version of data.table.
@@ -97,6 +106,7 @@ add_duration <- function(d, keys = NULL, silent = TRUE) {
 #'    is sortable. For example, could be POSIXct dates.
 #' @return A new \code{data.table}, containing columns \code{time} (key column)
 #'    and \code{duration}.
+#' @keywords internal
 times_and_durations <- function(d) {
   times <- sort(unique(d[, time]), decreasing = FALSE)
   data.table(time = times, duration = rev(seq_along(times)), key = "time")
@@ -121,6 +131,7 @@ times_and_durations <- function(d) {
 #' @return A \code{data.table} with key columns \code{location, event, stream,
 #'    duration}, and a column \code{llr} containing the log-likelihood ratios for 
 #'    each event type.
+#' @keywords internal
 add_llr <- function(loglikelihoods, null_name) {
   input_keys <- c("event", "location", "stream", "duration")
   if (any(getkeys(loglikelihoods)[1:4] != input_keys)) {
@@ -141,6 +152,7 @@ add_llr <- function(loglikelihoods, null_name) {
 #'    should be ordered, e.g. as it is when the elemets of the sets within it 
 #'    are integers.
 #' @param index The index of the set you wish to be returned.
+#' @keywords internal
 get_set <- function(set_of_sets, index) {
   i <- 1
   for (s in set_of_sets) {

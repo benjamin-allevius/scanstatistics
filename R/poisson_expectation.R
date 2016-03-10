@@ -10,6 +10,7 @@
 #' @param table A \code{data.table} with at least the column \code{mean}, 
 #'    corresponding to the parameter \code{lambda} in 
 #'    \code{\link[stats]{rpois}}.
+#' @keywords internal
 generate_poisson_counts <- function(table) {
   table[, count := rpois(.N, lambda = mean)][]
 }
@@ -23,6 +24,7 @@ generate_poisson_counts <- function(table) {
 #' @inheritParams partition_zones
 #' @return A scalar; the scan statistic for the simulated data.
 #' @importFrom magrittr %>%
+#' @keywords internal
 simulate_poisson_scanstatistic <- function(table, zones) {
   table[, .(mean), by = .(location, duration)] %>%
     generate_poisson_counts %>% 
@@ -42,6 +44,7 @@ simulate_poisson_scanstatistic <- function(table, zones) {
 #'    statistics to generate.
 #' @return A numeric vector of length \code{n_replicates}.
 #' @importFrom foreach %dopar%
+#' @keywords internal
 poisson_mcsim <- function(table, zones, n_replicates = 999L) {
   foreach(i = seq(n_replicates), .combine = c, .inorder = FALSE) %dopar% {
     simulate_poisson_scanstatistic(table, zones)
@@ -63,6 +66,7 @@ poisson_mcsim <- function(table, zones, n_replicates = 999L) {
 #'    The column \code{statistic} contains the logarithm of the statistic for 
 #'    each zone-duration combination.
 #' @importFrom magrittr %>%
+#' @keywords internal
 poisson_calculations <- function(table, zones) {
   table %>% 
     zone_joiner(zones = zones, keys = c("zone", "duration")) %>%
@@ -85,6 +89,7 @@ poisson_calculations <- function(table, zones) {
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #'    The column \code{statistic} contains the logarithm of the statistic for 
 #'    each zone-duration combination.
+#' @keywords internal
 poisson_statistic <- function(table) {
   table[, .(statistic = log(relrisk) * count - (relrisk - 1) * mean),
         by = .(zone, duration)]
@@ -100,6 +105,7 @@ poisson_statistic <- function(table) {
 #'    comprising the zone and up to the given duration (i.e. cumulative sum 
 #'    for the duration).
 #' @return The same table, with an extra column \code{relrisk}.
+#' @keywords internal
 poisson_relrisk <- function(table) {
   table[, relrisk := max(1, count / mean), by = .(zone, duration)]
 }

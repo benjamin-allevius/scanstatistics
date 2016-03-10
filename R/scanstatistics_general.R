@@ -12,7 +12,9 @@
 #' @param ... Arguments passed to 
 #' @export
 calculate_scanstatistic <- function(scanstatistic = "poisson",
-                                    table, zones, n_replicates, ...) {
+                                    table, 
+                                    zones, 
+                                    n_replicates, ...) {
   # Input validation
   allowed_types <- c("poisson", "nb-hotspot", "nb-emerging", "zip")
   if (scanstatistic %notin% allowed_types) {
@@ -59,6 +61,7 @@ calculate_scanstatistic <- function(scanstatistic = "poisson",
 #'    correspond to the statistic calculated for each spatial or space-time 
 #'    window (given as other columns).
 #' @return The maximum value of the column \code{statistic}.
+#' @keywords internal
 extract_scanstatistic <- function(table) {
   table[, max(statistic)]
 }
@@ -71,6 +74,7 @@ extract_scanstatistic <- function(table) {
 #' @inheritParams extract_scanstatistic
 #' @return The row of the input table with the highest value of the column 
 #'    \code{statistic}.
+#' @keywords internal
 extract_mlc <- function(table) {
   table[which.max(statistic), ]
 }
@@ -79,6 +83,7 @@ extract_mlc <- function(table) {
 #' @param observed A scalar; the observed value of the scan statistic.
 #' @param replicates A vector of Monte Carlo replicates of the scan statistic.
 #' @return A scalar; the p-value corresponding to the observed scan statistic.
+#' @keywords internal
 mc_pvalue <- function(observed, replicates) {
   (1 + sum(replicates > observed)) / (1 + length(replicates))
 }

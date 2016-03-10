@@ -1,9 +1,12 @@
 #' scanstatistics: A package for spatiotemporal event detection.
 #'
-#' The foo package provides three categories of important functions:
-#' foo, bar and baz.
-#' @section Foo functions:
-#' The foo functions ...
+#' The scanstatistics package provides two categories of important functions:
+#' data preparation functions, and the scan statistics themselves.
+#' @section Data preparation functions:
+#' These functions prepare your data for use. In particular, it helps you 
+#' define the \emph{zones} which will be considered by the scan statistics.
+#' @section Scan statistics:
+#' These are the functions used for spacetime cluster detection.
 #' @docType package
 #' @name scanstatistics
 #' @import data.table

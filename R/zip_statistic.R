@@ -1,29 +1,47 @@
-# Main functions ---------------------------------------------------------------
+# Main function ----------------------------------------------------------------
 
-# zip_scanstatistic <- function(table, zones, n_replicates, ...) {
-#   # input validation
-#   
-#   # Calculate statistics for observed data
-#   # extract max value
-#   maxdur <- table[, max(duration)]
-#   observed_statistics <- zip_calculations(table, zones, maxdur = maxdur, ...)
-#   scan_obs <- extract_scanstatistic(observed_statistics)
-#   
-#   replicate_scanstats <- zip_mcsim(table, 
-#                                    zones, 
-#                                    n_replicates, 
-#                                    maxdur = maxdur,
-#                                    ...)
-#   pval <- mc_pvalue(scan_obs, replicate_scanstats)
-#   
-#   list(data = table,
-#        zones = zones,
-#        n_replicates = n_replicates,
-#        replicates = replicate_scanstats,
-#        observed = observed_statistics,
-#        mlc = extract_mlc(observed_statistics),
-#        pvalue = pval)
-# }
+#' Calculate the spatiotemporal ZIP scan statistic.
+#' 
+#' This function calculates the spatiotemporal zero-inflated Poisson scan 
+#' statistic, along with the most likely cluster (MLC) and its Monte Carlo 
+#' \eqn{p}-value. See details.
+#' @param table A \code{data.table} with columns \code{duration, location, 
+#'    count} and columns for distribution parameters that match the chosen type
+#'    of scan statistic. See details.
+#' @param zones A \code{set} of \code{set}s, the inner sets containing integer
+#'    values that match those in the column \code{location} of the \code{table}
+#'    argument of this function. See details.
+#' @param n_replicates The number of Monte Carlo replications to perform in 
+#'    order to calculate a p-value.
+#' @param ... Arguments passed to internal functions. Arguments that can be
+#'    passed here are \code{d}, the initial value for the excess zero indicators
+#'    (default is 0.5), and \code{tol}, the threshold for the absolute 
+#'    convergence criterion (default is 0.01).
+#' @export
+zip_scanstatistic <- function(table, zones, n_replicates, ...) {
+  # input validation
+  
+  # Calculate statistics for observed data
+  # extract max value
+  maxdur <- table[, max(duration)]
+  observed_statistics <- zip_calculations(table, zones, maxdur = maxdur, ...)
+  scan_obs <- extract_scanstatistic(observed_statistics)
+  
+  replicate_scanstats <- zip_mcsim(table, 
+                                   zones, 
+                                   n_replicates, 
+                                   maxdur = maxdur,
+                                   ...)
+  pval <- mc_pvalue(scan_obs, replicate_scanstats)
+  
+  list(data = table,
+       zones = zones,
+       n_replicates = n_replicates,
+       replicates = replicate_scanstats,
+       observed = observed_statistics,
+       mlc = extract_mlc(observed_statistics),
+       pvalue = pval)
+}
 
 
 # Simulation and hypothesis testing functions ----------------------------------
@@ -41,6 +59,7 @@
 #'    value the count will be generated from a Poisson distribution.
 #' @return The same table, with a new column \code{count}.
 #' @importFrom gamlss.dist rZIP
+#' @keywords internal
 generate_zip_counts <- function(table, abs_tol = 1e08) {
   # Note: rZIP returns a numeric vector
   table[, count := 0]
@@ -60,6 +79,7 @@ generate_zip_counts <- function(table, abs_tol = 1e08) {
 #' @return A scalar; the expectation-based ZIP-EM scan statistic for the 
 #'    simulated data.
 #' @importFrom magrittr %>%
+#' @keywords internal
 simulate_zip_scanstatistic <- function(table, zones, ...) {
   table[, .(p, mean), by = .(location, duration)] %>%
     generate_zip_counts %>% 
@@ -82,6 +102,7 @@ simulate_zip_scanstatistic <- function(table, zones, ...) {
 #' @return A numeric vector of length \code{n_replicates}.
 #' @importFrom magrittr %>%
 #' @importFrom foreach %dopar%
+#' @keywords internal
 zip_mcsim <- function(table, zones, n_replicates = 999L, ...) {
   foreach(i = seq(n_replicates), .combine = c, .inorder = FALSE) %dopar% {
     simulate_zip_scanstatistic(table, zones, ...)
@@ -100,6 +121,7 @@ zip_mcsim <- function(table, zones, n_replicates = 999L, ...) {
 #'    is the given/estimated probability of an excess zero, and \code{mean} is
 #'    the estimated Poisson mean. \code{count} is the observed count.
 #' @return The same table, \strong{modified} with a new column \code{ddagger}.
+#' @keywords internal
 estimate_d_dagger <- function(table) {
   table[, ddagger := estimate_d(p, mean, count)][]
 }
@@ -118,6 +140,7 @@ estimate_d_dagger <- function(table) {
 #'   \item{statistic}{Numeric vector containing the ZIP statistics corresponding
 #'   to each duration, for the given spatial zone.}
 #' }
+#' @keywords internal
 calc_zipstat_over_duration <- function(table, maxdur, ...) {
   stat <- rep(0, maxdur)
   for (t in seq(maxdur)) {
@@ -139,6 +162,7 @@ calc_zipstat_over_duration <- function(table, maxdur, ...) {
 #'   \item{tol}{As in \code{link{window_zip_statistic}}.}
 #' }
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
+#' @keywords internal
 zip_statistic <- function(table, ...) {
   table[, calc_zipstat_over_duration(.SD, ...), by = .(zone)]
 }
@@ -154,6 +178,7 @@ zip_statistic <- function(table, ...) {
 #' @param ... Arguments passed to \code{\link{simulate_zip_scanstatistic}}.
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @importFrom magrittr %>%
+#' @keywords internal
 zip_calculations <- function(table, zones, ...) {
   table %>%
     zone_joiner(zones = zones, keys = c("zone", "duration")) %>%
@@ -174,6 +199,7 @@ zip_calculations <- function(table, zones, ...) {
 #' @param y An integer vector of the observed counts, of same length as 
 #'    \code{d}.
 #' @return A scalar, the estimated relative risk.
+#' @keywords internal
 estimate_zip_relrisk <- function(d, mu, y) {
   max(1, sum(y * (1 - d)) / sum(mu * (1 - d)))
 }
@@ -190,6 +216,7 @@ estimate_zip_relrisk <- function(d, mu, y) {
 #' @param y An integer vector containing the observed counts. Of same length as 
 #'    \code{p}.
 #' @return A numeric vector, of same length as the input vector \code{p}.
+#' @keywords internal
 estimate_d <- function(p, mu, y) {
   d <- rep(0, length(y))
   zero <- y == 0L
@@ -211,11 +238,10 @@ estimate_d <- function(p, mu, y) {
 #'    \code{p}.
 #' @param y Integer vector of observed counts. Of same length as \code{p}.
 #' @return A numeric vector of same length as input vector \code{p}.
+#' @keywords internal
 zip_statistic_term <- function(q, p, dstar, ddagger, mu, y) {
   zip_statistic_factor(p, dstar, q * mu, y) - 
     zip_statistic_factor(p, ddagger, mu, y)
-  # (dstar - ddagger) * (log(p) - log(1 - p) - y * log(mu) + lfactorial(y)) +
-    # (1 - dstar) * (y * log(q) - q * mu) + (1 - ddagger) * mu
 }
 
 #' Factor(s) in the product of the EB-ZIP window statistic.
@@ -231,6 +257,7 @@ zip_statistic_term <- function(q, p, dstar, ddagger, mu, y) {
 #' @param y Integer vector of observed counts. Of same length as \code{p}.
 #' @param tol Scalar; probability p below this is considered equal to zero.
 #' @return A numeric vector of same length as input vector \code{p}.
+#' @keywords internal
 zip_statistic_factor <- function(p, d, mu, y, tol = 1e-08) {
   res <- rep(0, length(p))
   p_is_zero <- p < tol
@@ -263,6 +290,7 @@ zip_statistic_factor <- function(p, d, mu, y, tol = 1e-08) {
 #'   \item{q}{Scalar estimate of the relative risk.}
 #'   \item{dstar}{Estimates of the excess zero indicator variables.}
 #' }
+#' @keywords internal
 zip_em_estimates <- function(p, mu, y, d_init = 0.5, tol = 0.01) {
   d_prev <- ifelse(y > 0, rep(0, length(y)), rep(d_init, length(y)))
   q <- estimate_zip_relrisk(d_prev, mu, y)
@@ -285,6 +313,7 @@ zip_em_estimates <- function(p, mu, y, d_init = 0.5, tol = 0.01) {
 #' @inheritParams zip_em_estimates
 #' @param ... Named parameters passed to \code{\link{zip_em_estimates}}.
 #' @return A scalar, the (logarithm of the) ZIP statistic.
+#' @keywords internal
 window_zip_statistic <- function(p, mu, y, ...) {
   em <- zip_em_estimates(p, mu, y, ...)
   sum(zip_statistic_term(em$q, p, em$dstar, estimate_d(p, mu, y), mu, y))

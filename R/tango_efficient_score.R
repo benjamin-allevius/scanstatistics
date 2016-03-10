@@ -10,6 +10,7 @@
 #'    \code{phi}. The parameter \eqn{\phi} (phi) is the same as \code{size} in
 #'    \code{\link[stats]{rnbinom}}.
 #' @return The same table, with a new column \code{count}.
+#' @keywords internal
 generate_nb_counts <- function(table) {
   table[is.finite(phi), count := as.integer(rnbinom(.N, mu = mean, size = phi))]
   table[is.infinite(phi), count := rpois(.N, mean)][]
@@ -25,6 +26,7 @@ generate_nb_counts <- function(table) {
 #' @param wstat_fun The function that calculates the statistic for each window.
 #' @return A scalar; the scan statistic for the simulated data.
 #' @importFrom magrittr %>%
+#' @keywords internal
 simulate_nb_scanstatistic <- function(table, zones, wstat_fun) {
   table[, .(mean, phi), by = .(location, duration)] %>%
     generate_nb_counts %>%
@@ -48,6 +50,7 @@ simulate_nb_scanstatistic <- function(table, zones, wstat_fun) {
 #' @return A numeric vector of length \code{n_replicates}.
 #' @importFrom magrittr %>%
 #' @importFrom foreach foreach
+#' @keywords internal
 nb_mcsim <- function(table, zones, n_replicates, type = "hotspot") {
   if (type == "emerging") {
     window_stats <- nb_emerging_calculations
@@ -74,6 +77,7 @@ nb_mcsim <- function(table, zones, n_replicates, type = "hotspot") {
 #' @param table A \code{data.table} with columns \code{mean, phi} and possibly
 #'    others.
 #' @return The same table, with a new column \code{overdispersion}.
+#' @keywords internal
 nb_overdispersion <- function(table) {
   table[, overdispersion := 1 + mean / phi][]
 }
@@ -92,6 +96,7 @@ nb_overdispersion <- function(table) {
 #'    in \code{\link[MASS]{negative.binomial}}.
 #' @return A \code{data.table} with columns \code{location, duration, num, 
 #'    denom}.
+#' @keywords internal
 nb_score_terms <- function(table) {
   table[, 
         .(num = sum((count - mean) / overdispersion),
@@ -107,6 +112,7 @@ nb_score_terms <- function(table) {
 #'    count}.
 #' @return A \code{data.table} with columns \code{location, duration, num, 
 #'    denom}.
+#' @keywords internal
 poisson_score_terms <- function(table) {
   table[,
         .(num = sum((count - mean)),
@@ -123,6 +129,7 @@ poisson_score_terms <- function(table) {
 #' @inheritParams partition_zones
 #' @return A \code{data.table} with columns \code{zone, duration, num, denom}.
 #' @importFrom magrittr %>%
+#' @keywords internal
 score_zone_sums <- function(table, zones) {
   table %>% 
     zone_joiner(zones = zones, keys = c("zone", "duration")) %>%
@@ -140,6 +147,7 @@ score_zone_sums <- function(table, zones) {
 #' @inheritParams partition_zones
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @importFrom magrittr %>%
+#' @keywords internal
 nb_hotspot_calculations <- function(table, zones) {
   table %>% 
     nb_score_terms %>%
@@ -155,6 +163,7 @@ nb_hotspot_calculations <- function(table, zones) {
 #' @param table A \code{data.table} with columns \code{zone, duration, num, 
 #'    denom}.
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
+#' @keywords internal
 nb_hotspot_score <- function(table) {
   table[,
         .(duration = duration,
@@ -172,6 +181,7 @@ nb_hotspot_score <- function(table) {
 #' @inheritParams partition_zones
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @importFrom magrittr %>%
+#' @keywords internal
 nb_emerging_calculations <- function(table, zones) {
   table %>% 
     nb_score_terms %>%
@@ -186,6 +196,7 @@ nb_emerging_calculations <- function(table, zones) {
 #' distribution for the counts.
 #' @inheritParams nb_hotspot_score
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
+#' @keywords internal
 nb_emerging_score <- function(table) {
   table[,
     .(duration = duration,
@@ -199,11 +210,13 @@ nb_emerging_score <- function(table) {
 #' @param x A vector of normalized counts summed over a single zone.
 #' @param d A vector of outbreak durations considered.
 #' @return A vector of length \code{length(d)}.
+#' @keywords internal
 convolute_numerator <- Vectorize(
   function(x, d) sum(d:1 * x[1:d]), vectorize.args = "d")
 
 #' Computes the sum in the outbreak score denominator.
 #' @inheritParams convolute_numerator
 #' @return A vector of length \code{length(d)}.
+#' @keywords internal
 convolute_denominator <- Vectorize(
   function(x, d) sum((d:1)^2 * x[1:d]), vectorize.args = "d")
