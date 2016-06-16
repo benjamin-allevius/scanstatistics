@@ -1,7 +1,7 @@
 Package: scanstatistics
 Type: Package
 Title: Spatio-Temporal Event Detection using Scan Statistics
-Description: Event (a.k.a. anomaly, outbreak) detection in a spatio-temporal, 
+Description: Event (a.k.a. anomaly, outbreak) detection in a spatio-temporal,
     spatial or setting.
 Version: 0.0.0.9000
 Date: 2015-02-09
@@ -13,14 +13,20 @@ Encoding: UTF-8
 License: GPL (>= 3)
 URL: https://github.com/BenjaK/scanstatistics
 BugReports: https://github.com/BenjaK/scanstatistics/issues
-Depends: data.table, foreach
-Imports: magrittr, gamlss.dist
-Suggests: knitr,
-    testthat,
-    sets,
-    tidyr,
-    reshape2,
+Depends:
+    data.table,
+    foreach
+Imports:
+    magrittr,
+    gamlss.dist, 
     plyr,
+    sets
+Suggests:
     doParallel,
+    knitr,
     lubridate,
+    reshape2,
+    testthat,
+    tidyr
 VignetteBuilder: knitr
+RoxygenNote: 5.0.1
