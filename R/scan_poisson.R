@@ -15,7 +15,7 @@ scan_poisson <- function(table, zones, n_replicates = 0) {
                  data_distribution = "Poisson",
                  n_locations = table[, length(unique(location))],
                  n_zones = length(zones),
-                 n_timeperiods = table[, max(duration)],
+                 n_maxduration = table[, max(duration)],
             class = "scanstatistic"))
 }
 
