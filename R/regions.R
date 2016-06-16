@@ -11,6 +11,7 @@
 #' @inheritParams stats::dist
 #' @return A matrix of integers, row \eqn{i} containing the \eqn{k} nearest 
 #'    neighbors of point \eqn{i}, including itself.
+#' @importFrom stats dist
 coords_to_knn <- function(x, 
                           k = min(10, nrow(x)), 
                           method = "euclidean", 
