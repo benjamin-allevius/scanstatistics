@@ -1,0 +1,224 @@
+
+# Simulation and hypothesis testing functions ----------------------------------
+
+#' Randomly generate and add negative binomial counts to a table.
+#' 
+#' This function randomly generates counts from a negative binomial distribution
+#' according to the parameters on each row of the input \code{data.table}, and 
+#' adds the counts to a new column \code{count}. 
+#' @param table A \code{data.table} with at least the columns \code{mean} and
+#'    \code{phi}. The parameter \eqn{\phi} (phi) is the same as \code{size} in
+#'    \code{\link[stats]{rnbinom}}.
+#' @return The same table, with a new column \code{count}.
+#' @importFrom stats rnbinom 
+#' @importFrom stats rpois
+#' @keywords internal
+generate_nb_counts <- function(table) {
+  table[is.finite(phi), count := as.integer(rnbinom(.N, mu = mean, size = phi))]
+  table[is.infinite(phi), count := rpois(.N, mean)][]
+}
+
+#' Simulate a single negative binomial score scan statistic.
+#' 
+#' Simulate negative binomial-distributed data according to the supplied 
+#' parameters and calculate the value of the score scan statistic, according to 
+#' the specified model.
+#' @inheritParams generate_nb_counts
+#' @inheritParams partition_zones
+#' @param wstat_fun The function that calculates the statistic for each window.
+#' @return A scalar; the scan statistic for the simulated data.
+#' @importFrom magrittr %>%
+#' @keywords internal
+simulate_nb_scanstatistic <- function(table, zones, wstat_fun) {
+  table[, .(mean, phi), by = .(location, duration)] %>%
+    generate_nb_counts %>%
+    nb_overdispersion %>%
+    wstat_fun(zones) %>%
+    extract_scanstatistic
+}
+
+#' Monte Carlo simulation of negative binomial score scan statistics.
+#' 
+#' This function generates \code{n_replicates} negative binomial-distributed 
+#' data sets according to the parameters in the input table, and calculates the 
+#' value of the score scan statistic for each generated data set using the 
+#' supplied \code{zones}. The score can be calculated either according to the 
+#' hotspot cluster model or the emerging outbreak model.
+#' @inheritParams generate_nb_counts
+#' @inheritParams partition_zones
+#' @param n_replicates A positive integer; the number of replicate scan 
+#'    statistics to generate.
+#' @param type Either "hotspot" or "emerging".
+#' @return A numeric vector of length \code{n_replicates}.
+#' @importFrom magrittr %>%
+#' @importFrom foreach foreach
+#' @keywords internal
+nb_mcsim <- function(table, zones, n_replicates, type = "hotspot") {
+  if (type == "emerging") {
+    window_stats <- nb_emerging_calculations
+  } else {
+    window_stats <- nb_hotspot_calculations
+  }
+  foreach(i = seq(n_replicates), .combine = c, .inorder = FALSE) %dopar% {
+    # simulate_nb_scanstatistic(table, zones, window_stats)
+    table[, .(mean, phi), by = .(location, duration)] %>%
+      generate_nb_counts %>%
+      nb_overdispersion %>%
+      window_stats(zones) %>%
+      extract_scanstatistic
+  }
+}
+
+#' Computes the overdispersion parameter for a fitted negative binomial model.
+#' 
+#' Computes the overdispersion parameter \eqn{w=1+\mu/\phi} for a negative
+#' binomial distribution parametrized by its mean \eqn{\mu} and with variance
+#' \eqn{\mu+\mu^2/\phi}. The overdispersion is added as a new column to the 
+#' input \code{data.table}, meaning that this function \code{modifies} its 
+#' input.
+#' @param table A \code{data.table} with columns \code{mean, phi} and possibly
+#'    others.
+#' @return The same table, with a new column \code{overdispersion}.
+#' @keywords internal
+nb_overdispersion <- function(table) {
+  table[, overdispersion := 1 + mean / phi][]
+}
+
+
+#' Computes the numerator and denominator terms for the hotspot score.
+#' 
+#' This function calculates the terms found in the numerator and denominator 
+#' sums for the hotspot version of the negative binomial score. 
+#' @param table A \code{data.table} with columns \code{location, duration, mean,
+#'    overdispersion, count}. If \eqn{\mu} is the mean of the negative binomial 
+#'    distribution and \eqn{\phi} is the parameter such that the variance of the 
+#'    distribution is \eqn{\mu+\mu^2/\phi}, the overdispersion is given by 
+#'    \eqn{1+\mu/\phi}. The parameter \eqn{\phi} is referred to as the 
+#'    \code{size} in \code{\link[stats]{NegBinomial}}, and \code{theta} 
+#'    in \code{\link[MASS]{negative.binomial}}.
+#' @return A \code{data.table} with columns \code{location, duration, num, 
+#'    denom}.
+#' @keywords internal
+nb_score_terms <- function(table) {
+  table[, 
+        .(num = sum((count - mean) / overdispersion),
+          denom = sum(mean / overdispersion)),
+        by = .(location, duration)]
+}
+
+#' Computes the numerator and denominator terms for the hotspot score.
+#' 
+#' This function calculates the terms found in the numerator and denominator 
+#' sums for the hotspot version of the Poisson score. 
+#' @param table A \code{data.table} with columns \code{location, duration, mean,
+#'    count}.
+#' @return A \code{data.table} with columns \code{location, duration, num, 
+#'    denom}.
+#' @keywords internal
+poisson_score_terms <- function(table) {
+  table[,
+        .(num = sum((count - mean)),
+          denom = sum(mean)),
+        by = .(location, duration)]
+}
+
+#' Sums the numerator and denominator terms over all locations in each zone.
+#' 
+#' Computes the sum of the numerator and denominator terms over all locations in
+#' each zone, as part of the score calculation.
+#' @param table A \code{data.table} with columns \code{location, duration, num,
+#'    denom}; the output from \code{\link{nb_score_terms}}.
+#' @inheritParams partition_zones
+#' @return A \code{data.table} with columns \code{zone, duration, num, denom}.
+#' @importFrom magrittr %>%
+#' @keywords internal
+score_zone_sums <- function(table, zones) {
+  table %>% 
+    zone_joiner(zones = zones, keys = c("zone", "duration")) %>%
+    zone_sum(sumcols = c("num", "denom"))
+}
+
+
+### Functions for hotspot model ------------------------------------------------
+
+#' Calculate the hotspot score for each space-time window.
+#' 
+#' Calculate the hotspot score for each space-time window, given the initial 
+#' data of counts, means, and overdispersion parameters.
+#' @inheritParams nb_score_terms
+#' @inheritParams partition_zones
+#' @return A \code{data.table} with columns \code{zone, duration, statistic}.
+#' @importFrom magrittr %>%
+#' @keywords internal
+nb_hotspot_calculations <- function(table, zones) {
+  table %>% 
+    nb_score_terms %>%
+    score_zone_sums(zones) %>%
+    nb_hotspot_score
+}
+
+#' Computes the hotspot score for each space-time window.
+#' 
+#' Computes the score statistic for each space-time window, assuming a 
+#' hotspot outbreak model and either a Poisson or a negative binomial 
+#' distribution for the counts.
+#' @param table A \code{data.table} with columns \code{zone, duration, num, 
+#'    denom}.
+#' @return A \code{data.table} with columns \code{zone, duration, statistic}.
+#' @keywords internal
+nb_hotspot_score <- function(table) {
+  table[,
+        .(duration = duration,
+          statistic = cumsum(num) / sqrt(cumsum(denom))),
+        by = .(zone)]
+}
+
+### Functions for outbreak model -----------------------------------------------
+
+#' Calculate the outbreak score for each space-time window.
+#' 
+#' Calculate the outbreak score for each space-time window, given the initial 
+#' data of counts, means, and overdispersion parameters.
+#' @inheritParams nb_score_terms
+#' @inheritParams partition_zones
+#' @return A \code{data.table} with columns \code{zone, duration, statistic}.
+#' @importFrom magrittr %>%
+#' @keywords internal
+nb_emerging_calculations <- function(table, zones) {
+  table %>% 
+    nb_score_terms %>%
+    score_zone_sums(zones) %>%
+    nb_emerging_score
+}
+
+#' Calculate the outbreak score for each space-time window.
+#' 
+#' Computes the score statistic for each space-time window, assuming an 
+#' emergent outbreak model and either a Poisson or a negative binomial 
+#' distribution for the counts.
+#' @inheritParams nb_hotspot_score
+#' @return A \code{data.table} with columns \code{zone, duration, statistic}.
+#' @keywords internal
+nb_emerging_score <- function(table) {
+  table[,
+    .(duration = duration,
+      statistic = convolute_numerator(num, duration)
+      / sqrt(convolute_denominator(denom, duration))), 
+    by = .(zone)]
+}
+
+#' Computes the sum in the outbreak score numerator.
+#' 
+#' @param x A vector of normalized counts summed over a single zone.
+#' @param d A vector of outbreak durations considered.
+#' @return A vector of length \code{length(d)}.
+#' @keywords internal
+convolute_numerator <- Vectorize(
+  function(x, d) sum(d:1 * x[1:d]), vectorize.args = "d")
+
+#' Computes the sum in the outbreak score denominator.
+#' @inheritParams convolute_numerator
+#' @return A vector of length \code{length(d)}.
+#' @keywords internal
+convolute_denominator <- Vectorize(
+  function(x, d) sum((d:1)^2 * x[1:d]), vectorize.args = "d")
