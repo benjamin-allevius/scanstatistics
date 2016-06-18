@@ -87,3 +87,16 @@ extract_mlc <- function(table) {
 mc_pvalue <- function(observed, replicates) {
   (1 + sum(replicates > observed)) / (1 + length(replicates))
 }
+
+
+print.scanstatistic <- function(x) {
+  cat(paste0(
+    "A scan statistic assuming a ", 
+    x$data_distribution,
+    " distribution for the data was run on a dataset consisting of ", 
+    x$n_locations, 
+    " locations, making up ",
+    x$n_zones, 
+    " zones. The maximum outbreak/event/anomaly duration considered was ",
+    x$n_maxduration, "."))
+}
