@@ -13,7 +13,7 @@
 #' @importFrom stats rnbinom 
 #' @importFrom stats rpois
 #' @keywords internal
-generate_nb_counts <- function(table) {
+gen_negbin_counts <- function(table) {
   table[is.finite(phi), count := as.integer(rnbinom(.N, mu = mean, size = phi))]
   table[is.infinite(phi), count := rpois(.N, mean)][]
 }
@@ -23,16 +23,16 @@ generate_nb_counts <- function(table) {
 #' Simulate negative binomial-distributed data according to the supplied 
 #' parameters and calculate the value of the score scan statistic, according to 
 #' the specified model.
-#' @inheritParams generate_nb_counts
+#' @inheritParams gen_negbin_counts
 #' @inheritParams partition_zones
 #' @param wstat_fun The function that calculates the statistic for each window.
 #' @return A scalar; the scan statistic for the simulated data.
 #' @importFrom magrittr %>%
 #' @keywords internal
-simulate_nb_scanstatistic <- function(table, zones, wstat_fun) {
+sim_negbin_statistic <- function(table, zones, wstat_fun) {
   table[, .(mean, phi), by = .(location, duration)] %>%
-    generate_nb_counts %>%
-    nb_overdispersion %>%
+    gen_negbin_counts %>%
+    negbin_overdispersion %>%
     wstat_fun(zones) %>%
     extract_scanstatistic
 }
@@ -44,7 +44,7 @@ simulate_nb_scanstatistic <- function(table, zones, wstat_fun) {
 #' value of the score scan statistic for each generated data set using the 
 #' supplied \code{zones}. The score can be calculated either according to the 
 #' hotspot cluster model or the emerging outbreak model.
-#' @inheritParams generate_nb_counts
+#' @inheritParams gen_negbin_counts
 #' @inheritParams partition_zones
 #' @param n_replicates A positive integer; the number of replicate scan 
 #'    statistics to generate.
@@ -53,17 +53,18 @@ simulate_nb_scanstatistic <- function(table, zones, wstat_fun) {
 #' @importFrom magrittr %>%
 #' @importFrom foreach foreach
 #' @keywords internal
-nb_mcsim <- function(table, zones, n_replicates, type = "hotspot") {
+negbin_mcsim <- function(table, zones, n_replicates, type = "hotspot") {
   if (type == "emerging") {
-    window_stats <- nb_emerging_calculations
+    window_stats <- negbin_increasing_calculations
   } else {
-    window_stats <- nb_hotspot_calculations
+    window_stats <- negbin_calculations
   }
+  replicate(n_replicates,)
   foreach(i = seq(n_replicates), .combine = c, .inorder = FALSE) %dopar% {
-    # simulate_nb_scanstatistic(table, zones, window_stats)
+    # sim_negbin_statistic(table, zones, window_stats)
     table[, .(mean, phi), by = .(location, duration)] %>%
-      generate_nb_counts %>%
-      nb_overdispersion %>%
+      gen_negbin_counts %>%
+      negbin_overdispersion %>%
       window_stats(zones) %>%
       extract_scanstatistic
   }
@@ -80,7 +81,7 @@ nb_mcsim <- function(table, zones, n_replicates, type = "hotspot") {
 #'    others.
 #' @return The same table, with a new column \code{overdispersion}.
 #' @keywords internal
-nb_overdispersion <- function(table) {
+negbin_overdispersion <- function(table) {
   table[, overdispersion := 1 + mean / phi][]
 }
 
@@ -99,7 +100,7 @@ nb_overdispersion <- function(table) {
 #' @return A \code{data.table} with columns \code{location, duration, num, 
 #'    denom}.
 #' @keywords internal
-nb_score_terms <- function(table) {
+negbin_score_terms <- function(table) {
   table[, 
         .(num = sum((count - mean) / overdispersion),
           denom = sum(mean / overdispersion)),
@@ -127,7 +128,7 @@ poisson_score_terms <- function(table) {
 #' Computes the sum of the numerator and denominator terms over all locations in
 #' each zone, as part of the score calculation.
 #' @param table A \code{data.table} with columns \code{location, duration, num,
-#'    denom}; the output from \code{\link{nb_score_terms}}.
+#'    denom}; the output from \code{\link{negbin_score_terms}}.
 #' @inheritParams partition_zones
 #' @return A \code{data.table} with columns \code{zone, duration, num, denom}.
 #' @importFrom magrittr %>%
@@ -145,16 +146,16 @@ score_zone_sums <- function(table, zones) {
 #' 
 #' Calculate the hotspot score for each space-time window, given the initial 
 #' data of counts, means, and overdispersion parameters.
-#' @inheritParams nb_score_terms
+#' @inheritParams negbin_score_terms
 #' @inheritParams partition_zones
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @importFrom magrittr %>%
 #' @keywords internal
-nb_hotspot_calculations <- function(table, zones) {
+negbin_calculations <- function(table, zones) {
   table %>% 
-    nb_score_terms %>%
+    negbin_score_terms %>%
     score_zone_sums(zones) %>%
-    nb_hotspot_score
+    negbin_score
 }
 
 #' Computes the hotspot score for each space-time window.
@@ -166,7 +167,7 @@ nb_hotspot_calculations <- function(table, zones) {
 #'    denom}.
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @keywords internal
-nb_hotspot_score <- function(table) {
+negbin_score <- function(table) {
   table[,
         .(duration = duration,
           statistic = cumsum(num) / sqrt(cumsum(denom))),
@@ -179,16 +180,16 @@ nb_hotspot_score <- function(table) {
 #' 
 #' Calculate the outbreak score for each space-time window, given the initial 
 #' data of counts, means, and overdispersion parameters.
-#' @inheritParams nb_score_terms
+#' @inheritParams negbin_score_terms
 #' @inheritParams partition_zones
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @importFrom magrittr %>%
 #' @keywords internal
-nb_emerging_calculations <- function(table, zones) {
+negbin_increasing_calculations <- function(table, zones) {
   table %>% 
-    nb_score_terms %>%
+    negbin_score_terms %>%
     score_zone_sums(zones) %>%
-    nb_emerging_score
+    negbin_increasing_score
 }
 
 #' Calculate the outbreak score for each space-time window.
@@ -196,10 +197,10 @@ nb_emerging_calculations <- function(table, zones) {
 #' Computes the score statistic for each space-time window, assuming an 
 #' emergent outbreak model and either a Poisson or a negative binomial 
 #' distribution for the counts.
-#' @inheritParams nb_hotspot_score
+#' @inheritParams negbin_score
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @keywords internal
-nb_emerging_score <- function(table) {
+negbin_increasing_score <- function(table) {
   table[,
     .(duration = duration,
       statistic = convolute_numerator(num, duration)
