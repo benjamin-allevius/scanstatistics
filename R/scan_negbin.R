@@ -43,31 +43,28 @@ sim_negbin_statistic <- function(table, zones, wstat_fun) {
 #' data sets according to the parameters in the input table, and calculates the 
 #' value of the score scan statistic for each generated data set using the 
 #' supplied \code{zones}. The score can be calculated either according to the 
-#' hotspot cluster model or the emerging outbreak model.
+#' ordinary cluster model or the increasing outbreak/event/anomaly model.
 #' @inheritParams gen_negbin_counts
 #' @inheritParams partition_zones
 #' @param n_replicates A positive integer; the number of replicate scan 
 #'    statistics to generate.
-#' @param type Either "hotspot" or "emerging".
+#' @param type Either "ordinary" (default) or "increasing".
 #' @return A numeric vector of length \code{n_replicates}.
 #' @importFrom magrittr %>%
 #' @importFrom foreach foreach
 #' @keywords internal
-negbin_mcsim <- function(table, zones, n_replicates, type = "hotspot") {
-  if (type == "emerging") {
+negbin_mcsim <- function(table, zones, n_replicates, type = "ordinary") {
+  if (type == "increasing") {
     window_stats <- negbin_increasing_calculations
   } else {
     window_stats <- negbin_calculations
   }
-  replicate(n_replicates,)
-  foreach(i = seq(n_replicates), .combine = c, .inorder = FALSE) %dopar% {
-    # sim_negbin_statistic(table, zones, window_stats)
-    table[, .(mean, phi), by = .(location, duration)] %>%
-      gen_negbin_counts %>%
-      negbin_overdispersion %>%
-      window_stats(zones) %>%
-      extract_scanstatistic
-  }
+  replicate(n_replicates,
+            table[, .(mean, phi), by = .(location, duration)] %>%
+              gen_negbin_counts %>%
+              negbin_overdispersion %>%
+              window_stats(zones) %>%
+              extract_scanstatistic)
 }
 
 #' Computes the overdispersion parameter for a fitted negative binomial model.
@@ -86,10 +83,10 @@ negbin_overdispersion <- function(table) {
 }
 
 
-#' Computes the numerator and denominator terms for the hotspot score.
+#' Computes the numerator and denominator terms for the NegBin score
 #' 
 #' This function calculates the terms found in the numerator and denominator 
-#' sums for the hotspot version of the negative binomial score. 
+#' sums for the ordinary version of the negative binomial scan statistic.
 #' @param table A \code{data.table} with columns \code{location, duration, mean,
 #'    overdispersion, count}. If \eqn{\mu} is the mean of the negative binomial 
 #'    distribution and \eqn{\phi} is the parameter such that the variance of the 
@@ -107,10 +104,11 @@ negbin_score_terms <- function(table) {
         by = .(location, duration)]
 }
 
-#' Computes the numerator and denominator terms for the hotspot score.
+#' Computes the numerator and denominator terms for the Poisson score.
 #' 
 #' This function calculates the terms found in the numerator and denominator 
-#' sums for the hotspot version of the Poisson score. 
+#' sums for the ordinary version of the Poisson scan statistic (Tango et al. 
+#' version). 
 #' @param table A \code{data.table} with columns \code{location, duration, mean,
 #'    count}.
 #' @return A \code{data.table} with columns \code{location, duration, num, 
@@ -140,12 +138,12 @@ score_zone_sums <- function(table, zones) {
 }
 
 
-### Functions for hotspot model ------------------------------------------------
+### Functions for ordinary model ------------------------------------------------
 
-#' Calculate the hotspot score for each space-time window.
+#' Calculate the ordinary NegBin score for each space-time window.
 #' 
-#' Calculate the hotspot score for each space-time window, given the initial 
-#' data of counts, means, and overdispersion parameters.
+#' Calculate the ordinary negative binomial score for each space-time window, 
+#' given the initial data of counts, means, and overdispersion parameters.
 #' @inheritParams negbin_score_terms
 #' @inheritParams partition_zones
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
@@ -158,7 +156,7 @@ negbin_calculations <- function(table, zones) {
     negbin_score
 }
 
-#' Computes the hotspot score for each space-time window.
+#' Computes the ordinary score for each space-time window.
 #' 
 #' Computes the score statistic for each space-time window, assuming a 
 #' hotspot outbreak model and either a Poisson or a negative binomial 
@@ -174,11 +172,11 @@ negbin_score <- function(table) {
         by = .(zone)]
 }
 
-### Functions for outbreak model -----------------------------------------------
+### Functions for increasing model -----------------------------------------------
 
-#' Calculate the outbreak score for each space-time window.
+#' Calculate the increasing score for each space-time window.
 #' 
-#' Calculate the outbreak score for each space-time window, given the initial 
+#' Calculate the increasing score for each space-time window, given the initial 
 #' data of counts, means, and overdispersion parameters.
 #' @inheritParams negbin_score_terms
 #' @inheritParams partition_zones
@@ -192,11 +190,11 @@ negbin_increasing_calculations <- function(table, zones) {
     negbin_increasing_score
 }
 
-#' Calculate the outbreak score for each space-time window.
+#' Calculate the increasing score for each space-time window.
 #' 
-#' Computes the score statistic for each space-time window, assuming an 
-#' emergent outbreak model and either a Poisson or a negative binomial 
-#' distribution for the counts.
+#' Computes the score statistic for each space-time window, assuming the 
+#' increasing type of outbreak/event/anomaly and either a Poisson or a negative 
+#' binomial distribution for the counts.
 #' @inheritParams negbin_score
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @keywords internal
@@ -208,7 +206,7 @@ negbin_increasing_score <- function(table) {
     by = .(zone)]
 }
 
-#' Computes the sum in the outbreak score numerator.
+#' Computes the sum in the increasing score numerator.
 #' 
 #' @param x A vector of normalized counts summed over a single zone.
 #' @param d A vector of outbreak durations considered.
@@ -217,7 +215,7 @@ negbin_increasing_score <- function(table) {
 convolute_numerator <- Vectorize(
   function(x, d) sum(d:1 * x[1:d]), vectorize.args = "d")
 
-#' Computes the sum in the outbreak score denominator.
+#' Computes the sum in the increasing score denominator.
 #' @inheritParams convolute_numerator
 #' @return A vector of length \code{length(d)}.
 #' @keywords internal
