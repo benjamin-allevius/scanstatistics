@@ -89,6 +89,23 @@ mc_pvalue <- function(observed, replicates) {
 }
 
 
+scanstatistic_object <- function(observed, simulated, details) {
+  statistic <- extract_scanstatistic(observed)
+  pval <- mc_pvalue(statistic, replicated)
+  mlc <- extract_mlc(observed)
+  
+  structure(list(observed = observed,
+                 replicated = unlist(replicated),
+                 mlc = mlc,
+                 pvalue = pval,
+                 data_distribution = "Poisson",
+                 n_locations = length(table[, unique(location)]),
+                 n_zones = length(zones),
+                 n_maxduration = table[, max(duration)],
+                 class = "scanstatistic"))
+}
+
+
 print.scanstatistic <- function(x) {
   cat(paste0(
     "A scan statistic assuming a ", 
