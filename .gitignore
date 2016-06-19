@@ -8,3 +8,4 @@ src/*.so
 src/*.dll
 inst/doc
 man/*.Rd
+.Rproj.user
