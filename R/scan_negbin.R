@@ -1,3 +1,34 @@
+# Main function ----------------------------------------------------------------
+
+#' @param table A \code{data.table} with columns \code{location, duration, mean,
+#'    overdispersion, count}. If \eqn{\mu} is the mean of the negative binomial 
+#'    distribution and \eqn{\phi} is the parameter such that the variance of the 
+#'    distribution is \eqn{\mu+\mu^2/\phi}, the overdispersion is given by 
+#'    \eqn{1+\mu/\phi}. The parameter \eqn{\phi} is referred to as the 
+#'    \code{size} in \code{\link[stats]{NegBinomial}}, and \code{theta} 
+#'    in \code{\link[MASS]{negative.binomial}}.
+#' @param n_replicates A positive integer; the number of replicate scan 
+#'    statistics to generate. 
+#' @param version Which version of the negative binomial score scan statistic to 
+#'    calculate: either "ordinary" (default) or "increasing". See details.
+#' @inheritParams partition_zones
+#' @return An object of class \code{scanstatistics}.
+scan_negbin <- function(table, zones, n_replicates = 0, version = "ordinary") {
+  details <- list(table = table,
+                            zones = zones, 
+                            distribution = "negative binomial",
+                            type = "expectation-based",
+                            version = version)
+  if (version == "increasing") {
+    scanstatistic_object(negbin_increasing_calculations(table, zones), 
+                         negbin_mcsim(table, zones, n_replicates, version),
+                         details)
+  } else {
+    scanstatistic_object(negbin_calculations(table, zones), 
+                         negbin_mcsim(table, zones, n_replicates, version),
+                         details)
+  }
+}
 
 # Simulation and hypothesis testing functions ----------------------------------
 
@@ -48,13 +79,13 @@ sim_negbin_statistic <- function(table, zones, wstat_fun) {
 #' @inheritParams partition_zones
 #' @param n_replicates A positive integer; the number of replicate scan 
 #'    statistics to generate.
-#' @param type Either "ordinary" (default) or "increasing".
+#' @param version Either "ordinary" (default) or "increasing".
 #' @return A numeric vector of length \code{n_replicates}.
 #' @importFrom magrittr %>%
 #' @importFrom foreach foreach
 #' @keywords internal
-negbin_mcsim <- function(table, zones, n_replicates, type = "ordinary") {
-  if (type == "increasing") {
+negbin_mcsim <- function(table, zones, n_replicates, version = "ordinary") {
+  if (version == "increasing") {
     window_stats <- negbin_increasing_calculations
   } else {
     window_stats <- negbin_calculations
@@ -87,13 +118,7 @@ negbin_overdispersion <- function(table) {
 #' 
 #' This function calculates the terms found in the numerator and denominator 
 #' sums for the ordinary version of the negative binomial scan statistic.
-#' @param table A \code{data.table} with columns \code{location, duration, mean,
-#'    overdispersion, count}. If \eqn{\mu} is the mean of the negative binomial 
-#'    distribution and \eqn{\phi} is the parameter such that the variance of the 
-#'    distribution is \eqn{\mu+\mu^2/\phi}, the overdispersion is given by 
-#'    \eqn{1+\mu/\phi}. The parameter \eqn{\phi} is referred to as the 
-#'    \code{size} in \code{\link[stats]{NegBinomial}}, and \code{theta} 
-#'    in \code{\link[MASS]{negative.binomial}}.
+#' @inheritParams scan_negbin
 #' @return A \code{data.table} with columns \code{location, duration, num, 
 #'    denom}.
 #' @keywords internal
@@ -144,7 +169,7 @@ score_zone_sums <- function(table, zones) {
 #' 
 #' Calculate the ordinary negative binomial score for each space-time window, 
 #' given the initial data of counts, means, and overdispersion parameters.
-#' @inheritParams negbin_score_terms
+#' @inheritParams scan_negbin
 #' @inheritParams partition_zones
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @importFrom magrittr %>%
@@ -158,9 +183,9 @@ negbin_calculations <- function(table, zones) {
 
 #' Computes the ordinary score for each space-time window.
 #' 
-#' Computes the score statistic for each space-time window, assuming a 
-#' hotspot outbreak model and either a Poisson or a negative binomial 
-#' distribution for the counts.
+#' Computes the score statistic for each space-time window, assuming an 
+#' ordinary outbreak/event/anomaly model and either a Poisson or a negative 
+#' binomial distribution for the counts.
 #' @param table A \code{data.table} with columns \code{zone, duration, num, 
 #'    denom}.
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
@@ -178,7 +203,7 @@ negbin_score <- function(table) {
 #' 
 #' Calculate the increasing score for each space-time window, given the initial 
 #' data of counts, means, and overdispersion parameters.
-#' @inheritParams negbin_score_terms
+#' @inheritParams scan_negbin
 #' @inheritParams partition_zones
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @importFrom magrittr %>%

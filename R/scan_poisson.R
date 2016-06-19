@@ -1,22 +1,12 @@
 # Main function ----------------------------------------------------------------
 
 scan_poisson <- function(table, zones, n_replicates = 0) {
-  observed <- poisson_calculations(table, zones)
-  replicated <- poisson_mcsim(table, zones, n_replicates)
-  
-  statistic <- extract_scanstatistic(observed)
-  pval <- mc_pvalue(statistic, replicated)
-  mlc <- extract_mlc(observed)
-  
-  structure(list(observed = observed,
-                 replicated = unlist(replicated),
-                 mlc = mlc,
-                 pvalue = pval,
-                 data_distribution = "Poisson",
-                 n_locations = length(table[, unique(location)]),
-                 n_zones = length(zones),
-                 n_maxduration = table[, max(duration)],
-            class = "scanstatistic"))
+  scanstatistic_object(poisson_calculations(table, zones), 
+                       poisson_mcsim(table, zones, n_replicates),
+                       list(table = table,
+                            zones = zones, 
+                            distribution = "Poisson",
+                            type = "expectation-based"))
 }
 
 # Simulation and hypothesis testing functions ----------------------------------

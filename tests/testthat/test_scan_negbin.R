@@ -13,13 +13,13 @@ test_that("negbin_mcsim", {
                        sets::as.set(1:2))
   nsims <- 10
   
-  actual_hotspot <- negbin_mcsim(table, zones, nsims, type = "hotspot")
-  expect_true(length(actual_hotspot) == nsims)
-  expect_true(!any(is.na(actual_hotspot)))
+  actual_ordinary <- negbin_mcsim(table, zones, nsims, version = "ordinary")
+  expect_true(length(actual_ordinary) == nsims)
+  expect_true(!any(is.na(actual_ordinary)))
   
-  actual_outbreak <- negbin_mcsim(table, zones, nsims, type = "outbreak")
-  expect_true(length(actual_outbreak) == nsims)
-  expect_true(!any(is.na(actual_outbreak)))
+  actual_increasing <- negbin_mcsim(table, zones, nsims, version = "increasing")
+  expect_true(length(actual_increasing) == nsims)
+  expect_true(!any(is.na(actual_increasing)))
 })
 
 test_that("negbin_score_terms: calculates correctly", {
@@ -67,7 +67,7 @@ test_that("score_zone_sums: calculates correctly", {
   expect_equal(actual[, denom], expected_denom)
 })
 
-### Functions for hotspot model ------------------------------------------------
+### Functions for ordinary outbreak/event/anomaly model ------------------------
 
 test_that("negbin_score: calculated correctly", {
   d <- data.table(zone = rep(1:3, each = 3),

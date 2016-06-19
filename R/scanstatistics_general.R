@@ -88,7 +88,8 @@ mc_pvalue <- function(observed, replicates) {
   (1 + sum(replicates > observed)) / (1 + length(replicates))
 }
 
-
+#' Creates a scanstatistics object.
+#' @keywords internal
 scanstatistic_object <- function(observed, simulated, details) {
   statistic <- extract_scanstatistic(observed)
   pval <- mc_pvalue(statistic, replicated)
@@ -98,10 +99,11 @@ scanstatistic_object <- function(observed, simulated, details) {
                  replicated = unlist(replicated),
                  mlc = mlc,
                  pvalue = pval,
-                 data_distribution = "Poisson",
-                 n_locations = length(table[, unique(location)]),
-                 n_zones = length(zones),
-                 n_maxduration = table[, max(duration)],
+                 distribution = details$distribution,
+                 type = details$type,
+                 n_locations = length(details$table[, unique(location)]),
+                 n_zones = length(details$zones),
+                 n_maxduration = details$table[, max(duration)],
                  class = "scanstatistic"))
 }
 
@@ -109,7 +111,7 @@ scanstatistic_object <- function(observed, simulated, details) {
 print.scanstatistic <- function(x) {
   cat(paste0(
     "A scan statistic assuming a ", 
-    x$data_distribution,
+    x$distribution,
     " distribution for the data was run on a dataset consisting of ", 
     x$n_locations, 
     " locations, making up ",
