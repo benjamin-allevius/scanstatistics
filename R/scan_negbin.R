@@ -1,5 +1,6 @@
 # Main function ----------------------------------------------------------------
 
+#' Compute the negative binomial score scan statistic.
 #' @param table A \code{data.table} with columns \code{location, duration, mean,
 #'    overdispersion, count}. If \eqn{\mu} is the mean of the negative binomial 
 #'    distribution and \eqn{\phi} is the parameter such that the variance of the 

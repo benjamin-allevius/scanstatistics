@@ -1,5 +1,14 @@
 # Main function ----------------------------------------------------------------
 
+#' Calculate the Poisson scan statistic.
+#' 
+#' @param table A \code{data.table} with columns \code{location, duration, 
+#'    count, mean}.
+#' @param zones A \code{list} or \code{set} of zones, each zone itself a 
+#'    set containing one or more locations of those found in \code{table}.
+#' @param n_replicates A positive integer; the number of replicate scan 
+#'    statistics to generate.
+#' @return An object of class \code{scanstatistics}.
 scan_poisson <- function(table, zones, n_replicates = 0) {
   scanstatistic_object(poisson_calculations(table, zones), 
                        poisson_mcsim(table, zones, n_replicates),
