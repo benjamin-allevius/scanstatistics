@@ -2,6 +2,7 @@
 
 export(calculate_scanstatistic)
 export(get_zone)
+export(scan_poisson)
 export(zip_scanstatistic)
 import(data.table)
 importFrom(foreach,"%do%")

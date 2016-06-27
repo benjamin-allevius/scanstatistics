@@ -1,14 +1,62 @@
+# Functions in this file:
+#   scan_poisson
+#   generate_poisson_counts
+#   simulate_poisson_scanstatistic
+#   poisson_mcsim
+#   poisson_calculations
+#   poisson_statistic
+#   poisson_relrisk
+
 # Main function ----------------------------------------------------------------
 
 #' Calculate the Poisson scan statistic.
 #' 
-#' @param table A \code{data.table} with columns \code{location, duration, 
-#'    count, mean}.
-#' @param zones A \code{list} or \code{set} of zones, each zone itself a 
+#' Calculate the expectation-based Poisson scan statistic by supplying a 
+#' \code{data.table} of observed counts and pre-computed expected value 
+#' parameters for each location and time. A p-value for the observed scan
+#' statistic can be obtained by Monte Carlo simulation.
+#' 
+#' @param table A \code{data.table} with columns 
+#'    \code{location, duration, count, mean}. The \code{location} column should 
+#'    consist of integers that are unique to each location. The 
+#'    \code{duration} column should also consist of integers, starting at 1 for 
+#'    the most recent time period and increasing in reverse chronological order.
+#' @param zones A \code{set} of zones, each zone itself a 
 #'    set containing one or more locations of those found in \code{table}.
 #' @param n_replicates A positive integer; the number of replicate scan 
 #'    statistics to generate.
 #' @return An object of class \code{scanstatistics}.
+#' @export
+#' @concept poisson scanstatistic
+#' @details For the expectation-based Poisson scan statistic, the null 
+#'    hypothesis of no outbreak/anomaly/event holds that the counts observed at 
+#'    each location \eqn{i} and duration \eqn{t} (the number of time periods 
+#'    before present) is Poisson-distributed with expected value \eqn{\mu_{it}}:
+#'    \deqn{
+#'      H_0 : Y_{it} \sim \textrm{Poisson}(\mu_{it}),
+#'    }
+#'    for all locations \eqn{i = 1, \ldots, m} and all durations \eqn{t = 1,
+#'    \ldots,T}, with \eqn{T} being the maximum duration considered.
+#'    Under the alternative hypothesis, there is a space-time window \eqn{W}
+#'    consisting of a spatial zone \eqn{Z \subset \{1, \ldots, m\}} and a time 
+#'    window \eqn{D \subseteq \{1, \ldots, T\}} with an expected value inflated
+#'    by a factor \eqn{q_W > 1} compared to the null hypothesis:
+#'    \deqn{
+#'    H_1 : Y_{it} \sim \textrm{Poisson}(q_W \mu_{it}), ~~(i,t) \in W 
+#'    }
+#'    For locations and durations outside of this window, counts are assumed to
+#'    be distributed as under the null hypothesis. The sets \eqn{Z} considered 
+#'    are those specified in the argument \code{zones}, while the maximum 
+#'    duration \eqn{T} is taken as the maximum value in the column 
+#'    \code{duration} of the input \code{table}. For each space-time window
+#'    \eqn{W} considered, a (log) likelihood ratio is computed using the 
+#'    distributions under the alternative and null hypotheses, and the 
+#'    expectation-based Poisson scan statistic is calculated as the maximum of 
+#'    these quantities over all space-time windows.
+#'    Point estimates of the parameters \eqn{\mu_{it}} must be specified in the
+#'    column \code{mean} of the argument \code{table} before this function is 
+#'    called.
+#' @examples
 scan_poisson <- function(table, zones, n_replicates = 0) {
   scanstatistic_object(poisson_calculations(table, zones), 
                        poisson_mcsim(table, zones, n_replicates),
