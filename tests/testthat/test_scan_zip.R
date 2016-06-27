@@ -1,8 +1,5 @@
 context("ZIP statistic tests")
 
-library(doParallel)
-registerDoParallel(cores = 1)
-
 test_that("estimate_d", {
   p <- c(2, 3, 4) / 10
   mu <- c(3.5, 5.5, 4.5)
