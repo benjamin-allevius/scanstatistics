@@ -88,7 +88,7 @@ mc_pvalue <- function(observed, replicates) {
   (1 + sum(replicates > observed)) / (1 + length(replicates))
 }
 
-#' Creates a scanstatistics object.
+#' Creates an S3 object of class scanstatistic.
 #' @keywords internal
 scanstatistic_object <- function(observed, simulated, details) {
   statistic <- extract_scanstatistic(observed)
