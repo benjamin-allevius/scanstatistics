@@ -57,8 +57,9 @@
 #'    column \code{mean} of the argument \code{table} before this function is 
 #'    called.
 #' @examples
+#' # Simple example
 #' table <- table_creator(list(location = 1:2, duration = 1:3), 
-#' keys = c("location", "duration"))
+#'                        keys = c("location", "duration"))
 #' table[, mean := 1:6 + 0.5]
 #' table[, count := c(1,3,2, 7, 3, 10)]
 #' zones <- sets::set(sets::as.set(1L), 
@@ -71,7 +72,7 @@ scan_poisson <- function(table, zones, n_mcsim = 0) {
                        list(table = table,
                             zones = zones, 
                             distribution = "Poisson",
-                            type = "expectation-based"))
+                            type = "Expectation-based"))
 }
 
 # Simulation and hypothesis testing functions ----------------------------------
