@@ -1,3 +1,11 @@
+# Functions in this file:
+#   auto_zone_partition_size
+#   partition_zones
+#   zone_apply
+#   zone_joiner
+#   zone_table_creator
+#   get_zone
+
 
 #' Decide how many parts to partition the set of all zones into.
 #' 
