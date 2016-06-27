@@ -7,14 +7,14 @@
 #' @param zones A \code{set} of \code{set}s, the inner sets containing integer
 #'    values that match those in the column \code{location} of the \code{table}
 #'    argument of this function.
-#' @param n_replicates The number of Monte Carlo replications to perform in 
+#' @param n_mcsim The number of Monte Carlo replications to perform in 
 #'    order to calculate a p-value.
 #' @param ... Arguments passed to 
 #' @export
 calculate_scanstatistic <- function(scanstatistic = "poisson",
                                     table, 
                                     zones, 
-                                    n_replicates, ...) {
+                                    n_mcsim, ...) {
   # Input validation
   allowed_types <- c("poisson", "nb-hotspot", "nb-emerging", "zip")
   if (scanstatistic %notin% allowed_types) {
@@ -25,18 +25,18 @@ calculate_scanstatistic <- function(scanstatistic = "poisson",
   # Calculate the chosen type of scanstatistic
   if (scanstatistic == "poisson") {
     observed_statistics <- poisson_calculations(table, zones)
-    replicate_scanstats <- poisson_mcsim(table, zones, n_replicates)
+    replicate_scanstats <- poisson_mcsim(table, zones, n_mcsim)
   } else if (scanstatistic == "nb-hotspot") {
       observed_statistics <- nb_hotspot_calculations(table, zones)
-      replicate_scanstats <- nb_mcsim(table, zones, n_replicates, "hotspot")
+      replicate_scanstats <- nb_mcsim(table, zones, n_mcsim, "hotspot")
   } else if (scanstatistic == "nb-emerging") {
       observed_statistics <- nb_emerging_calculations(table, zones)
-      replicate_scanstats <- nb_mcsim(table, zones, n_replicates, "emerging")
+      replicate_scanstats <- nb_mcsim(table, zones, n_mcsim, "emerging")
   } else if (scanstatistic == "zip") {
     maxdur <- table[, max(duration)]
     observed_statistics <- zip_calculations(table, zones, maxdur = maxdur, ...)
     replicate_scanstats <- zip_mcsim(
-      table, zones, n_replicates, maxdur = maxdur, ...)
+      table, zones, n_mcsim, maxdur = maxdur, ...)
   }
   
   scan_obs <- extract_scanstatistic(observed_statistics)
@@ -85,25 +85,29 @@ extract_mlc <- function(table) {
 #' @return A scalar; the p-value corresponding to the observed scan statistic.
 #' @keywords internal
 mc_pvalue <- function(observed, replicates) {
-  (1 + sum(replicates > observed)) / (1 + length(replicates))
+  if (length(replicates) == 0) {
+    return(NULL)
+  } else {
+    return((1 + sum(replicates > observed)) / (1 + length(replicates)))
+  }
 }
 
 #' Creates an S3 object of class scanstatistic.
 #' @keywords internal
 scanstatistic_object <- function(observed, simulated, details) {
   statistic <- extract_scanstatistic(observed)
-  pval <- mc_pvalue(statistic, replicated)
+  pval <- mc_pvalue(statistic, simulated)
   mlc <- extract_mlc(observed)
   
   structure(list(observed = observed,
-                 replicated = unlist(replicated),
+                 replicated = unlist(simulated),
                  mlc = mlc,
                  pvalue = pval,
                  distribution = details$distribution,
                  type = details$type,
                  n_locations = length(details$table[, unique(location)]),
                  n_zones = length(details$zones),
-                 n_maxduration = details$table[, max(duration)],
+                 max_duration = details$table[, max(duration)],
                  class = "scanstatistic"))
 }
 
@@ -117,5 +121,5 @@ print.scanstatistic <- function(x) {
     " locations, making up ",
     x$n_zones, 
     " zones. The maximum outbreak/event/anomaly duration considered was ",
-    x$n_maxduration, "."))
+    x$max_duration, "."))
 }

@@ -23,8 +23,8 @@
 #'    the most recent time period and increasing in reverse chronological order.
 #' @param zones A \code{set} of zones, each zone itself a 
 #'    set containing one or more locations of those found in \code{table}.
-#' @param n_replicates A positive integer; the number of replicate scan 
-#'    statistics to generate.
+#' @param n_mcsim A positive integer; the number of replicate scan statistics to 
+#'    generate.
 #' @return An object of class \code{scanstatistics}.
 #' @export
 #' @concept poisson scanstatistic
@@ -57,9 +57,17 @@
 #'    column \code{mean} of the argument \code{table} before this function is 
 #'    called.
 #' @examples
-scan_poisson <- function(table, zones, n_replicates = 0) {
+#' table <- table_creator(list(location = 1:2, duration = 1:3), 
+#' keys = c("location", "duration"))
+#' table[, mean := 1:6 + 0.5]
+#' table[, count := c(1,3,2, 7, 3, 10)]
+#' zones <- sets::set(sets::as.set(1L), 
+#'                    sets::as.set(2L),
+#'                    sets::as.set(1:2))
+#' print(scan_poisson(table, zones, 10))
+scan_poisson <- function(table, zones, n_mcsim = 0) {
   scanstatistic_object(poisson_calculations(table, zones), 
-                       poisson_mcsim(table, zones, n_replicates),
+                       poisson_mcsim(table, zones, n_mcsim),
                        list(table = table,
                             zones = zones, 
                             distribution = "Poisson",
@@ -101,19 +109,23 @@ simulate_poisson_scanstatistic <- function(table, zones) {
 
 #' Monte Carlo simulation of expectation-based Poisson scan statistics.
 #' 
-#' This function generates \code{n_replicates} Poisson-distributed data sets 
+#' This function generates \code{n_mcsim} Poisson-distributed data sets 
 #' according to the parameters in the input table, and calculates the value of
 #' the scan statistic for each generated data set using the supplied 
 #' \code{zones}.
 #' @inheritParams simulate_poisson_scanstatistic
 #' @inheritParams partition_zones
-#' @param n_replicates A positive integer; the number of replicate scan 
+#' @param n_mcsim A positive integer; the number of replicate scan 
 #'    statistics to generate.
-#' @return A numeric vector of length \code{n_replicates}.
+#' @return A numeric vector of length \code{n_mcsim}.
 #' @importFrom foreach %dopar%
 #' @keywords internal
-poisson_mcsim <- function(table, zones, n_replicates = 999L) {
-  replicate(n_replicates, simulate_poisson_scanstatistic(table, zones))
+poisson_mcsim <- function(table, zones, n_mcsim = 999L) {
+  if (n_mcsim > 0) {
+    return(replicate(n_mcsim, simulate_poisson_scanstatistic(table, zones)))
+  } else {
+    return(numeric(0))
+  }
 }
 
 
