@@ -105,21 +105,25 @@ scanstatistic_object <- function(observed, simulated, details) {
                  pvalue = pval,
                  distribution = details$distribution,
                  type = details$type,
+                 zones = details$zones,
                  n_locations = length(details$table[, unique(location)]),
                  n_zones = length(details$zones),
-                 max_duration = details$table[, max(duration)],
-                 class = "scanstatistic"))
+                 max_duration = details$table[, max(duration)]),
+            class = "scanstatistic")
 }
 
 
 print.scanstatistic <- function(x) {
   cat(paste0(
-    "A scan statistic assuming a ", 
-    x$distribution,
-    " distribution for the data was run on a dataset consisting of ", 
-    x$n_locations, 
-    " locations, making up ",
-    x$n_zones, 
-    " zones. The maximum outbreak/event/anomaly duration considered was ",
-    x$max_duration, "."))
+    "Data distribution:                ", x$distribution, "\n",
+    "Type of scan statistic:           ", x$type, "\n",
+    "Number of locations considered:   ", x$n_locations, "\n",
+    "Maximum duration considered:      ", x$max_duration, "\n",
+    "Number of spatial zones:          ", x$n_zones, "\n",
+    "p-value of observed statistic:    ", round(x$pvalue, 3), "\n",
+    "Number of Monte Carlo replicates: ", length(x$replicated), "\n",
+    "Most likely event duration:       ", x$mlc$duration, "\n",
+    "ID of locations in most likely cluster: ", 
+    toString(get_zone(x$mlc$zone, x$zones)))
+    )
 }
