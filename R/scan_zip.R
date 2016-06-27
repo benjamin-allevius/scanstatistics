@@ -105,9 +105,7 @@ simulate_zip_scanstatistic <- function(table, zones, ...) {
 #' @importFrom foreach %dopar%
 #' @keywords internal
 zip_mcsim <- function(table, zones, n_replicates = 999L, ...) {
-  foreach(i = seq(n_replicates), .combine = c, .inorder = FALSE) %dopar% {
-    simulate_zip_scanstatistic(table, zones, ...)
-  }
+  replicate(n_replicates, simulate_zip_scanstatistic(table, zones, ...))
 }
 
 
