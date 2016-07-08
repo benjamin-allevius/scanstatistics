@@ -183,3 +183,16 @@ get_zone <- function(zone, all_zones) {
   }
   stop("Zone not found.")
 }
+
+#' Creates a set of all non-empty subsets of the integers from 1 to n.
+#' @keywords internal
+all_possible_zones <- function(n) {
+  zones <- sets::set()
+  for (k in 1:n) {
+    ss <- combn(1:n, k)
+    for (j in 1:ncol(ss)) {
+      zones <- sets::set_union(zones, sets::set(sets::as.set(ss[, j])))
+    }
+  }
+  zones
+}
