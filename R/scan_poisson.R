@@ -25,7 +25,29 @@
 #'    set containing one or more locations of those found in \code{table}.
 #' @param n_mcsim A positive integer; the number of replicate scan statistics to 
 #'    generate.
-#' @return An object of class \code{scanstatistics}.
+#' @return An object of class \code{scanstatistics}. It has the following 
+#'    fields:
+#'    \describe{
+#'     \item{observed}{A \code{data.table} containing the value of the 
+#'                     statistic calculated for each zone-duration combination,
+#'                     for the observed data. The scan statistic is the maximum
+#'                     value of these calculated statistics.}
+#'     \item{replicated}{A numeric vector of length \code{n_mcsim} containing 
+#'                       the values of the scanstatistics calculated by Monte
+#'                       Carlo simulation.}
+#'     \item{mlc}{A \code{data.table} containing the zone, duration, and 
+#'                scanstatistic.}
+#'     \item{pvalue}{The p-value calculated from Monte Carlo replications.}
+#'     \item{distribution}{The assumed distribution of the data; "Poisson" in
+#'                         this case.}
+#'     \item{type}{The type of scan statistic; "Expectation-based" in this 
+#'                 case.}
+#'     \item{zones}{The set of zones that was passed to the function as input.}
+#'     \item{n_locations}{The number of locations in the data.}
+#'     \item{n_zones}{The number of zones.}
+#'     \item{max_duration}{The maximum outbreak/event/anomaly duration 
+#'                         considered.}
+#'    }
 #' @export
 #' @concept poisson scanstatistic
 #' @details For the expectation-based Poisson scan statistic, the null 
@@ -58,14 +80,14 @@
 #'    called.
 #' @examples
 #' # Simple example
-#' table <- table_creator(list(location = 1:2, duration = 1:3), 
-#'                        keys = c("location", "duration"))
+#' table <- scanstatistics:::table_creator(list(location = 1:2, duration = 1:3), 
+#'                                         keys = c("location", "duration"))
 #' table[, mean := 1:6 + 0.5]
-#' table[, count := c(1,3,2, 7, 3, 10)]
+#' table[, count := c(1, 3, 2, 7, 3, 10)]
 #' zones <- sets::set(sets::as.set(1L), 
 #'                    sets::as.set(2L),
 #'                    sets::as.set(1:2))
-#' print(scan_poisson(table, zones, 10))
+#' scan_poisson(table, zones, 10)
 scan_poisson <- function(table, zones, n_mcsim = 0) {
   scanstatistic_object(poisson_calculations(table, zones), 
                        poisson_mcsim(table, zones, n_mcsim),
@@ -119,7 +141,6 @@ simulate_poisson_scanstatistic <- function(table, zones) {
 #' @param n_mcsim A positive integer; the number of replicate scan 
 #'    statistics to generate.
 #' @return A numeric vector of length \code{n_mcsim}.
-#' @importFrom foreach %dopar%
 #' @keywords internal
 poisson_mcsim <- function(table, zones, n_mcsim = 999L) {
   if (n_mcsim > 0) {
