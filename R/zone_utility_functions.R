@@ -185,6 +185,11 @@ get_zone <- function(zone, all_zones) {
 }
 
 #' Creates a set of all non-empty subsets of the integers from 1 to n.
+#' 
+#' Creates a set of all \eqn{2^n-1} non-empty subsets of the integers from 1 to 
+#' n.
+#' @param n An integer larger than 0.
+#' @return A set of sets, each inner set containing integers between 1 and n.
 #' @keywords internal
 all_possible_zones <- function(n) {
   zones <- sets::set()
