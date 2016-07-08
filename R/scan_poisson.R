@@ -80,14 +80,15 @@
 #'    called.
 #' @examples
 #' # Simple example
-#' table <- scanstatistics:::table_creator(list(location = 1:2, duration = 1:3), 
+#' set.seed(1)
+#' table <- scanstatistics:::table_creator(list(location = 1:4, duration = 1:4), 
 #'                                         keys = c("location", "duration"))
-#' table[, mean := 1:6 + 0.5]
-#' table[, count := c(1, 3, 2, 7, 3, 10)]
-#' zones <- sets::set(sets::as.set(1L), 
-#'                    sets::as.set(2L),
-#'                    sets::as.set(1:2))
-#' scan_poisson(table, zones, 10)
+#' table[, mean := 3 * location]
+#' table[, count := rpois(.N, mean)]
+#' table[location %in% c(1, 4) & duration < 3, count := rpois(.N, 2 * mean)]
+#' zones <- scanstatistics:::all_possible_zones(4)
+#' result <- scan_poisson(table, zones, 100)
+#' result
 scan_poisson <- function(table, zones, n_mcsim = 0) {
   scanstatistic_object(poisson_calculations(table, zones), 
                        poisson_mcsim(table, zones, n_mcsim),
