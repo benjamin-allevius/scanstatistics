@@ -1,22 +1,9 @@
 # Functions in this file:
-#   auto_zone_partition_size
 #   partition_zones
 #   zone_apply
 #   zone_joiner
 #   zone_table_creator
 #   get_zone
-
-
-#' Decide how many parts to partition the set of all zones into.
-#' 
-#' Decide how many parts to partition the set of all zones into, for applying
-#' some function(s) over each part. Few parts can lead to memory problems for 
-#' large data sets, while many parts lead to longer computation times.
-#' @inheritParams partition_zones
-#' @keywords internal
-auto_zone_partition_size <- function(zones) {
-  min(length(zones), floor(log(sum(vapply(zones, length, integer(1))))))
-}
 
 #' Partition a set of zones.
 #' 
@@ -69,54 +56,54 @@ partition_zones <- function(zones, n_parts = min(10L, length(zones))) {
   zone_partition <- list()
   os <- 0L
   for (r in ranges) {
-    zone_partition <- c(zone_partition, 
-                          sets::set(as.set(regs[(os + 1L):r])))
+    zone_partition <- c(zone_partition, sets::set(as.set(regs[(os + 1L):r])))
     os <- r
   }
   list(partition = zone_partition, offsets = offsets)
 }
 
-#' Applies a function over all zones containing the locations supplied.
-#' 
-#' Applies the function \code{f} to the data table formed by expanding the
-#' \code{location_table} according to the zones in \code{zone_partition}.
-#' @param location_table A \code{data.table} with key column \code{location},
-#'    and others which may be used by the supplied function.
-#' @param zone_partition A list as outputted by \code{\link{partition_zones}}. 
-#'    Has two elements:
-#'    \describe{
-#'      \item{\code{partition}}{A list, each element of which is a \code{set} 
-#'        containing one or more zones (\code{set} containing locations).}
-#'      \item{\code{offsets}}{An integer vector containing offset numbers to the
-#'         zone numbering. For example, the first zone in \code{partition[i]} 
-#'         will have will be zone number \code{offsets[i] + 1}.}
-#'    }
-#' @param f A function to apply after expanding \code{location_table} by the
-#'    zones in a given element of \code{zone_partition$partition}.
-#' @param keys A character vector to set the key columns of the expanded 
-#'    zone-location table by before applying the function \code{f}.
-#' @return A \code{data.table}, containing the results of applying the supplied
-#'    function over all zones.
-#' @importFrom foreach foreach %do%
-#' @keywords internal
-zone_apply <- function(location_table, zone_partition, f, keys = NULL) {
-  foreach(zones_in_part = zone_partition$partition, 
-          offset = zone_partition$offsets,
-          .combine = rbind,
-          .packages = c("data.table", "magrittr")) %do% {
-    locations <- unique(unlist(zones_in_part))
-    zone_table <- zone_table_creator(zones_in_part, 
-                                     keys = c("location"), 
-                                     offset = offset)
-    merge(location_table[location %in% locations, ],
-          zone_table,
-          by = "location",
-          allow.cartesian = TRUE) %>% {
-            setkeyv(., keys)
-            .
-          } %>% f
-  }
-}
+# #' Applies a function over all zones containing the locations supplied.
+# #' 
+# #' Applies the function \code{f} to the data table formed by expanding the
+# #' \code{location_table} according to the zones in \code{zone_partition}.
+# #' @param location_table A \code{data.table} with key column \code{location},
+# #'    and others which may be used by the supplied function.
+# #' @param zone_partition A list as outputted by \code{\link{partition_zones}}. 
+# #'    Has two elements:
+# #'    \describe{
+# #'      \item{\code{partition}}{A list, each element of which is a \code{set} 
+# #'        containing one or more zones (\code{set} containing locations).}
+# #'      \item{\code{offsets}}{An integer vector containing offset numbers to the
+# #'         zone numbering. For example, the first zone in \code{partition[i]} 
+# #'         will have will be zone number \code{offsets[i] + 1}.}
+# #'    }
+# #' @param f A function to apply after expanding \code{location_table} by the
+# #'    zones in a given element of \code{zone_partition$partition}.
+# #' @param keys A character vector to set the key columns of the expanded 
+# #'    zone-location table by before applying the function \code{f}.
+# #' @return A \code{data.table}, containing the results of applying the supplied
+# #'    function over all zones.
+# #' @importFrom foreach foreach %do%
+# #' @keywords internal
+# zone_apply <- function(location_table, zone_partition, f, keys = NULL) {
+#   
+#   foreach(zones_in_part = zone_partition$partition, 
+#           offset = zone_partition$offsets,
+#           .combine = rbind,
+#           .packages = c("data.table", "magrittr")) %do% {
+#     locations <- unique(unlist(zones_in_part))
+#     zone_table <- zone_table_creator(zones_in_part, 
+#                                      keys = c("location"), 
+#                                      offset = offset)
+#     merge(location_table[location %in% locations, ],
+#           zone_table,
+#           by = "location",
+#           allow.cartesian = TRUE) %>% {
+#             setkeyv(., keys)
+#             .
+#           } %>% f
+#   }
+# }
 
 
 #' Creates a new \code{data.table} from a table containing locations,
