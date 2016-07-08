@@ -102,7 +102,6 @@ simulate_zip_scanstatistic <- function(table, zones, ...) {
 #' @param ... Arguments passed to \code{\link{simulate_zip_scanstatistic}}.
 #' @return A numeric vector of length \code{n_replicates}.
 #' @importFrom magrittr %>%
-#' @importFrom foreach %dopar%
 #' @keywords internal
 zip_mcsim <- function(table, zones, n_replicates = 999L, ...) {
   replicate(n_replicates, simulate_zip_scanstatistic(table, zones, ...))

@@ -83,7 +83,6 @@ sim_negbin_statistic <- function(table, zones, wstat_fun) {
 #' @param version Either "ordinary" (default) or "increasing".
 #' @return A numeric vector of length \code{n_replicates}.
 #' @importFrom magrittr %>%
-#' @importFrom foreach foreach
 #' @keywords internal
 negbin_mcsim <- function(table, zones, n_replicates, version = "ordinary") {
   if (version == "increasing") {
