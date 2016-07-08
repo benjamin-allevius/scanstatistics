@@ -98,7 +98,7 @@ test_that("zip_statistic: works", {
   zones <- sets::set(sets::as.set(1L), 
                        sets::as.set(2L),
                        sets::as.set(1:2))
-  dt <- zone_joiner(table, zones = zones, keys = c("zone", "duration"))
+  dt <- join_zones(table, zones = zones, keys = c("zone", "duration"))
   actual <- zip_statistic(dt, maxdur = 3)
   # actual <- dt[, calc_zipstat_over_duration(.SD, 3), by = .(zone)]
   expected <- c(

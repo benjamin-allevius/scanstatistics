@@ -1,6 +1,12 @@
 # Main function ----------------------------------------------------------------
 
-#' Compute the negative binomial score scan statistic.
+#' Calculate the negative binomial scan statistic.
+#' 
+#' Calculate the expectation-based negative binomial scan statistic by supplying 
+#' a \code{data.table} of observed counts and pre-computed expected value 
+#' parameters for each location and time. A p-value for the observed scan
+#' statistic can be obtained by Monte Carlo simulation.
+#' 
 #' @param table A \code{data.table} with columns \code{location, duration, mean,
 #'    overdispersion, count}. If \eqn{\mu} is the mean of the negative binomial 
 #'    distribution and \eqn{\phi} is the parameter such that the variance of the 
@@ -8,13 +14,14 @@
 #'    \eqn{1+\mu/\phi}. The parameter \eqn{\phi} is referred to as the 
 #'    \code{size} in \code{\link[stats]{NegBinomial}}, and \code{theta} 
 #'    in \code{\link[MASS]{negative.binomial}}.
-#' @param n_replicates A positive integer; the number of replicate scan 
+#' @param zones A \code{set} of zones, each zone itself a 
+#'    set containing one or more locations of those found in \code{table}.
+#' @param n_mcsim A positive integer; the number of replicate scan 
 #'    statistics to generate. 
 #' @param version Which version of the negative binomial score scan statistic to 
 #'    calculate: either "ordinary" (default) or "increasing". See details.
-#' @inheritParams partition_zones
 #' @return An object of class \code{scanstatistics}.
-scan_negbin <- function(table, zones, n_replicates = 0, version = "ordinary") {
+scan_negbin <- function(table, zones, n_mcsim = 0, version = "ordinary") {
   details <- list(table = table,
                             zones = zones, 
                             distribution = "negative binomial",
@@ -22,11 +29,11 @@ scan_negbin <- function(table, zones, n_replicates = 0, version = "ordinary") {
                             version = version)
   if (version == "increasing") {
     scanstatistic_object(negbin_increasing_calculations(table, zones), 
-                         negbin_mcsim(table, zones, n_replicates, version),
+                         negbin_mcsim(table, zones, n_mcsim, version),
                          details)
   } else {
     scanstatistic_object(negbin_calculations(table, zones), 
-                         negbin_mcsim(table, zones, n_replicates, version),
+                         negbin_mcsim(table, zones, n_mcsim, version),
                          details)
   }
 }
@@ -71,26 +78,26 @@ sim_negbin_statistic <- function(table, zones, wstat_fun) {
 
 #' Monte Carlo simulation of negative binomial score scan statistics.
 #' 
-#' This function generates \code{n_replicates} negative binomial-distributed 
+#' This function generates \code{n_mcsim} negative binomial-distributed 
 #' data sets according to the parameters in the input table, and calculates the 
 #' value of the score scan statistic for each generated data set using the 
 #' supplied \code{zones}. The score can be calculated either according to the 
 #' ordinary cluster model or the increasing outbreak/event/anomaly model.
 #' @inheritParams gen_negbin_counts
 #' @inheritParams partition_zones
-#' @param n_replicates A positive integer; the number of replicate scan 
+#' @param n_mcsim A positive integer; the number of replicate scan 
 #'    statistics to generate.
 #' @param version Either "ordinary" (default) or "increasing".
-#' @return A numeric vector of length \code{n_replicates}.
+#' @return A numeric vector of length \code{n_mcsim}.
 #' @importFrom magrittr %>%
 #' @keywords internal
-negbin_mcsim <- function(table, zones, n_replicates, version = "ordinary") {
+negbin_mcsim <- function(table, zones, n_mcsim, version = "ordinary") {
   if (version == "increasing") {
     window_stats <- negbin_increasing_calculations
   } else {
     window_stats <- negbin_calculations
   }
-  replicate(n_replicates,
+  replicate(n_mcsim,
             table[, .(mean, phi), by = .(location, duration)] %>%
               gen_negbin_counts %>%
               negbin_overdispersion %>%
@@ -158,7 +165,7 @@ poisson_score_terms <- function(table) {
 #' @keywords internal
 score_zone_sums <- function(table, zones) {
   table %>% 
-    zone_joiner(zones = zones, keys = c("zone", "duration")) %>%
+    join_zones(zones = zones, keys = c("zone", "duration")) %>%
     zone_sum(sumcols = c("num", "denom"))
 }
 

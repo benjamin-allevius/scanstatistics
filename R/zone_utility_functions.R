@@ -1,7 +1,7 @@
 # Functions in this file:
 #   partition_zones
 #   zone_apply
-#   zone_joiner
+#   join_zones
 #   zone_table_creator
 #   get_zone
 
@@ -124,10 +124,10 @@ partition_zones <- function(zones, n_parts = min(10L, length(zones))) {
 #' @examples
 #' \dontrun{
 #' locs_etc <- table_creator(list(location = 1:2, duration = 1:3, stream = 1:2))
-#' zone_joiner(locs_etc, list(1, 2, 1:2), keys = c("duration", "zone"))
+#' join_zones(locs_etc, list(1, 2, 1:2), keys = c("duration", "zone"))
 #' }
 #' @keywords internal
-zone_joiner <- function(locations_etc, zones, keys = c("zone")) {
+join_zones <- function(locations_etc, zones, keys = c("zone")) {
   zone_table_creator(zones, keys = "location")[
     locations_etc, allow.cartesian = TRUE][, .SD, keyby = keys]
 }
@@ -190,6 +190,7 @@ get_zone <- function(zone, all_zones) {
 #' n.
 #' @param n An integer larger than 0.
 #' @return A set of sets, each inner set containing integers between 1 and n.
+#' @importFrom utils combn
 #' @keywords internal
 all_possible_zones <- function(n) {
   zones <- sets::set()

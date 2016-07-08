@@ -169,7 +169,7 @@ poisson_mcsim <- function(table, zones, n_mcsim = 999L) {
 #' @keywords internal
 poisson_calculations <- function(table, zones) {
   table %>% 
-    zone_joiner(zones = zones, keys = c("zone", "duration")) %>%
+    join_zones(zones = zones, keys = c("zone", "duration")) %>%
     zone_sum(sumcols = c("count", "mean")) %>%
     cumsum_duration(sumcols = c("count", "mean"), bycols = c("zone")) %>%
     poisson_relrisk %>%

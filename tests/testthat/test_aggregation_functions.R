@@ -8,7 +8,7 @@ test_that("zone_sum: calculates correctly", {
   zones <- sets::set(sets::as.set(1L), 
                        sets::as.set(2L),
                        sets::as.set(1:2))
-  table <- zone_joiner(table, zones, c("zone", "duration"))
+  table <- join_zones(table, zones, c("zone", "duration"))
   
   actual <- zone_sum(table, c("count", "mean"))
   expected_count <- c(1, 2, 3, 4, 1+3, 2+4)

@@ -179,7 +179,7 @@ zip_statistic <- function(table, ...) {
 #' @keywords internal
 zip_calculations <- function(table, zones, ...) {
   table %>%
-    zone_joiner(zones = zones, keys = c("zone", "duration")) %>%
+    join_zones(zones = zones, keys = c("zone", "duration")) %>%
     zip_statistic(...)
 }
 
