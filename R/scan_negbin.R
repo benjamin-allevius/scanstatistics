@@ -3,15 +3,14 @@
 #' Calculate the negative binomial scan statistic.
 #' 
 #' Calculate the expectation-based negative binomial scan statistic by supplying 
-#' a \code{data.table} of observed counts and pre-computed expected value 
+#' a \code{data.table} of observed counts and pre-computed distribution 
 #' parameters for each location and time. A p-value for the observed scan
 #' statistic can be obtained by Monte Carlo simulation.
 #' 
 #' @param table A \code{data.table} with columns \code{location, duration, mean,
-#'    overdispersion, count}. If \eqn{\mu} is the mean of the negative binomial 
-#'    distribution and \eqn{\phi} is the parameter such that the variance of the 
-#'    distribution is \eqn{\mu+\mu^2/\phi}, the overdispersion is given by 
-#'    \eqn{1+\mu/\phi}. The parameter \eqn{\phi} is referred to as the 
+#'    theta, count}. A negative binomial distribution parametrized by \eqn{\mu} 
+#'    and \eqn{\theta} has expected value \eqn{\mu} and variance 
+#'    \eqn{\mu+\mu^2/\theta}. The parameter \eqn{\theta} is referred to as the 
 #'    \code{size} in \code{\link[stats]{NegBinomial}}, and \code{theta} 
 #'    in \code{\link[MASS]{negative.binomial}}.
 #' @param zones A \code{set} of zones, each zone itself a 
@@ -20,7 +19,42 @@
 #'    statistics to generate. 
 #' @param version Which version of the negative binomial score scan statistic to 
 #'    calculate: either "ordinary" (default) or "increasing". See details.
-#' @return An object of class \code{scanstatistics}.
+#' @return An object of class \code{scanstatistics}. It has the following 
+#'    fields:
+#'    \describe{
+#'     \item{observed}{A \code{data.table} containing the value of the 
+#'                     statistic calculated for each zone-duration combination,
+#'                     for the observed data. The scan statistic is the maximum
+#'                     value of these calculated statistics.}
+#'     \item{replicated}{A numeric vector of length \code{n_mcsim} containing 
+#'                       the values of the scanstatistics calculated by Monte
+#'                       Carlo simulation.}
+#'     \item{mlc}{A \code{data.table} containing the zone, duration, and 
+#'                scanstatistic.}
+#'     \item{pvalue}{The p-value calculated from Monte Carlo replications.}
+#'     \item{distribution}{The assumed distribution of the data; "negative 
+#'                         binomial" in this case.}
+#'     \item{type}{The type of scan statistic; "Expectation-based" in this 
+#'                 case.}
+#'     \item{zones}{The set of zones that was passed to the function as input.}
+#'     \item{n_locations}{The number of locations in the data.}
+#'     \item{n_zones}{The number of zones.}
+#'     \item{max_duration}{The maximum outbreak/event/anomaly duration 
+#'                         considered.}
+#'    }
+#' @examples
+#' # Simple example
+#' set.seed(1)
+#' table <- scanstatistics:::table_creator(list(location = 1:4, duration = 1:4),
+#'                                         keys = c("location", "duration"))
+#' table[, mean := 3 * location]
+#' table[, theta := 2]
+#' table[, count := rnbinom(.N, mu = mean, size = theta)]
+#' table[location %in% c(1, 4) & duration < 3, 
+#'       count :=  rnbinom(.N, mu = 2 * mean, size = theta)]
+#' zones <- scanstatistics:::all_possible_zones(4)
+#' result1 <- scan_negbin(table, zones, 100, "ordinary")
+#' result2 <- scan_negbin(table, zones, 100, "increasing")
 scan_negbin <- function(table, zones, n_mcsim = 0, version = "ordinary") {
   details <- list(table = table,
                             zones = zones, 
@@ -46,15 +80,16 @@ scan_negbin <- function(table, zones, n_mcsim = 0, version = "ordinary") {
 #' according to the parameters on each row of the input \code{data.table}, and 
 #' adds the counts to a new column \code{count}. 
 #' @param table A \code{data.table} with at least the columns \code{mean} and
-#'    \code{phi}. The parameter \eqn{\phi} (phi) is the same as \code{size} in
-#'    \code{\link[stats]{rnbinom}}.
+#'    \code{theta}. The parameter \eqn{\theta} (theta) is the same as 
+#'    \code{size} in \code{\link[stats]{rnbinom}}.
 #' @return The same table, with a new column \code{count}.
 #' @importFrom stats rnbinom 
 #' @importFrom stats rpois
 #' @keywords internal
 gen_negbin_counts <- function(table) {
-  table[is.finite(phi), count := as.integer(rnbinom(.N, mu = mean, size = phi))]
-  table[is.infinite(phi), count := rpois(.N, mean)][]
+  table[is.finite(theta), 
+        count := as.integer(rnbinom(.N, mu = mean, size = theta))]
+  table[is.infinite(theta), count := rpois(.N, mean)][]
 }
 
 #' Simulate a single negative binomial score scan statistic.
@@ -69,7 +104,7 @@ gen_negbin_counts <- function(table) {
 #' @importFrom magrittr %>%
 #' @keywords internal
 sim_negbin_statistic <- function(table, zones, wstat_fun) {
-  table[, .(mean, phi), by = .(location, duration)] %>%
+  table[, .(mean, theta), by = .(location, duration)] %>%
     gen_negbin_counts %>%
     negbin_overdispersion %>%
     wstat_fun(zones) %>%
@@ -98,7 +133,7 @@ negbin_mcsim <- function(table, zones, n_mcsim, version = "ordinary") {
     window_stats <- negbin_calculations
   }
   replicate(n_mcsim,
-            table[, .(mean, phi), by = .(location, duration)] %>%
+            table[, .(mean, theta), by = .(location, duration)] %>%
               gen_negbin_counts %>%
               negbin_overdispersion %>%
               window_stats(zones) %>%
@@ -107,17 +142,17 @@ negbin_mcsim <- function(table, zones, n_mcsim, version = "ordinary") {
 
 #' Computes the overdispersion parameter for a fitted negative binomial model.
 #' 
-#' Computes the overdispersion parameter \eqn{w=1+\mu/\phi} for a negative
+#' Computes the overdispersion parameter \eqn{w=1+\mu/\theta} for a negative
 #' binomial distribution parametrized by its mean \eqn{\mu} and with variance
-#' \eqn{\mu+\mu^2/\phi}. The overdispersion is added as a new column to the 
+#' \eqn{\mu+\mu^2/\theta}. The overdispersion is added as a new column to the 
 #' input \code{data.table}, meaning that this function \code{modifies} its 
 #' input.
-#' @param table A \code{data.table} with columns \code{mean, phi} and possibly
+#' @param table A \code{data.table} with columns \code{mean, theta} and possibly
 #'    others.
 #' @return The same table, with a new column \code{overdispersion}.
 #' @keywords internal
 negbin_overdispersion <- function(table) {
-  table[, overdispersion := 1 + mean / phi][]
+  table[, overdispersion := 1 + mean / theta][]
 }
 
 
@@ -170,7 +205,7 @@ score_zone_sums <- function(table, zones) {
 }
 
 
-### Functions for ordinary model ------------------------------------------------
+### Functions for ordinary model -----------------------------------------------
 
 #' Calculate the ordinary NegBin score for each space-time window.
 #' 
@@ -183,6 +218,7 @@ score_zone_sums <- function(table, zones) {
 #' @keywords internal
 negbin_calculations <- function(table, zones) {
   table %>% 
+    negbin_overdispersion %>%
     negbin_score_terms %>%
     score_zone_sums(zones) %>%
     negbin_score
@@ -204,7 +240,7 @@ negbin_score <- function(table) {
         by = .(zone)]
 }
 
-### Functions for increasing model -----------------------------------------------
+### Functions for increasing model ---------------------------------------------
 
 #' Calculate the increasing score for each space-time window.
 #' 

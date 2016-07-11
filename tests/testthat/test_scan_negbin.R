@@ -6,7 +6,7 @@ test_that("negbin_mcsim", {
   table <- table_creator(list(location = 1:2, duration = 1:3), 
                          keys = c("location", "duration"))
   table[, mean := 1:6 + 0.5]
-  table[, phi := c(0.2, 0.5, 2.5, 5, 10, 100)]
+  table[, theta := c(0.2, 0.5, 2.5, 5, 10, 100)]
   table[, count := c(5, 2, 5, 15, 12, 3)]
   zones <- sets::set(sets::as.set(1L), 
                        sets::as.set(2L),
