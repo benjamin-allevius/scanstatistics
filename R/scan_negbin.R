@@ -12,7 +12,10 @@
 #'    and \eqn{\theta} has expected value \eqn{\mu} and variance 
 #'    \eqn{\mu+\mu^2/\theta}. The parameter \eqn{\theta} is referred to as the 
 #'    \code{size} in \code{\link[stats]{NegBinomial}}, and \code{theta} 
-#'    in \code{\link[MASS]{negative.binomial}}.
+#'    in \code{\link[MASS]{negative.binomial}}. \strong{Warning}: the table will 
+#'    be \strong{modified} in using this function. A column 
+#'    \code{overdispersion}, with value equal to \eqn{1+\mu/\theta} will be 
+#'    added.
 #' @param zones A \code{set} of zones, each zone itself a 
 #'    set containing one or more locations of those found in \code{table}.
 #' @param n_mcsim A positive integer; the number of replicate scan 
@@ -42,6 +45,8 @@
 #'     \item{max_duration}{The maximum outbreak/event/anomaly duration 
 #'                         considered.}
 #'    }
+#' @export
+#' @concept negative binomial negbin nbinom scanstatistic
 #' @examples
 #' # Simple example
 #' set.seed(1)
@@ -160,7 +165,8 @@ negbin_overdispersion <- function(table) {
 #' 
 #' This function calculates the terms found in the numerator and denominator 
 #' sums for the ordinary version of the negative binomial scan statistic.
-#' @inheritParams scan_negbin
+#' @param table A \code{data.table} with columns \code{location, duration, mean,
+#'    overdispersion, count}.
 #' @return A \code{data.table} with columns \code{location, duration, num, 
 #'    denom}.
 #' @keywords internal
@@ -253,6 +259,7 @@ negbin_score <- function(table) {
 #' @keywords internal
 negbin_increasing_calculations <- function(table, zones) {
   table %>% 
+    negbin_overdispersion %>%
     negbin_score_terms %>%
     score_zone_sums(zones) %>%
     negbin_increasing_score
