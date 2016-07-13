@@ -45,15 +45,14 @@
 #'     \item{zones}{The set of zones that was passed to the function as input.}
 #'     \item{n_locations}{The number of locations in the data.}
 #'     \item{n_zones}{The number of zones.}
-#'     \item{max_duration}{The maximum outbreak/event/anomaly duration 
-#'                         considered.}
+#'     \item{max_duration}{The maximum anomaly duration considered.}
 #'    }
 #' @export
 #' @concept poisson scanstatistic
 #' @details For the expectation-based Poisson scan statistic, the null 
-#'    hypothesis of no outbreak/anomaly/event holds that the counts observed at 
-#'    each location \eqn{i} and duration \eqn{t} (the number of time periods 
-#'    before present) is Poisson-distributed with expected value \eqn{\mu_{it}}:
+#'    hypothesis of no anomaly holds that the count observed at each location 
+#'    \eqn{i} and duration \eqn{t} (the number of time periods before present) 
+#'    is Poisson-distributed with expected value \eqn{\mu_{it}}:
 #'    \deqn{
 #'      H_0 : Y_{it} \sim \textrm{Poisson}(\mu_{it}),
 #'    }
