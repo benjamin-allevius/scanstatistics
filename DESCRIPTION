@@ -23,6 +23,7 @@ Suggests:
     knitr,
     lubridate,
     reshape2,
+    rmarkdown,
     testthat,
     tidyr
 VignetteBuilder: knitr
