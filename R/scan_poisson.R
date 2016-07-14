@@ -60,8 +60,9 @@
 #'    \ldots,T}, with \eqn{T} being the maximum duration considered.
 #'    Under the alternative hypothesis, there is a space-time window \eqn{W}
 #'    consisting of a spatial zone \eqn{Z \subset \{1, \ldots, m\}} and a time 
-#'    window \eqn{D \subseteq \{1, \ldots, T\}} with an expected value inflated
-#'    by a factor \eqn{q_W > 1} compared to the null hypothesis:
+#'    window \eqn{D \subseteq \{1, \ldots, T\}} such that the counts in that
+#'    window have their expected values inflated by a factor \eqn{q_W > 1} 
+#'    compared to the null hypothesis:
 #'    \deqn{
 #'    H_1 : Y_{it} \sim \textrm{Poisson}(q_W \mu_{it}), ~~(i,t) \in W 
 #'    }

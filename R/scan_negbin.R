@@ -14,7 +14,7 @@
 #'    \code{size} in \code{\link[stats]{NegBinomial}}, and \code{theta} 
 #'    in \code{\link[MASS]{negative.binomial}}. \strong{Warning}: the table will 
 #'    be \strong{modified} in using this function. A column 
-#'    \code{overdispersion}, with value equal to \eqn{1+\mu/\theta} will be 
+#'    \code{overdispersion} with value equal to \eqn{1+\mu/\theta} will be 
 #'    added.
 #' @param zones A \code{set} of zones, each zone itself a 
 #'    set containing one or more locations of those found in \code{table}.
@@ -47,6 +47,42 @@
 #'    }
 #' @export
 #' @concept negative binomial negbin nbinom scanstatistic
+#' @details For the expectation-based negative binomial scan statistic (Tango
+#'    et al., 2011), the null hypothesis of no anomaly holds that the count 
+#'    observed at each location \eqn{i} and duration \eqn{t} (the number of time 
+#'    periods before present) has a negative binomial distribution with expected 
+#'    value \eqn{\mu_{it}} and dispersion parameter \eqn{\theta_{it}}:
+#'    \deqn{
+#'      H_0 : Y_{it} \sim \textrm{NegBin}(\mu_{it}, \theta_{it}),
+#'    }
+#'    for all locations \eqn{i = 1, \ldots, m} and all durations \eqn{t = 1,
+#'    \ldots,T}, with \eqn{T} being the maximum duration considered.
+#'    The alternative hypothesis depends on the version used: if \code{version
+#'    == "ordinary"}, then the alternative hypothesis states that there is a 
+#'    space-time window \eqn{W} consisting of a spatial zone \eqn{Z \subset \{1, 
+#'    \ldots, m\}} and a time window \eqn{D \subseteq \{1, \ldots, T\}} such 
+#'    that the counts in this window have their expected values inflated by a 
+#'    factor \eqn{q_W > 1} compared to the null hypothesis:
+#'    \deqn{
+#'    H_1 : Y_{it} \sim \textrm{NegBin}(q_W \mu_{it}, \theta_{it}), 
+#'          ~~(i,t) \in W 
+#'    }
+#'    If \code{version == "increasing"}, \eqn{q_W} is instead increasing over
+#'    time (decreasing with \code{duration}).
+#'    For locations and durations outside of this window, counts are assumed to
+#'    be distributed as under the null hypothesis. The sets \eqn{Z} considered 
+#'    are those specified in the argument \code{zones}, while the maximum 
+#'    duration \eqn{T} is taken as the maximum value in the column 
+#'    \code{duration} of the input \code{table}. For each space-time window
+#'    \eqn{W} considered, a score statistic is computed using the score function
+#'    and Fisher information under the null hypothesis of no anomaly.
+#'    The scan statistic is calculated as the maximum of these quantities over 
+#'    all space-time windows. Point estimates of the parameters \eqn{\mu_{it}} 
+#'    and \eqn{\theta_{it}} must be specified in the column \code{mean} and 
+#'    \code{theta} of the argument \code{table} before this function is called.
+#' @references 
+#'    Tango, T., Takahashi, K. & Kohriyama, K. (2011), \emph{A space-time scan 
+#'    statistic for detecting emerging outbreaks}, Biometrics 67(1), 106–115.
 #' @examples
 #' # Simple example
 #' set.seed(1)
