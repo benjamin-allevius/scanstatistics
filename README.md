@@ -1,3 +1,2 @@
 # scanstatistics
-A package for spatiotemporal event detection using scan statistics, 
-as part of my master's thesis. Not ready for use yet.
+An R package for space-time anomaly detection using scan statistics.
