@@ -3,7 +3,7 @@
 export(get_zone)
 export(scan_negbin)
 export(scan_poisson)
-export(zip_scanstatistic)
+export(scan_zip)
 import(data.table)
 importFrom(gamlss.dist,rZIP)
 importFrom(magrittr,"%>%")
