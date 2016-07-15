@@ -8,18 +8,26 @@
 #' statistic can be obtained by Monte Carlo simulation.
 #' 
 #' @param table A \code{data.table} with columns \code{location, duration, mean,
-#'    theta, count}. A negative binomial distribution parametrized by \eqn{\mu} 
-#'    and \eqn{\theta} has expected value \eqn{\mu} and variance 
-#'    \eqn{\mu+\mu^2/\theta}. The parameter \eqn{\theta} is referred to as the 
-#'    \code{size} in \code{\link[stats]{NegBinomial}}, and \code{theta} 
-#'    in \code{\link[MASS]{negative.binomial}}. \strong{Warning}: the table will 
-#'    be \strong{modified} in using this function. A column 
+#'    theta, count}. The \code{location} column should consist of integers that 
+#'    are unique to each location. The \code{duration} column should also 
+#'    consist of integers, starting at 1 for the most recent time period and 
+#'    increasing in reverse chronological order. 
+#'    
+#'    A negative binomial distribution parametrized by \eqn{\mu} and 
+#'    \eqn{\theta} (columns \code{mean} and \code{theta} respectively) has 
+#'    expected value \eqn{\mu} and variance \eqn{\mu+\mu^2/\theta}. The 
+#'    parameter \eqn{\theta} is referred to as the \code{size} in 
+#'    \code{\link[stats]{NegBinomial}}, and \code{theta} in 
+#'    \code{\link[MASS]{negative.binomial}}. 
+#'    
+#'    \strong{Warning}: 
+#'    the table will be modified in using this function. A column 
 #'    \code{overdispersion} with value equal to \eqn{1+\mu/\theta} will be 
 #'    added.
 #' @param zones A \code{set} of zones, each zone itself a 
 #'    set containing one or more locations of those found in \code{table}.
-#' @param n_mcsim A positive integer; the number of replicate scan 
-#'    statistics to generate. 
+#' @param n_mcsim A non-negative integer; the number of replicate scan 
+#'    statistics to generate in order to calculate a p-value.
 #' @param version Which version of the negative binomial score scan statistic to 
 #'    calculate: either "ordinary" (default) or "increasing". See details.
 #' @return An object of class \code{scanstatistics}. It has the following 
@@ -53,10 +61,10 @@
 #'    periods before present) has a negative binomial distribution with expected 
 #'    value \eqn{\mu_{it}} and dispersion parameter \eqn{\theta_{it}}:
 #'    \deqn{
-#'      H_0 : Y_{it} \sim \textrm{NegBin}(\mu_{it}, \theta_{it}),
+#'      H_0 : Y_{it} \sim \textrm{NegBin}(\mu_{it}, \theta_{it}).
 #'    }
-#'    for all locations \eqn{i = 1, \ldots, m} and all durations \eqn{t = 1,
-#'    \ldots,T}, with \eqn{T} being the maximum duration considered.
+#'    This holds for all locations \eqn{i = 1, \ldots, m} and all durations 
+#'    \eqn{t = 1, \ldots,T}, with \eqn{T} being the maximum duration considered.
 #'    The alternative hypothesis depends on the version used: if \code{version
 #'    == "ordinary"}, then the alternative hypothesis states that there is a 
 #'    space-time window \eqn{W} consisting of a spatial zone \eqn{Z \subset \{1, 
@@ -65,7 +73,7 @@
 #'    factor \eqn{q_W > 1} compared to the null hypothesis:
 #'    \deqn{
 #'    H_1 : Y_{it} \sim \textrm{NegBin}(q_W \mu_{it}, \theta_{it}), 
-#'          ~~(i,t) \in W 
+#'          ~~(i,t) \in W.
 #'    }
 #'    If \code{version == "increasing"}, \eqn{q_W} is instead increasing over
 #'    time (decreasing with \code{duration}).

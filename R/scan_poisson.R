@@ -21,10 +21,12 @@
 #'    consist of integers that are unique to each location. The 
 #'    \code{duration} column should also consist of integers, starting at 1 for 
 #'    the most recent time period and increasing in reverse chronological order.
+#'    The column \code{mean} should contain the estimated Poisson expected value
+#'    parameter.
 #' @param zones A \code{set} of zones, each zone itself a 
 #'    set containing one or more locations of those found in \code{table}.
-#' @param n_mcsim A positive integer; the number of replicate scan statistics to 
-#'    generate.
+#' @param n_mcsim A non-negative integer; the number of replicate scan 
+#'    statistics to generate in order to calculate a p-value.
 #' @return An object of class \code{scanstatistics}. It has the following 
 #'    fields:
 #'    \describe{
@@ -64,7 +66,7 @@
 #'    window have their expected values inflated by a factor \eqn{q_W > 1} 
 #'    compared to the null hypothesis:
 #'    \deqn{
-#'    H_1 : Y_{it} \sim \textrm{Poisson}(q_W \mu_{it}), ~~(i,t) \in W 
+#'    H_1 : Y_{it} \sim \textrm{Poisson}(q_W \mu_{it}), ~~(i,t) \in W.
 #'    }
 #'    For locations and durations outside of this window, counts are assumed to
 #'    be distributed as under the null hypothesis. The sets \eqn{Z} considered 
