@@ -71,7 +71,7 @@
 #'    are those specified in the argument \code{zones}, while the maximum 
 #'    duration \eqn{T} is taken as the maximum value in the column 
 #'    \code{duration} of the input \code{table}. For each space-time window
-#'    \eqn{W} considered, a (log) likelihood ratio is computed using the 
+#'    \eqn{W} considered, (the log of) a likelihood ratio is computed using the 
 #'    distributions under the alternative and null hypotheses, and the 
 #'    expectation-based Poisson scan statistic is calculated as the maximum of 
 #'    these quantities over all space-time windows.
