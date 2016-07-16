@@ -89,15 +89,14 @@
 #'    duration \eqn{T} is taken as the maximum value in the column 
 #'    \code{duration} of the input \code{table}. 
 #'    
-#'    For each space-time window
-#'    \eqn{W} considered, (the log of) a likelihood ratio is computed using the 
-#'    distributions under the alternative and null hypotheses, and the 
-#'    expectation-based Poisson scan statistic is calculated as the maximum of 
-#'    these quantities over all space-time windows. The expectation-maximization
-#'    (EM) algorithm is used to obtain maximum likelihood estimates.
-#'    Point estimates of the parameters \eqn{\mu_{it}} must be specified in the
-#'    column \code{mean} of the argument \code{table} before this function is 
-#'    called.
+#'    For each space-time window \eqn{W} considered, (the log of) a likelihood 
+#'    ratio is computed using the distributions under the alternative and null 
+#'    hypotheses, and the expectation-based Poisson scan statistic is calculated 
+#'    as the maximum of these quantities over all space-time windows. The 
+#'    expectation-maximization (EM) algorithm is used to obtain maximum 
+#'    likelihood estimates. Point estimates of the parameters \eqn{\mu_{it}} 
+#'    must be specified in the column \code{mean} of the argument \code{table} 
+#'    before this function is called.
 #' @references 
 #'    Kjellson, B. (2015), \emph{Spatiotemporal Outbreak Detection: A Scan 
 #'    Statistic Based on the Zero-Inflated Poisson Distribution}, (Master 
