@@ -104,6 +104,18 @@
 #'    Thesis, Stockholm University),
 #'    \href{http://goo.gl/6Q89ML}{Link to PDF}.
 #' @examples 
+#' # Simple example
+#' set.seed(1)
+#' table <- scanstatistics:::table_creator(list(location = 1:4, duration = 1:4),
+#'                                         keys = c("location", "duration"))
+#' table[, mean := 3 * location]
+#' table[, p := runif(.N, 0, 0.3)]
+#' table[, count := gamlss.dist::rZIP(.N, mu = mean, sigma = p)]
+#' table[location %in% c(1, 4) & duration < 3, 
+#'       count := gamlss.dist::rZIP(.N, mu = 2 * mean, sigma = p)]
+#' zones <- scanstatistics:::all_possible_zones(4)
+#' result <- scan_poisson(table, zones, 100)
+#' result
 scan_zip <- function(table, zones, n_mcsim = 0, ...) {
   maxdur <- table[, max(duration)]
   scanstatistic_object(zip_calculations(table, zones, maxdur, ...), 
