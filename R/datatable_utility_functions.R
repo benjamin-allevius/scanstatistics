@@ -15,6 +15,7 @@
 #' create_table(cols)
 #' }
 #' @keywords internal
+#' @export
 create_table <- function(col_list, keys = NULL) {
   data.table(do.call(expand.grid, c(col_list, stringsAsFactors = FALSE)),
              key = keys)
@@ -120,6 +121,7 @@ get_enumerated_character <- function(enum_list, number) {
 #' @inheritParams enumerate_character
 #' @return The input table \strong{modified}, with the given column replaced by 
 #'    integer values as described.
+#' @keywords internal
 column_to_int <- function(table, colname) {
   timeclasses <- c("Date", "POSIXct", "POSIXlt")
   if (any(sapply(counts, class)[[colname]] %in% timeclasses)) {

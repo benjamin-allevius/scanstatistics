@@ -12,6 +12,8 @@
 #' @return A matrix of integers, row \eqn{i} containing the \eqn{k} nearest 
 #'    neighbors of point \eqn{i}, including itself.
 #' @importFrom stats dist
+#' @keywords internal
+#' @export
 coords_to_knn <- function(x, 
                           k = min(10, nrow(x)), 
                           method = "euclidean", 
@@ -29,6 +31,7 @@ coords_to_knn <- function(x,
 #' @inheritParams coords_to_knn
 #' @return A matrix of integers, row \eqn{i} containing the \eqn{k} nearest 
 #'    neighbors of point \eqn{i}, including itself.
+#' @keywords internal
 dist_to_knn <- function(x, k = min(10, nrow(x))) {
   if (class(x) == "dist" && (!attr(x, "Diag") || !attr(x, "Upper"))) {
     stop("If x is a 'dist' object, it must have diag=TRUE and upper=TRUE")
