@@ -83,7 +83,7 @@
 #' @examples
 #' # Simple example
 #' set.seed(1)
-#' table <- scanstatistics:::table_creator(list(location = 1:4, duration = 1:4), 
+#' table <- scanstatistics:::create_table(list(location = 1:4, duration = 1:4), 
 #'                                         keys = c("location", "duration"))
 #' table[, mean := 3 * location]
 #' table[, count := rpois(.N, mean)]

@@ -71,8 +71,8 @@ test_that("window_zip_statistic", {
 
 
 test_that("calc_zipstat_over_duration: works", {
-  table <- table_creator(list(location = 1:2, duration = 1:3), 
-                         keys = c("location", "duration"))
+  table <- create_table(list(location = 1:2, duration = 1:3), 
+                        keys = c("location", "duration"))
   table[, mean := 1:6 + 0.5]
   table[, p := 1:6 / 20]
   # Counts should correspond to outbreak with duration 2 at location 1
@@ -88,8 +88,8 @@ test_that("calc_zipstat_over_duration: works", {
 
 
 test_that("zip_statistic: works", {
-  table <- table_creator(list(location = 1:2, duration = 1:3), 
-                         keys = c("location", "duration"))
+  table <- create_table(list(location = 1:2, duration = 1:3), 
+                        keys = c("location", "duration"))
   table[, mean := 1:6 + 0.5]
   table[, p := 1:6 / 20]
   # Counts should correspond to outbreak with duration 2 at location 1
@@ -116,8 +116,8 @@ test_that("zip_statistic: works", {
 })
 
 test_that("zip_mcsim", {
-  table <- table_creator(list(location = 1:2, duration = 1:3), 
-                         keys = c("location", "duration"))
+  table <- create_table(list(location = 1:2, duration = 1:3), 
+                        keys = c("location", "duration"))
   table[, mean := 1:6 + 0.5]
   table[, p := 1:6 / 20]
   zones <- sets::set(sets::as.set(1L), 
@@ -131,8 +131,8 @@ test_that("zip_mcsim", {
 })
 
 # test_that("zip_scanstatistic", {
-#   table <- table_creator(list(location = 1:2, duration = 1:3), 
-#                          keys = c("location", "duration"))
+#   table <- create_table(list(location = 1:2, duration = 1:3), 
+#                         keys = c("location", "duration"))
 #   table[, mean := 1:6 + 0.5]
 #   table[, p := 1:6 / 20]
 #   # Counts should correspond to outbreak with duration 2 at location 1

@@ -44,10 +44,10 @@ test_that("add_llr: works correctly", {
   locations <- 1:2
   streams <- 1:2
   events <- 0:2
-  loglikelihoods <- table_creator(list(duration = durations, 
-                                       location = locations,
-                                       stream = streams,
-                                       event = events))
+  loglikelihoods <- create_table(list(duration = durations, 
+                                      location = locations,
+                                      stream = streams,
+                                      event = events))
   setkeyv(loglikelihoods, c("event", "location", "stream", "duration"))
   loglikelihoods[, loglikelihood := 1:24]
   expected <- loglikelihoods[event != 0][, 

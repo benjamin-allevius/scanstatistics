@@ -1,3 +1,7 @@
+# Functions in this file:
+#   zone_sum
+#   cumsum_duration
+
 
 #' Sum columns over all location in each zone, for each duration.
 #' 

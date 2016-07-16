@@ -3,8 +3,8 @@ context("Negative Binomial Scanstatistics")
 ### General functions ----------------------------------------------------------
 
 test_that("negbin_mcsim", {
-  table <- table_creator(list(location = 1:2, duration = 1:3), 
-                         keys = c("location", "duration"))
+  table <- create_table(list(location = 1:2, duration = 1:3), 
+                        keys = c("location", "duration"))
   table[, mean := 1:6 + 0.5]
   table[, theta := c(0.2, 0.5, 2.5, 5, 10, 100)]
   table[, count := c(5, 2, 5, 15, 12, 3)]
@@ -23,8 +23,8 @@ test_that("negbin_mcsim", {
 })
 
 test_that("negbin_score_terms: calculates correctly", {
-  table <- table_creator(list(location = 1:2, duration = 1:2), 
-                         keys = c("location", "duration"))
+  table <- create_table(list(location = 1:2, duration = 1:2), 
+                        keys = c("location", "duration"))
   x <- c(1, 3, 5, 7)
   m <- c(0, 3, 1, 10) + 0.5
   s <- 1:4
@@ -39,8 +39,8 @@ test_that("negbin_score_terms: calculates correctly", {
 })
 
 test_that("poisson_score_terms: calculates correctly", {
-  table <- table_creator(list(location = 1:2, duration = 1:2), 
-                         keys = c("location", "duration"))
+  table <- create_table(list(location = 1:2, duration = 1:2), 
+                        keys = c("location", "duration"))
   x <- c(1, 3, 5, 7)
   m <- c(0, 3, 1, 10) + 0.5
   table[, count := x]
@@ -53,8 +53,8 @@ test_that("poisson_score_terms: calculates correctly", {
 })
 
 test_that("score_zone_sums: calculates correctly", {
-  table <- table_creator(list(location = 1:2, duration = 1:2), 
-                         keys = c("location", "duration"))
+  table <- create_table(list(location = 1:2, duration = 1:2), 
+                        keys = c("location", "duration"))
   table[, num := 1:4]
   table[, denom := 5:8]
   zones <- sets::set(sets::as.set(1L), 

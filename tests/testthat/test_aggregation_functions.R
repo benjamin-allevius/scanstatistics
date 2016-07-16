@@ -1,8 +1,8 @@
 context("Aggregation functions")
 
 test_that("zone_sum: calculates correctly", {
-  table <- table_creator(list(location = 1:2, duration = 1:2), 
-                         keys = c("location", "duration"))
+  table <- create_table(list(location = 1:2, duration = 1:2), 
+                        keys = c("location", "duration"))
   table[, count := 1:4]
   table[, mean := 4:1 + 0.5]
   zones <- sets::set(sets::as.set(1L), 
@@ -19,8 +19,8 @@ test_that("zone_sum: calculates correctly", {
 
 
 test_that("cumsum_duration: calculates correctly", {
-  table <- table_creator(list(zone = 1:2, duration = 1:3), 
-                         keys = c("zone", "duration"))
+  table <- create_table(list(zone = 1:2, duration = 1:3), 
+                        keys = c("zone", "duration"))
   table[, count := 0:5]
   table[, mean := 1:6 + 0.5]
   

@@ -2,8 +2,8 @@ context("Expectation-Based Poisson Scan Statistic")
 
 
 test_that("poisson_mcsim", {
-  table <- table_creator(list(location = 1:2, duration = 1:3), 
-                         keys = c("location", "duration"))
+  table <- create_table(list(location = 1:2, duration = 1:3), 
+                        keys = c("location", "duration"))
   table[, mean := 1:6 + 0.5]
   table[, count := c(1,3,2, 7, 3, 10)]
   zones <- sets::set(sets::as.set(1L), 
@@ -17,8 +17,8 @@ test_that("poisson_mcsim", {
 })
 
 test_that("poisson_statistic: calculates correctly", {
-  table <- table_creator(list(zone = 1:3, duration = 1:2), 
-                         keys = c("zone", "duration"))
+  table <- create_table(list(zone = 1:3, duration = 1:2), 
+                        keys = c("zone", "duration"))
   table[, mean := 1:6 + 0.5]
   table[, count := c(1,3,2, 7, 3, 10)]
   table[, relrisk := max(1, count / mean), by = .(zone, duration)]
@@ -34,8 +34,8 @@ test_that("poisson_statistic: calculates correctly", {
 })
 
 test_that("poisson_relrisk: calculates correctly", {
-  table <- table_creator(list(zone = 1:3, duration = 1:2), 
-                         keys = c("zone", "duration"))
+  table <- create_table(list(zone = 1:3, duration = 1:2), 
+                        keys = c("zone", "duration"))
   table[, mean := 1:6 + 0.5]
   table[, count := c(1,3,2, 7, 3, 10)]
   

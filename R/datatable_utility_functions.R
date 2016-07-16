@@ -1,4 +1,5 @@
-
+# Functions in this file:
+#   create_table
 
 #' Create a \code{data.table} with all combinations of the supplied variables.
 #' 
@@ -11,10 +12,10 @@
 #' @examples
 #' \dontrun{
 #' cols <- list(location = 1:2, time = 0:2, stream = 1:2)
-#' table_creator(cols)
+#' create_table(cols)
 #' }
 #' @keywords internal
-table_creator <- function(col_list, keys = NULL) {
+create_table <- function(col_list, keys = NULL) {
   data.table(do.call(expand.grid, c(col_list, stringsAsFactors = FALSE)),
              key = keys)
 }
