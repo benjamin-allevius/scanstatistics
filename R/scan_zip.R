@@ -1,11 +1,28 @@
+# Functions in this file:
+#   scan_zip
+#   generate_zip_counts
+#   simulate_zip_scanstatistic
+#   zip_mcsim
+#   estimate_d_dagger
+#   calc_zipstat_over_duration
+#   zip_statistic
+#   zip_calculations
+#   estimate_zip_relrisk
+#   estimate_d
+#   zip_statistic_term
+#   zip_statistic_factor
+#   zip_em_estimates
+#   window_zip_statistic
+
 # Main function ----------------------------------------------------------------
 
 #' Calculate the ZIP scan statistic.
 #' 
-#' Calculate the expectation-based Poisson scan statistic by supplying a 
-#' \code{data.table} of observed counts and pre-computed expected value 
-#' parameters for each location and time. A p-value for the observed scan
-#' statistic can be obtained by Monte Carlo simulation.
+#' Calculate the expectation-based zero-inflated Poisson scan statistic by 
+#' supplying a \code{data.table} of observed counts and pre-computed expected 
+#' values and structural zero probabilities for each location and time. A 
+#' p-value for the observed scan statistic can be obtained by Monte Carlo 
+#' simulation.
 #' 
 #' @param table A \code{data.table} with columns 
 #'    \code{location, duration, count, mean, p}. The \code{location} column 
@@ -46,7 +63,7 @@
 #'     \item{max_duration}{The maximum anomaly duration considered.}
 #'    }
 #' @export
-#' @concept poisson scanstatistic
+#' @concept zero-inflated poisson scanstatistic
 #' @details For the expectation-based zero-inflated Poisson scan statistic 
 #'    (Kjellson 2015), the null hypothesis of no anomaly holds that the count 
 #'    observed at each location \eqn{i} and duration \eqn{t} (the number of time 
@@ -70,16 +87,19 @@
 #'    be distributed as under the null hypothesis. The sets \eqn{Z} considered 
 #'    are those specified in the argument \code{zones}, while the maximum 
 #'    duration \eqn{T} is taken as the maximum value in the column 
-#'    \code{duration} of the input \code{table}. For each space-time window
+#'    \code{duration} of the input \code{table}. 
+#'    
+#'    For each space-time window
 #'    \eqn{W} considered, (the log of) a likelihood ratio is computed using the 
 #'    distributions under the alternative and null hypotheses, and the 
 #'    expectation-based Poisson scan statistic is calculated as the maximum of 
-#'    these quantities over all space-time windows.
+#'    these quantities over all space-time windows. The expectation-maximization
+#'    (EM) algorithm is used to obtain maximum likelihood estimates.
 #'    Point estimates of the parameters \eqn{\mu_{it}} must be specified in the
 #'    column \code{mean} of the argument \code{table} before this function is 
 #'    called.
 #' @references 
-#'    Kjellson, B. (2015), \emph{Spatiotemporal Outbreak Detection A Scan 
+#'    Kjellson, B. (2015), \emph{Spatiotemporal Outbreak Detection: A Scan 
 #'    Statistic Based on the Zero-Inflated Poisson Distribution}, (Master 
 #'    Thesis, Stockholm University),
 #'    \href{http://goo.gl/6Q89ML}{Link to PDF}.
@@ -112,7 +132,7 @@ scan_zip <- function(table, zones, n_mcsim = 0, ...) {
 #' @importFrom gamlss.dist rZIP
 #' @importFrom stats rpois
 #' @keywords internal
-generate_zip_counts <- function(table, abs_tol = 1e-08) {
+generate_zip_counts <- function(table, abs_tol = 1e-03) {
   # Note: rZIP returns a numeric vector
   table[, count := 0]
   table[p < abs_tol, count := as.numeric(rpois(.N, mean))]
