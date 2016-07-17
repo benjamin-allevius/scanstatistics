@@ -107,6 +107,7 @@ enumerate_character <- function(table, colname) {
 #' 
 #' @param enum_list A list as returned from \code{\link{enumerate_character}}.
 #' @param number The number of the name you wish to extract.
+#' @keywords internal
 get_enumerated_character <- function(enum_list, number) {
   names(enum_list)[number]
 }
