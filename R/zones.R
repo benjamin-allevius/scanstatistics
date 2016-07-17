@@ -60,7 +60,7 @@ dist_to_knn <- function(x, k = min(10, nrow(x))) {
 #' @inheritParams plyr::alply
 #' @importFrom sets set_union
 #' @importFrom plyr alply
-zones_upto_k <- function(k_nearest, .parallel = FALSE, .paropts = NULL) {
+knn_zones <- function(k_nearest, .parallel = FALSE, .paropts = NULL) {
   Reduce(set_union, 
          alply(k_nearest, 
                .margins = 1, 

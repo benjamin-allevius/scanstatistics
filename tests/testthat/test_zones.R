@@ -64,7 +64,7 @@ test_that("closest_subsets: returns correct sets", {
   expect_equal(closest_subsets(1:4), expres)
 })
 
-test_that("zones_upto_k: returns correct sets", {
+test_that("knn_zones: returns correct sets", {
   nn <- matrix(c(c(1L, 2L, 4L, 3L, 5L),
                  c(2L, 1L, 3L, 4L, 5L), 
                  c(3L, 2L, 4L, 1L, 5L),
@@ -80,7 +80,7 @@ test_that("zones_upto_k: returns correct sets", {
                     sets::as.set(c(3L, 2L)),
                     sets::as.set(c(4L, 1L)),
                     sets::as.set(c(5L, 3L)))
-  expect_equal(zones_upto_k(nn[, 1:2]), regs)
+  expect_equal(knn_zones(nn[, 1:2]), regs)
 })
 
 # Flexible zone shape (Tango 2005) -------------------------------------------
