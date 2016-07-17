@@ -101,7 +101,7 @@
 #' table[, count := rnbinom(.N, mu = mean, size = theta)]
 #' table[location %in% c(1, 4) & duration < 3, 
 #'       count :=  rnbinom(.N, mu = 2 * mean, size = theta)]
-#' zones <- scanstatistics:::all_possible_zones(4)
+#' zones <- scanstatistics:::powerset_zones(4)
 #' result1 <- scan_negbin(table, zones, 100, "ordinary")
 #' result2 <- scan_negbin(table, zones, 100, "increasing")
 scan_negbin <- function(table, zones, n_mcsim = 0, version = "ordinary") {

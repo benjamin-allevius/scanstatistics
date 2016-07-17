@@ -88,7 +88,7 @@
 #' table[, mean := 3 * location]
 #' table[, count := rpois(.N, mean)]
 #' table[location %in% c(1, 4) & duration < 3, count := rpois(.N, 2 * mean)]
-#' zones <- scanstatistics:::all_possible_zones(4)
+#' zones <- scanstatistics:::powerset_zones(4)
 #' result <- scan_poisson(table, zones, 100)
 #' result
 scan_poisson <- function(table, zones, n_mcsim = 0) {

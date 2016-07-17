@@ -4,6 +4,7 @@
 #   join_zones
 #   zone_table_creator
 #   get_zone
+#   powerset_zones
 
 #' Partition a set of zones.
 #' 
@@ -193,15 +194,15 @@ get_zone <- function(zone, all_zones) {
   stop("Zone not found.")
 }
 
-#' Creates a set of all non-empty subsets of the integers from 1 to n.
+#' Creates a set of all non-empty subsets of the integers from 1 to \eqn{n}.
 #' 
-#' Creates a set of all \eqn{2^n-1} non-empty subsets of the integers from 1 to 
-#' n.
+#' Creates a set of all \eqn{2^(n-1)} non-empty subsets of the integers from 1 
+#' to \eqn{n}.
 #' @param n An integer larger than 0.
 #' @return A set of sets, each inner set containing integers between 1 and n.
 #' @importFrom utils combn
 #' @keywords internal
-all_possible_zones <- function(n) {
+powerset_zones <- function(n) {
   zones <- sets::set()
   for (k in 1:n) {
     ss <- combn(1:n, k)

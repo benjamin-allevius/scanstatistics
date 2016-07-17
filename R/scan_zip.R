@@ -112,7 +112,7 @@
 #' table[, count := gamlss.dist::rZIP(.N, mu = mean, sigma = p)]
 #' table[location %in% c(1, 4) & duration < 3, 
 #'       count := gamlss.dist::rZIP(.N, mu = 2 * mean, sigma = p)]
-#' zones <- scanstatistics:::all_possible_zones(4)
+#' zones <- scanstatistics:::powerset_zones(4)
 #' result <- scan_poisson(table, zones, 100)
 #' result
 scan_zip <- function(table, zones, n_mcsim = 0, ...) {
