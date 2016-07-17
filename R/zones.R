@@ -1,4 +1,13 @@
-
+# Functions in this file:
+#   coords_to_knn
+#   dist_to_knn
+#   knn_zones
+#   closest_subsets
+#   flexible_zones
+#   connected_neighbors
+#   if_connected
+#   is_connected
+#   connected_to
 
 
 #' Get the k nearest neighbors for each location, given its coordinates.
