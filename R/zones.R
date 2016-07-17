@@ -73,6 +73,7 @@ dist_to_knn <- function(x, k = min(10, nrow(x))) {
 #' @return A set containing sets of the \eqn{k} nearest neighbors for each 
 #'    location (including itself), for \eqn{k=1,\ldots,}\code{ncol(k_nearest)}.
 #'    Locations are encoded as integers.
+#' @export
 #' @examples 
 #' nn <- matrix(c(1L, 2L, 4L, 3L, 5L,
 #'                2L, 1L, 3L, 4L, 5L, 
@@ -110,7 +111,7 @@ closest_subsets <- function(v) {
 #' 
 #' Given a matrix of \eqn{k} nearest neighbors and an adjacency matrix
 #' for the locations involved, produces the set of flexibly shaped zones
-#' (sets of locations). The zones in these sets are all connected,
+#' (sets of locations). The locations in these sets are all connected,
 #' in the sense that any location in the zone can be reached from another
 #' by traveling through adjacent locations within the zone.
 #' @param k_nearest An integer matrix of the \eqn{k} nearest neighbors for each 
@@ -137,14 +138,13 @@ closest_subsets <- function(v) {
 #'               0,0,0,1,0,0,
 #'               0,0,0,0,0,0), 
 #'               nrow = 6, byrow = TRUE) == 1
-#' nn <- matrix(as.integer(
-#'  c(1,2,3,4,5,6,
-#'    2,1,3,4,5,6,
-#'    3,2,1,4,5,6,
-#'    4,5,1,6,3,2,
-#'    5,4,6,1,3,2,
-#'    6,5,4,1,3,2)),
-#'    nrow = 6, byrow = TRUE)
+#' nn <- matrix(as.integer(c(1,2,3,4,5,6,
+#'                           2,1,3,4,5,6,
+#'                           3,2,1,4,5,6,
+#'                           4,5,1,6,3,2,
+#'                           5,4,6,1,3,2,
+#'                           6,5,4,1,3,2)),
+#'                           nrow = 6, byrow = TRUE)
 #' flexible_zones(nn, A)
 flexible_zones <- function(k_nearest, 
                            adjacency_matrix,
