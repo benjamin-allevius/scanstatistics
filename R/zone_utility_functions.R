@@ -11,7 +11,7 @@
 #' of locations, when the number of locations in each zone for the part are 
 #' summed over all zones in the part.
 #' @param zones A \code{set} of zones, each zone itself being a \code{set}
-#'    containing locations.
+#'    containing locations. Locations should be encoded as integers.
 #' @param n_parts An integer; the number of parts to split the \code{zones} 
 #'    into.
 #' @return A list with two elements:
@@ -166,13 +166,22 @@ zone_table_creator <- function(zones, keys = NULL, offset = 0L) {
 }
 
 
-#' Extract a spatial zone from the set of all zones.
+#' Extract a zone from the set of all zones.
 #' 
-#' Extract a spatial zone from the set of all zones, using its number.
+#' Extract a zone from the set of all zones, using its number (identifying 
+#' integer).
 #' @param zone An integer; the zone you wish to retrieve.
 #' @param all_zones The set of all zones.
 #' @return An element of \code{all_zones} matching the argument \code{zone}.
 #' @export
+#' @examples 
+#' zones <- sets::set(sets::as.set(1L),
+#'                    sets::as.set(2L),
+#'                    sets::as.set(3L),
+#'                    sets::as.set(1:2),              
+#'                    sets::as.set(c(1L, 3L)),
+#'                    sets::as.set(c(2L, 3L)))
+#' get_zone(4)
 get_zone <- function(zone, all_zones) {
   i <- 1
   for (z in all_zones) {
