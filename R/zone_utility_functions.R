@@ -181,7 +181,7 @@ zone_table_creator <- function(zones, keys = NULL, offset = 0L) {
 #'                    sets::as.set(1:2),              
 #'                    sets::as.set(c(1L, 3L)),
 #'                    sets::as.set(c(2L, 3L)))
-#' get_zone(4)
+#' get_zone(4, zones)
 get_zone <- function(zone, all_zones) {
   i <- 1
   for (z in all_zones) {
