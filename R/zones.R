@@ -1,16 +1,16 @@
 
 
 
-#' Get the k nearest neighbors for each point, given its coordinates.
+#' Get the k nearest neighbors for each location, given its coordinates.
 #' 
-#' Get the k nearest neighbors for each point, including the point itself.
-#' This function calls \code{\link[stats]{dist}},
-#' so the options for the distance measure used is the same as for that one.
-#' Distances are calculated between rows.
-#' @param k The number of nearest neighbors, counting the point itself.
+#' Get the k nearest neighbors for each location, including the location itself.
+#' This function calls \code{\link[stats]{dist}}, so the options for the 
+#' distance measure used is the same as for that one. Distances are calculated 
+#' between rows.
+#' @param k The number of nearest neighbors, counting the location itself.
 #' @inheritParams stats::dist
 #' @return A matrix of integers, row \eqn{i} containing the \eqn{k} nearest 
-#'    neighbors of point \eqn{i}, including itself.
+#'    neighbors of location \eqn{i}, including itself.
 #' @importFrom stats dist
 #' @keywords internal
 #' @export
@@ -21,17 +21,18 @@ coords_to_knn <- function(x,
   dist_to_knn(dist(x, method = "euclidean", diag = T, upper = T, p = p), k = k)
 }
 
-#' Given a distance matrix, calculate \eqn{k} nearest neighbors.
+#' Given a distance matrix, find the \eqn{k} nearest neighbors.
 #' 
 #' Given a distance matrix, calculate the \eqn{k} nearest neighbors of each 
-#' point, including the point itself. The matrix should contain only zeros on 
-#' the diagonal, and all other elements should be positive. 
+#' location, including the location itself. The matrix should contain only zeros 
+#' on the diagonal, and all other elements should be positive. 
 #' @param x A distance matrix. Elements should be non-negative and the diagonal
 #'    zeros, but this is not checked.
 #' @inheritParams coords_to_knn
 #' @return A matrix of integers, row \eqn{i} containing the \eqn{k} nearest 
-#'    neighbors of point \eqn{i}, including itself.
+#'    neighbors of location \eqn{i}, including itself.
 #' @keywords internal
+#' @export
 dist_to_knn <- function(x, k = min(10, nrow(x))) {
   if (class(x) == "dist" && (!attr(x, "Diag") || !attr(x, "Upper"))) {
     stop("If x is a 'dist' object, it must have diag=TRUE and upper=TRUE")
@@ -45,21 +46,32 @@ dist_to_knn <- function(x, k = min(10, nrow(x))) {
 # to location i. Each location is its own 1st closest location,
 # so element i of the first column is location i itself.
 
-#' Increasing subsets of \eqn{k} nearest neighbors.
+#' Find the increasing subsets of \eqn{k} nearest neighbors.
 #' 
-#' Returns the set of increasing nearest neighbor sets for all points.
-#' That is, for each point the set returned contains a set containing
-#' the point itself, a set containing the point and its nearest neighbor,
-#' and so on, up to the set containing the point and its \eqn{k-1} nearest 
+#' Returns the set of increasing nearest neighbor sets for all locations.
+#' That is, for each location the set returned contains a set containing
+#' the location itself, a set containing the location and its nearest neighbor,
+#' and so on, up to the set containing the location and its \eqn{k-1} nearest 
 #' neighbors. The set returned contains no duplicates.
-#' @param k_nearest A matrix or data frame with \eqn{k} columns, the \eqn{j}th 
-#'    element of the \eqn{i}th row containg the \eqn{j}th nearest neighbor of 
-#'    point \eqn{i}, with \eqn{j = 1,\ldots,k}. Each point is defined to be its 
-#'    own nearest neighbor, so the first column of row \eqn{i} should be (the 
-#'    identifier) of point \eqn{i} itself.
+#' @param k_nearest An integer matrix or data frame with \eqn{k} columns, the 
+#'    \eqn{j}th element of the \eqn{i}th row containg the \eqn{j}th nearest 
+#'    neighbor of location \eqn{i}, with \eqn{j = 1,\ldots,k}. Each location is 
+#'    defined to be its own nearest neighbor, so the first column of row \eqn{i} 
+#'    should be the integer identifier of location \eqn{i} itself.
 #' @inheritParams plyr::alply
 #' @importFrom sets set_union
 #' @importFrom plyr alply
+#' @return A set containing sets of the \eqn{k} nearest neighbors for each 
+#'    location (including itself), for \eqn{k=1,\ldots,}\code{ncol(k_nearest)}.
+#'    Locations are encoded as integers.
+#' @examples 
+#' nn <- matrix(c(1L, 2L, 4L, 3L, 5L,
+#'                2L, 1L, 3L, 4L, 5L, 
+#'                3L, 2L, 4L, 1L, 5L,
+#'                4L, 1L, 2L, 3L, 5L,
+#'                5L, 3L, 4L, 2L, 1L),
+#'                ncol = 5, byrow = TRUE)
+#' knn_zones(nn[, 1:3])
 knn_zones <- function(k_nearest, .parallel = FALSE, .paropts = NULL) {
   Reduce(set_union, 
          alply(k_nearest, 
@@ -77,7 +89,8 @@ knn_zones <- function(k_nearest, .parallel = FALSE, .paropts = NULL) {
 #' in the sense that the first set contains the first element of \code{v},
 #' the second set the first and second elements of \code{v}, and so on.
 #' @param v A vector. Meant to represent the \eqn{k} nearest neighbors
-#'    of a point, the first element being (an identifier) of the point itself.
+#'    of a location, the first element being the integer identifier of the 
+#'    location itself.
 #' @importFrom sets as.set
 #' @keywords internal
 closest_subsets <- function(v) {
@@ -91,18 +104,43 @@ closest_subsets <- function(v) {
 #' (sets of locations). The zones in these sets are all connected,
 #' in the sense that any location in the zone can be reached from another
 #' by traveling through adjacent locations within the zone.
-#' @param k_nearest A matrix of the \eqn{k} nearest neighbors for each location.
-#'    Each row corresponds to a location, with the first element of each row
-#'    being the location itself. Locations should preferably be given as 
+#' @param k_nearest An integer matrix of the \eqn{k} nearest neighbors for each 
+#'    location. Each row corresponds to a location, with the first element of 
+#'    each row being the location itself. Locations should be encoded as 
 #'    integers.
 #' @inheritParams connected_to
 #' @inheritParams plyr::alply
 #' @importFrom sets set_union as.set
 #' @importFrom plyr alply
+#' @export
+#' @return The \code{set} of all connected sub\code{set}s of locations. Each 
+#'    inner set contains a location and zero or more of its neighbors, if they 
+#'    are connected.
+#' @references 
+#'    Tango, T. & Takahashi, K. (2005), \emph{A flexibly shaped spatial scan 
+#'    statistic for detecting clusters}, International Journal of Health 
+#'    Geographics 4(1).
+#' @examples 
+#' A <- matrix(c(0,1,0,0,0,0,
+#'               1,0,1,0,0,0,
+#'               0,1,0,0,0,0,
+#'               0,0,0,0,1,0,
+#'               0,0,0,1,0,0,
+#'               0,0,0,0,0,0), 
+#'               nrow = 6, byrow = TRUE) == 1
+#' nn <- matrix(as.integer(
+#'  c(1,2,3,4,5,6,
+#'    2,1,3,4,5,6,
+#'    3,2,1,4,5,6,
+#'    4,5,1,6,3,2,
+#'    5,4,6,1,3,2,
+#'    6,5,4,1,3,2)),
+#'    nrow = 6, byrow = TRUE)
+#' flexible_zones(nn, A)
 flexible_zones <- function(k_nearest, 
-                             adjacency_matrix,
-                             .parallel = FALSE, 
-                             .paropts = NULL) {
+                           adjacency_matrix,
+                           .parallel = FALSE, 
+                           .paropts = NULL) {
   Reduce(set_union,
          as.set(alply(k_nearest,
                       .margins = 1,
@@ -112,17 +150,19 @@ flexible_zones <- function(k_nearest,
                       .paropts = .paropts)))
 }
 
-#' Returns the connected sets for a location and its \eqn{k} nearest neighbors,
-#' including itself.
+#' Find the connected sets for a location and its \eqn{k} nearest neighbors.
 #' 
 #' Returns a \code{set} of \code{set}s, each set of the latter type containing
 #' the location itself and zero or more of its neighbors, if they are connected.
 #' @param neighbors A vector of neighbors to a location, the first element
 #'    of the vector being the specific location, and the other elements its 
-#'    other nearest neighbors. Locations should preferably be integers.
+#'    other nearest neighbors. Locations should be encoded as integers.
 #' @inheritParams connected_to
 #' @importFrom sets set_power as.set set_union
 #' @keywords internal
+#' @return Returns a \code{set} of \code{set}s, each set of the latter type 
+#'    containing the location itself and zero or more of its neighbors, if they 
+#'    are connected.
 connected_neighbors <- function(neighbors, adjacency_matrix) {
   location <- neighbors[1]
   its_neighbors <- neighbors[-1]

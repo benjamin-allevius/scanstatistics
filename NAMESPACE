@@ -2,6 +2,8 @@
 
 export(coords_to_knn)
 export(create_table)
+export(dist_to_knn)
+export(flexible_zones)
 export(get_zone)
 export(scan_negbin)
 export(scan_poisson)

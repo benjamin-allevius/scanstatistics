@@ -92,8 +92,7 @@ test_that("flexible_zones: works", {
                 0,0,0,0,1,0,
                 0,0,0,1,0,0,
                 0,0,0,0,0,0), 
-              nrow = 6, byrow = TRUE)
-  A <- A == 1
+              nrow = 6, byrow = TRUE) == 1
   kn <- matrix(as.integer(
                c(1,2,3,4,5,6,
                  2,1,3,4,5,6,
