@@ -19,7 +19,8 @@
 #' @param k The number of nearest neighbors, counting the location itself.
 #' @inheritParams stats::dist
 #' @return A matrix of integers, row \eqn{i} containing the \eqn{k} nearest 
-#'    neighbors of location \eqn{i}, including itself.
+#'    neighbors of location \eqn{i}, including itself (first element of the 
+#'    row).
 #' @importFrom stats dist
 #' @keywords internal
 #' @export
