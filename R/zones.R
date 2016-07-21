@@ -18,12 +18,21 @@
 #' between rows.
 #' @param k The number of nearest neighbors, counting the location itself.
 #' @inheritParams stats::dist
-#' @return A matrix of integers, row \eqn{i} containing the \eqn{k} nearest 
-#'    neighbors of location \eqn{i}, including itself (first element of the 
-#'    row).
+#' @return An integer matrix of the \eqn{k} nearest neighbors for each location. 
+#'    Each row corresponds to a location, with the first element of each row 
+#'    being the location itself. Locations are encoded as integers.
 #' @importFrom stats dist
 #' @keywords internal
 #' @export
+#' @examples 
+#' x <- matrix(c(0, 0,
+#'               1, 0,
+#'               2, 1,
+#'               0, 4,
+#'               1, 3),
+#'             ncol = 2, byrow = TRUE)
+#' plot(x)
+#' coords_to_knn(x)
 coords_to_knn <- function(x, 
                           k = min(10, nrow(x)), 
                           method = "euclidean", 
@@ -36,8 +45,8 @@ coords_to_knn <- function(x,
 #' Given a distance matrix, calculate the \eqn{k} nearest neighbors of each 
 #' location, including the location itself. The matrix should contain only zeros 
 #' on the diagonal, and all other elements should be positive. 
-#' @param x A distance matrix. Elements should be non-negative and the diagonal
-#'    zeros, but this is not checked.
+#' @param x A (square) distance matrix. Elements should be non-negative and the 
+#'    diagonal zeros, but this is not checked.
 #' @inheritParams coords_to_knn
 #' @return A matrix of integers, row \eqn{i} containing the \eqn{k} nearest 
 #'    neighbors of location \eqn{i}, including itself.
@@ -63,11 +72,10 @@ dist_to_knn <- function(x, k = min(10, nrow(x))) {
 #' the location itself, a set containing the location and its nearest neighbor,
 #' and so on, up to the set containing the location and its \eqn{k-1} nearest 
 #' neighbors. The set returned contains no duplicates.
-#' @param k_nearest An integer matrix or data frame with \eqn{k} columns, the 
-#'    \eqn{j}th element of the \eqn{i}th row containg the \eqn{j}th nearest 
-#'    neighbor of location \eqn{i}, with \eqn{j = 1,\ldots,k}. Each location is 
-#'    defined to be its own nearest neighbor, so the first column of row \eqn{i} 
-#'    should be the integer identifier of location \eqn{i} itself.
+#' @param k_nearest An integer matrix of the \eqn{k} nearest neighbors for each 
+#'    location. Each row corresponds to a location, with the first element of 
+#'    each row being the location itself. Locations should be encoded as 
+#'    integers.
 #' @inheritParams plyr::alply
 #' @importFrom sets set_union
 #' @importFrom plyr alply
@@ -125,8 +133,8 @@ closest_subsets <- function(v) {
 #' @importFrom plyr alply
 #' @export
 #' @return The \code{set} of all connected sub\code{set}s of locations. Each 
-#'    inner set contains a location and zero or more of its neighbors, if they 
-#'    are connected.
+#'    inner set contains a location and zero or more of its nearest neighbors, 
+#'    if they are connected.
 #' @references 
 #'    Tango, T. & Takahashi, K. (2005), \emph{A flexibly shaped spatial scan 
 #'    statistic for detecting clusters}, International Journal of Health 
