@@ -19,11 +19,6 @@
 #'    parameter \eqn{\theta} is referred to as the \code{size} in 
 #'    \code{\link[stats]{NegBinomial}}, and \code{theta} in 
 #'    \code{\link[MASS]{negative.binomial}}. 
-#'    
-#'    \strong{Warning}: 
-#'    the table will be modified in using this function. A column 
-#'    \code{overdispersion} with value equal to \eqn{1+\mu/\theta} will be 
-#'    added.
 #' @param zones A \code{set} of zones, each zone itself a 
 #'    set containing one or more locations of those found in \code{table}.
 #' @param n_mcsim A non-negative integer; the number of replicate scan 
@@ -267,7 +262,7 @@ score_zone_sums <- function(table, zones) {
 #' @importFrom magrittr %>%
 #' @keywords internal
 negbin_calculations <- function(table, zones) {
-  table %>% 
+  table[, .(location, duration, count, mean, theta)] %>% 
     negbin_overdispersion %>%
     negbin_score_terms %>%
     score_zone_sums(zones) %>%
@@ -302,7 +297,7 @@ negbin_score <- function(table) {
 #' @importFrom magrittr %>%
 #' @keywords internal
 negbin_increasing_calculations <- function(table, zones) {
-  table %>% 
+  table[, .(location, duration, count, mean, theta)] %>% 
     negbin_overdispersion %>%
     negbin_score_terms %>%
     score_zone_sums(zones) %>%
