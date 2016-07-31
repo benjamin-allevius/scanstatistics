@@ -1,58 +1,163 @@
 ---
-title: "Vignette Title"
-author: "Vignette Author"
+title: "Introduction to the scanstatistics package"
+author: "Benjamin Kjellson"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    fig_caption: yes
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Introduction to the scanstatistics package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
+# What are Scan Statistics?
+Scan statistics provide a methodology for detecting anomalous clusters in 
+spatial or space-time data. The gist of this methodology---at least in this
+package---is this:
 
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
+1. Monitor one or more data streams at multiple _locations_ over intervals 
+   of time. 
+2. Form a set of space-time _clusters_, each consisting of (1) a collection of 
+   locations, and (2) an interval of time stretching from the present to some 
+   number of time periods in the past.
+3. For each cluster, compute a statistic based on both the observed and the 
+   expected responses. Report the clusters with the largest statistics.
 
-## Vignette Info
+The reason to look at order statistics such as the maximum is to avoid multiple
+testing. With thousands of clusters, reporting all clusters with statistics that 
+exceed some nominal critical value would lead to many false positives. If the 
+significance level is lowered to counter this, only very large exceedances 
+would be detected.
 
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
+Some key concepts are:
 
-## Styles
+* __Locations__: places or units for which data is gathered. Examples include:
+    + Geographical regions such as counties, for which we might count the number
+      of cancer cases per year.
+    + Mobile network cells, where we might count the number of dropped calls per
+      15 minutes.
+* __Zones__: We should be able to group multiple locations together into what we 
+  will call a _zone_, forming the spatial component of the clusters mentioned 
+  above. This grouping can be arbitrary, but more often it will be based on the
+  similarity between locations. With a suitable distance measure, we can 
+  calculate the geographical distance between spatial locations, or more 
+  generally between the features of the locations.
+* __Anomaly__:
+* __Duration__:
 
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
+# A Scan Statistic for Poisson Data
 
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
+```{r}
+library(scanstatistics)
+library(rsatscan)
+library(magrittr)
+library(stringr)
+library(plyr)
+library(ggplot2)
+pop <- as.data.table(NMpop)
+geo <- as.data.table(NMgeo)
+cas <- as.data.table(NMcas)
 
-## Figures
+# Standardize county names 
+# Grab counties for plotting
+map_df <- map_data("county", "new mexico")
 
-The figure sizes have been customised so that you can easily put two images side-by-side. 
+# Construct a factor variable; the county Cibola is missing from the data
+counties <- map_df$subregion %>%
+  unique %>%
+  str_replace_all(pattern = " ", replacement = "") %>%
+  tolower %>%
+  str_replace_all(pattern = "cibola", replacement = "zzz_cibola") %>%
+  sort %>%
+  as.factor
 
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
+factorize_counties <- function(x, fac = counties) {
+  x %>%
+    str_replace_all(pattern = " ", replacement = "") %>%
+    tolower %>%
+    str_replace_all(pattern = "guadelupe", replacement = "guadalupe") %>%
+    factor(levels = fac)
+}
+
+geo %<>% mutate(county = factorize_counties(county))
+cas %<>% mutate(county = factorize_counties(county))
+pop %<>% mutate(county = factorize_counties(county))
+
+
+# Aggregate cases across ages and gender
+pop <- pop[, .(population = sum(population)), by = .(county, year)]
+
+# Make year the same format in pop and cas
+pop[, year := year + 1900]
+cas <- cas[, .(count = sum(cases)), by = .(county, year)]
+
+# Fill in zero counts in all years
+setkeyv(pop, c("year", "county"))
+setkeyv(cas, c("year", "county"))
+
+all_years <- as.data.table(expand.grid(year = unique(cas$year), county = geo$county))
+setkeyv(all_years, c("year", "county"))
+
+cas <- merge(cas, all_years, all = TRUE)
+cas[is.na(count), count := 0]
+
+pop <- merge(pop, all_years, all = TRUE)
+pop[, population := as.numeric(population)]
+
+
+# Interpolate county populations
+for (s in geo$county) {
+  m <- lm(population ~ year + I(year^2), data = pop[county == s, ])
+  pop[county == s & is.na(population), 
+      population := predict(m, pop[county == s & is.na(population), ])]
+}
+
+
+popcas <- merge(pop, cas)
+
+ggplot(popcas) + geom_line(aes(x = year, y = population, group = county))
+ggplot(popcas) + geom_line(aes(x = year, y = count, group = county))
+ggplot(popcas) + geom_point(aes(x = population, y = count, color = county))
+
+
+m <- glm(count ~ offset(log(population)) + 1 + year, 
+         data = popcas[year < 1985, ], 
+         family = poisson)
+dt <- popcas[year >= 1985, ]
+dt[, mean := predict(m, dt, type = "response")]
+
+ggplot(dt) + 
+  geom_point(aes(x = mean, y = count, color = county)) + 
+  geom_abline(intercept = 0, slope = 1)
+
+ggplot(dt) + 
+  geom_line(aes(x = year, y = count / mean, color = county))
+
+
+
+dt[, duration := -(year - 1992)]
+dt[, location := as.integer(county)]
+
+zones <- 
+  geo[, c("long", "lat"), with = FALSE] %>%
+  coords_to_knn(k = 5) %>%
+  knn_zones
+
+
+result <- scan_poisson(dt, zones, 99)
+
+
+
+ggplot(map_df, aes(x = long, y = lat, group = group)) + 
+  geom_polygon(color = "black", fill = "grey") +
+  theme_bw()
 ```
 
-You can enable figure captions by `fig_caption: yes` in YAML:
+# A Scan Statistic for Negative Binomial Data
+```{r}
 
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
-
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
-
-## More Examples
-
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
-
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
 ```
 
-Also a quote using `>`:
 
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))
+# A Scan Statistic for Zero-Inflated Poisson Data
