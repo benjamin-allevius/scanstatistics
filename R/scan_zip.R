@@ -265,7 +265,7 @@ zip_statistic <- function(table, ...) {
 #' @importFrom magrittr %>%
 #' @keywords internal
 zip_calculations <- function(table, zones, ...) {
-  table %>%
+  table[, .(location, duration, count, mean, p)] %>%
     join_zones(zones = zones, keys = c("zone", "duration")) %>%
     zip_statistic(...)
 }
