@@ -170,7 +170,7 @@ poisson_mcsim <- function(table, zones, n_mcsim = 999L) {
 #' @importFrom magrittr %>%
 #' @keywords internal
 poisson_calculations <- function(table, zones) {
-  table %>% 
+  table[, c("location", "duration", "count", "mean"), with = FALSE] %>% 
     join_zones(zones = zones, keys = c("zone", "duration")) %>%
     zone_sum(sumcols = c("count", "mean")) %>%
     cumsum_duration(sumcols = c("count", "mean"), bycols = c("zone")) %>%
