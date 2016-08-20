@@ -29,28 +29,6 @@ logsumexp <- function(x) {
     A + log(sum(exp(x - A)))
 }
 
-#' Compute values from a date-time vector that are periodic over 24 hours.
-#' 
-#' Take a date-time vector and compute an equal-length vector, such that the new
-#' vector has a period of 24 hours. Handy for when you want to include a 
-#' periodic component with period 24 hours in a regression.
-#' @param t A date-time vector, e.g. of class POSIXct, for which the hour and 
-#'    minute can be extracted.
-#' @examples
-#' \dontrun{
-#' x <- dayperiod(seq(as.POSIXct("2015-04-18 19:00:00 CEST"), 
-#'                length.out = 4*24+1, by = "15 mins"))
-#' x[1] == x[length(x)]
-#' }
-#' @keywords internal
-dayperiod <- function(t) {
-  if (!requireNamespace("lubridate", quietly = TRUE)) {
-    stop("lubridate needed for this function to work. Please install it.",
-         call. = FALSE)
-  }
-  2*pi*(lubridate::hour(t) + lubridate::minute(t)/60)/24
-}
-
 #' Is the relative error between two numbers is less than the given tolerance?
 #' 
 #' Given two consecutive numbers in a sequence, return \code{TRUE} if the
