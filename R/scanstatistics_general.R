@@ -4,6 +4,7 @@
 #   mc_pvalue
 #   scanstatistic_object
 #   print.scanstatistic
+#   score_locations
 
 
 #' Extract value of scan statistic from per-window statistics.
@@ -65,7 +66,12 @@ scanstatistic_object <- function(observed, simulated, details) {
             class = "scanstatistic")
 }
 
-
+#' Print a scanstatistic object.
+#' 
+#' Prints a scanstatistic object and returns it invisibly.
+#' @param x A an object of class \code{scanstatistic}.
+#' @export
+#' @keywords internal
 print.scanstatistic <- function(x) {
   cat(paste0(
     "Data distribution:                ", x$distribution, "\n",
@@ -79,4 +85,51 @@ print.scanstatistic <- function(x) {
     "ID of locations in most likely cluster: ", 
     toString(get_zone(x$mlc$zone, x$zones)))
     )
+  invisible(x)
+}
+
+#' Score each location over zones and duration.
+#' 
+#' For each location, compute the average of the statistic calculated for each
+#' space-time window that the location is included in, i.e. average the 
+#' statistic over both zones and the maximum duration.
+#' @param x An object of class \code{scanstatistic}.
+#' @return A \code{data.table} with the following columns:
+#'    \describe{
+#'      \item{location}{The locations (as integers).}
+#'      \item{total_score}{For each location, the sum of all window statistics 
+#'                         that the location appears in.}
+#'      \item{n_zones}{The number of spatial zones that the location appears 
+#'                     in.}
+#'      \item{score}{The total score divided by the number of zones and the 
+#'                   maximum duration.}
+#'      \item{relative_score}{The score divided by the maximum score.}
+#' }
+#' @export
+#' @examples
+#' # Simple example
+#' set.seed(1)
+#' table <- scanstatistics:::create_table(list(location = 1:4, duration = 1:4), 
+#'                                         keys = c("location", "duration"))
+#' table[, mean := 3 * location]
+#' table[, count := rpois(.N, mean)]
+#' table[location %in% c(1, 4) & duration < 3, count := rpois(.N, 2 * mean)]
+#' zones <- scanstatistics:::powerset_zones(4)
+#' result <- scan_poisson(table, zones, 100)
+#' score_locations(result)
+score_locations <- function(x) {
+  tab <- data.table(location = seq_len(x$n_locations),
+                    total_score = 0,
+                    n_zones = 0)
+  zone_scores <- x$observed[, .(score = sum(statistic)), by = zone]
+  i <- 1
+  for (z in x$zones) {
+    locs <- unlist(z)
+    tab[locs, total_score := total_score + zone_scores[locs, sum(score)]]
+    tab[locs, n_zones := n_zones + 1]
+    i <- i + 1
+  }
+  tab[, score := total_score / (n_zones * x$max_duration)]
+  tab[, relative_score := score / max(score)]
+  tab
 }
