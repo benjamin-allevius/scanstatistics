@@ -21,10 +21,9 @@ Imports:
     sets
 Suggests:
     knitr,
-    lubridate,
     reshape2,
     rmarkdown,
-    testthat,
-    tidyr
+    testthat
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1
+ByteCompile: true
