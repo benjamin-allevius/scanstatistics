@@ -22,7 +22,6 @@
 #'    Each row corresponds to a location, with the first element of each row 
 #'    being the location itself. Locations are encoded as integers.
 #' @importFrom stats dist
-#' @keywords internal
 #' @export
 #' @examples 
 #' x <- matrix(c(0, 0,
@@ -50,7 +49,6 @@ coords_to_knn <- function(x,
 #' @inheritParams coords_to_knn
 #' @return A matrix of integers, row \eqn{i} containing the \eqn{k} nearest 
 #'    neighbors of location \eqn{i}, including itself.
-#' @keywords internal
 #' @export
 dist_to_knn <- function(x, k = min(10, nrow(x))) {
   if (class(x) == "dist" && (!attr(x, "Diag") || !attr(x, "Upper"))) {
