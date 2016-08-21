@@ -70,9 +70,10 @@ scanstatistic_object <- function(observed, simulated, details) {
 #' 
 #' Prints a scanstatistic object and returns it invisibly.
 #' @param x A an object of class \code{scanstatistic}.
+#' @param ... Further arguments passed to or from other methods.
 #' @export
 #' @keywords internal
-print.scanstatistic <- function(x) {
+print.scanstatistic <- function(x, ...) {
   cat(paste0(
     "Data distribution:                ", x$distribution, "\n",
     "Type of scan statistic:           ", x$type, "\n",
