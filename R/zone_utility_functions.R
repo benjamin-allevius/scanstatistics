@@ -169,29 +169,19 @@ zone_table_creator <- function(zones, keys = NULL, offset = 0L) {
 
 #' Extract a zone from the set of all zones.
 #' 
-#' Extract a zone from the set of all zones, using its number (identifying 
-#' integer).
-#' @param zone An integer; the zone you wish to retrieve.
-#' @param all_zones The set of all zones.
-#' @return An element of \code{all_zones} matching the argument \code{zone}.
+#' Extract zone number \eqn{n} from the set of all zones.
+#' @param n An integer; the number of the zone you wish to retrieve.
+#' @param zones A list of integer vectors, representing the set of all zones.
+#' @return An integer vector.
 #' @export
 #' @examples 
-#' zones <- sets::set(sets::as.set(1L),
-#'                    sets::as.set(2L),
-#'                    sets::as.set(3L),
-#'                    sets::as.set(1:2),              
-#'                    sets::as.set(c(1L, 3L)),
-#'                    sets::as.set(c(2L, 3L)))
+#' zones <- list(1L, 2L, 3L, 1:2, c(1L, 3L), c(2L, 3L))
 #' get_zone(4, zones)
-get_zone <- function(zone, all_zones) {
-  i <- 1
-  for (z in all_zones) {
-    if (i == zone) {
-      return(z)
-    }
-    i <- i + 1
+get_zone <- function(n, zones) {
+  if (n > length(zones) || n < 1) {
+    stop("Zone not found.")
   }
-  stop("Zone not found.")
+  zones[[n]]
 }
 
 #' Creates a set of all non-empty subsets of the integers from 1 to \eqn{n}.

@@ -63,13 +63,13 @@ dist_to_knn <- function(x, k = min(10, nrow(x))) {
 # to location i. Each location is its own 1st closest location,
 # so element i of the first column is location i itself.
 
-#' Find the increasing subsets of \eqn{k} nearest neighbors.
+#' Find the increasing subsets of \eqn{k} nearest neighbors for all locations.
 #' 
-#' Returns the set of increasing nearest neighbor sets for all locations.
-#' That is, for each location the set returned contains a set containing
-#' the location itself, a set containing the location and its nearest neighbor,
-#' and so on, up to the set containing the location and its \eqn{k-1} nearest 
-#' neighbors. The set returned contains no duplicates.
+#' Returns the set of increasing nearest neighbor sets for all locations, as
+#' a list of integer vectors.That is, for each location the list returned 
+#' contains one vector containing the location itself, another containing the 
+#' location and its nearest neighbor, and so on, up to the vector containing the 
+#' location and its \eqn{k-1} nearest neighbors. 
 #' @param k_nearest An integer matrix of the \eqn{k} nearest neighbors for each 
 #'    location. Each row corresponds to a location, with the first element of 
 #'    each row being the location itself. Locations should be encoded as 
@@ -77,9 +77,8 @@ dist_to_knn <- function(x, k = min(10, nrow(x))) {
 #' @inheritParams plyr::alply
 #' @importFrom sets set_union
 #' @importFrom plyr alply
-#' @return A set containing sets of the \eqn{k} nearest neighbors for each 
-#'    location (including itself), for \eqn{k=1,\ldots,}\code{ncol(k_nearest)}.
-#'    Locations are encoded as integers.
+#' @importFrom magrittr %>%
+#' @return A list of integer vectors.
 #' @export
 #' @examples 
 #' nn <- matrix(c(1L, 2L, 4L, 3L, 5L,
@@ -90,13 +89,14 @@ dist_to_knn <- function(x, k = min(10, nrow(x))) {
 #'                ncol = 5, byrow = TRUE)
 #' knn_zones(nn[, 1:3])
 knn_zones <- function(k_nearest, .parallel = FALSE, .paropts = NULL) {
-  Reduce(set_union, 
-         alply(k_nearest, 
-               .margins = 1, 
-               .fun = closest_subsets, 
-               .expand = F, 
-               .parallel = FALSE, 
-               .paropts = NULL))
+  k_nearest %>%
+    alply(.margins = 1, 
+          .fun = closest_subsets, 
+          .expand = F, 
+          .parallel = .parallel, 
+          .paropts = .paropts) %>%
+    Reduce(f = set_union, x = .) %>%
+    lapply(FUN = function(x) unlist(as.list(x)))
 }
 
 
@@ -118,9 +118,9 @@ closest_subsets <- function(v) {
 #' 
 #' Given a matrix of \eqn{k} nearest neighbors and an adjacency matrix
 #' for the locations involved, produces the set of flexibly shaped zones
-#' (sets of locations). The locations in these sets are all connected,
-#' in the sense that any location in the zone can be reached from another
-#' by traveling through adjacent locations within the zone.
+#' as a list of integer vectors. The locations in these zones are all connected, 
+#' in the sense that any location in the zone can be reached from another by 
+#' traveling through adjacent locations within the zone.
 #' @param k_nearest An integer matrix of the \eqn{k} nearest neighbors for each 
 #'    location. Each row corresponds to a location, with the first element of 
 #'    each row being the location itself. Locations should be encoded as 
@@ -129,10 +129,9 @@ closest_subsets <- function(v) {
 #' @inheritParams plyr::alply
 #' @importFrom sets set_union as.set
 #' @importFrom plyr alply
+#' @importFrom magrittr %>%
 #' @export
-#' @return The \code{set} of all connected sub\code{set}s of locations. Each 
-#'    inner set contains a location and zero or more of its nearest neighbors, 
-#'    if they are connected.
+#' @return A list of integer vectors.
 #' @references 
 #'    Tango, T. & Takahashi, K. (2005), \emph{A flexibly shaped spatial scan 
 #'    statistic for detecting clusters}, International Journal of Health 
@@ -157,13 +156,15 @@ flexible_zones <- function(k_nearest,
                            adjacency_matrix,
                            .parallel = FALSE, 
                            .paropts = NULL) {
-  Reduce(set_union,
-         as.set(alply(k_nearest,
-                      .margins = 1,
-                      .fun = connected_neighbors,
-                      adjacency_matrix = adjacency_matrix,
-                      .parallel = .parallel,
-                      .paropts = .paropts)))
+  k_nearest %>%
+    alply(.margins = 1,
+          .fun = connected_neighbors,
+          adjacency_matrix = adjacency_matrix,
+          .parallel = .parallel,
+          .paropts = .paropts) %>%
+    as.set %>%
+    Reduce(f = set_union, x = .) %>%
+    lapply(FUN = function(x) unlist(as.list(x)))
 }
 
 #' Find the connected sets for a location and its \eqn{k} nearest neighbors.

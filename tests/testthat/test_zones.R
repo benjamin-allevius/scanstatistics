@@ -80,6 +80,7 @@ test_that("knn_zones: returns correct sets", {
                     sets::as.set(c(3L, 2L)),
                     sets::as.set(c(4L, 1L)),
                     sets::as.set(c(5L, 3L)))
+  regs <- lapply(regs, function(x) unlist(as.list(x)))
   expect_equal(knn_zones(nn[, 1:2]), regs)
 })
 
@@ -101,8 +102,7 @@ test_that("flexible_zones: works", {
                  5,4,6,1,3,2,
                  6,5,4,1,3,2)),
                nrow = 6, byrow = TRUE)
-  expect_equal(flexible_zones(kn, A),
-               sets::set(sets::set(1L),
+  tru <- sets::set(sets::set(1L),
                          sets::set(2L),
                          sets::set(3L),
                          sets::set(4L),
@@ -111,7 +111,9 @@ test_that("flexible_zones: works", {
                          sets::set(1L, 2L),
                          sets::set(2L, 3L),
                          sets::set(4L, 5L),
-                         sets::set(1L, 2L, 3L)))
+                         sets::set(1L, 2L, 3L))
+  tru <- lapply(tru, FUN = function(x) unlist(as.list(x)))
+  expect_equal(flexible_zones(kn, A), tru)
 })
 
 test_that("connected_neighbors: works", {
