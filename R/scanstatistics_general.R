@@ -5,6 +5,7 @@
 #   scanstatistic_object
 #   print.scanstatistic
 #   score_locations
+#   top_clusters
 
 
 #' Extract value of scan statistic from per-window statistics.
@@ -47,13 +48,17 @@ mc_pvalue <- function(observed, replicates) {
 }
 
 #' Creates an S3 object of class scanstatistic.
+#' @param observed A data table containing columns location, duration, 
+#'    statistic, and possibly others.
+#' @param simulated A numeric vector of replicated scan statistics.
+#' @param details A list containing details about the data and scan statistic.
 #' @keywords internal
 scanstatistic_object <- function(observed, simulated, details) {
   statistic <- extract_scanstatistic(observed)
   pval <- mc_pvalue(statistic, simulated)
   mlc <- extract_mlc(observed)
   
-  structure(list(observed = observed,
+  structure(list(observed = observed[order(-statistic), ],
                  replicated = unlist(simulated),
                  mlc = mlc,
                  pvalue = pval,
@@ -133,4 +138,14 @@ score_locations <- function(x) {
   tab[, score := total_score / (n_zones * x$max_duration)]
   tab[, relative_score := score / max(score)]
   tab
+}
+
+#' Get the top (non-overlappig) clusters.
+top_clusters <- function(x, k = 5, overlapping = FALSE) {
+  if (overlapping) {
+    return(x$observed[seq_len(k), ])
+  } else {
+    row_idx <- integer(k)
+    
+  }
 }
