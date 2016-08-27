@@ -186,10 +186,10 @@ get_zone <- function(n, zones) {
 
 #' Creates a set of all non-empty subsets of the integers from 1 to \eqn{n}.
 #' 
-#' Creates a set of all \eqn{2^(n-1)} non-empty subsets of the integers from 1 
+#' Creates a list of all \eqn{2^(n-1)} non-empty subsets of the integers from 1 
 #' to \eqn{n}.
 #' @param n An integer larger than 0.
-#' @return A set of sets, each inner set containing integers between 1 and n.
+#' @return A list of integer vectors.
 #' @importFrom utils combn
 #' @keywords internal
 powerset_zones <- function(n) {
@@ -200,5 +200,5 @@ powerset_zones <- function(n) {
       zones <- sets::set_union(zones, sets::set(sets::as.set(ss[, j])))
     }
   }
-  zones
+  lapply(zones, FUN = function(x) unlist(as.list(x)))
 }
