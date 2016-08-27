@@ -66,14 +66,14 @@ dist_to_knn <- function(x, k = min(10, nrow(x))) {
 #' Find the increasing subsets of \eqn{k} nearest neighbors for all locations.
 #' 
 #' Returns the set of increasing nearest neighbor sets for all locations, as
-#' a list of integer vectors.That is, for each location the list returned 
+#' a list of integer vectors. That is, for each location the list returned 
 #' contains one vector containing the location itself, another containing the 
 #' location and its nearest neighbor, and so on, up to the vector containing the 
 #' location and its \eqn{k-1} nearest neighbors. 
-#' @param k_nearest An integer matrix of the \eqn{k} nearest neighbors for each 
-#'    location. Each row corresponds to a location, with the first element of 
-#'    each row being the location itself. Locations should be encoded as 
-#'    integers.
+#' @param k_nearest An integer matrix of with \eqn{k} columns and as many rows
+#'    as locations. The first element of each row is the integer encoding the
+#'    location (and equal to the row number); the following elements are the 
+#'    \eqn{k-1} nearest neighbors in ascending order of distance.
 #' @inheritParams plyr::alply
 #' @importFrom sets set_union
 #' @importFrom plyr alply
