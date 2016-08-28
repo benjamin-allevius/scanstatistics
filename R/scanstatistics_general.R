@@ -141,11 +141,45 @@ score_locations <- function(x) {
 }
 
 #' Get the top (non-overlappig) clusters.
+#' 
+#' Get the top \eqn{k} space-time clusters according to the statistic calculated
+#' for each cluster (the maximum being the scan statistic). The default is to 
+#' return the spatially non-overlapping clusters, i.e. those that do not have 
+#' any locations in common.
+#' @param x An object of class scanstatistics.
+#' @param k An integer, the number of clusters to return
+#' @param overlapping Logical; should the top clusters be allowed to overlap in
+#'    the spatial dimension? The default is \code{FALSE}.
+#' @return A \code{data.table} with at most \eqn{k} rows, with columns 
+#'    \code{zone, duration, statistic}. 
+#' @export
+#' @examples 
+#' set.seed(1)
+#' table <- scanstatistics:::create_table(list(location = 1:4, duration = 1:4), 
+#'                                         keys = c("location", "duration"))
+#' table[, mean := 3 * location]
+#' table[, count := rpois(.N, mean)]
+#' table[location %in% c(1, 4) & duration < 3, count := rpois(.N, 2 * mean)]
+#' zones <- scanstatistics:::powerset_zones(4)
+#' result <- scan_poisson(table, zones, 0)
+#' top_clusters(result, k = 4)
 top_clusters <- function(x, k = 5, overlapping = FALSE) {
   if (overlapping) {
     return(x$observed[seq_len(k), ])
   } else {
     row_idx <- integer(k)
-    
+    seen_locations <- integer(0)
+    n_added <- 0L
+    i <- 1L
+    while (n_added < k && i < nrow(x$observed)) {
+      zone <- x$observed[i, zone]
+      if (length(intersect(seen_locations, x$zones[[zone]])) == 0) {
+        n_added <- n_added + 1L
+        seen_locations <- c(seen_locations, x$zones[[zone]])
+        row_idx[n_added] <- i
+      }
+      i <- i + 1L
+    }
+    return(x$observed[row_idx[row_idx > 0], ])
   }
 }
