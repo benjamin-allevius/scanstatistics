@@ -115,7 +115,7 @@ print.scanstatistic <- function(x, ...) {
 #' @examples
 #' # Simple example
 #' set.seed(1)
-#' table <- scanstatistics:::create_table(list(location = 1:4, duration = 1:4), 
+#' table <- scanstatistics:::create_table(list(location = 1:4, duration = 1:4),
 #'                                         keys = c("location", "duration"))
 #' table[, mean := 3 * location]
 #' table[, count := rpois(.N, mean)]
@@ -130,9 +130,8 @@ score_locations <- function(x) {
   zone_scores <- x$observed[, .(score = sum(statistic)), by = zone]
   i <- 1
   for (z in x$zones) {
-    locs <- unlist(z)
-    tab[locs, total_score := total_score + zone_scores[locs, sum(score)]]
-    tab[locs, n_zones := n_zones + 1]
+    tab[z, total_score := total_score + zone_scores[z, sum(score)]]
+    tab[z, n_zones := n_zones + 1]
     i <- i + 1
   }
   tab[, score := total_score / (n_zones * x$max_duration)]
