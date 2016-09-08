@@ -85,10 +85,10 @@ print.scanstatistic <- function(x, ...) {
     "Number of locations considered:   ", x$n_locations, "\n",
     "Maximum duration considered:      ", x$max_duration, "\n",
     "Number of spatial zones:          ", x$n_zones, "\n",
+    "Number of Monte Carlo replicates: ", length(x$replicated), "\n",
     "p-value of observed statistic:    ", ifelse(is.null(x$pvalue), 
                                                  "NULL",
                                                  round(x$pvalue, 3)), "\n",
-    "Number of Monte Carlo replicates: ", length(x$replicated), "\n",
     "Most likely event duration:       ", x$mlc$duration, "\n",
     "ID of locations in most likely cluster: ", 
     toString(get_zone(x$mlc$zone, x$zones)))
