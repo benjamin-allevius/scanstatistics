@@ -163,7 +163,7 @@ score_locations <- function(x) {
 #' table[location %in% c(1, 4) & duration < 3, count := rpois(.N, 2 * mean)]
 #' zones <- scanstatistics:::powerset_zones(4)
 #' result <- scan_poisson(table, zones, 0)
-#' top_clusters(result, k = 4)
+#' top_clusters(result, k = 4, overlapping = FALSE)
 top_clusters <- function(x, k = 5, overlapping = FALSE) {
   if (overlapping) {
     return(x$observed[seq_len(k), ])
