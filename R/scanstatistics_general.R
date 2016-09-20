@@ -42,16 +42,26 @@ extract_mlc <- function(table) {
 #' \deqn{
 #' \sum_{i=1}^R \frac{1 + \mathrm{I}(x_i > y)}{1 + R}
 #' }
-#' @param observed A scalar; the observed value of the scan statistic.
+#' The function is vectorized, so multiple \eqn{p}-values can be calculated if
+#' several scan statistics (e.g. statistics from secondary clusters) are 
+#' supplied.
+#' @param observed A scalar containing the observed value of the scan statistic,
+#'    or a vector of observed values from secondary clusters.
 #' @param replicates A vector of Monte Carlo replicates of the scan statistic.
-#' @return A scalar; the p-value corresponding to the observed scan statistic.
-#' @keywords internal
+#' @return The \eqn{p}-value or \eqn{p}-values corresponding to the observed 
+#'    scan statistic(s).
 #' @export
 mc_pvalue <- function(observed, replicates) {
   if (length(replicates) == 0) {
     return(NULL)
   } else {
-    return((1 + sum(replicates > observed)) / (1 + length(replicates)))
+    f <- Vectorize(
+      function(y) {
+        (1 + sum(replicates > y)) / (1 + length(replicates))
+        }
+    )
+    
+    return(f(observed))
   }
 }
 
