@@ -34,11 +34,19 @@ extract_mlc <- function(table) {
   table[which.max(statistic), ]
 }
 
-#' Calculate the Monte Carlo p-value for a scan statistic.
+#' Calculate the Monte Carlo \eqn{p}-value for a scan statistic.
+#' 
+#' Given an observed scan statistic \eqn{y} and a vector of replicate scan 
+#' statistics \eqn{x_i}, \eqn{i=1,\ldots,R}, calculate the Monte carlo 
+#' \eqn{p}-value as
+#' \deqn{
+#' \sum_{i=1}^R \frac{1 + \mathrm{I}(x_i > y)}{1 + R}
+#' }
 #' @param observed A scalar; the observed value of the scan statistic.
 #' @param replicates A vector of Monte Carlo replicates of the scan statistic.
 #' @return A scalar; the p-value corresponding to the observed scan statistic.
 #' @keywords internal
+#' @export
 mc_pvalue <- function(observed, replicates) {
   if (length(replicates) == 0) {
     return(NULL)
