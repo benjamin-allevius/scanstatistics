@@ -6,6 +6,10 @@
 #   print.scanstatistic
 #   score_locations
 #   top_clusters
+#   validate_colnames
+#   validate_values
+#   validate_zones
+#   validate_scan
 
 
 #' Extract value of scan statistic from per-window statistics.
@@ -201,4 +205,47 @@ top_clusters <- function(x, k = 5, overlapping = FALSE) {
     }
     return(x$observed[row_idx[row_idx > 0], ])
   }
+}
+
+
+#' Check that the input table has the right columns. Raises error if not.
+#' @param table A data.table passed to a scan statistic function.
+#' @param col_names A character vector of column names required.
+validate_colnames <- function(table, col_names) {
+  test <- col_names %in% names(table)
+  missing_cols <- col_names[!test]
+  if (!all(test)) {
+    stop("Input table lacks column(s) ",
+         paste(paste0("'", missing_cols, "'"), collapse = ", "),
+         ".")
+  }
+}
+
+#' Check that the input table does not contain any missing values.
+#' @param table A data.table passed to a scan statistic function.
+#' @param col_names A character vector of column names; these columns in the
+#'    table must not have any missing values.
+validate_values <- function(table, col_names) {
+  if (any(is.na(table[, col_names, with = FALSE]))) {
+    stop("The columns ",
+         paste(paste0("'", col_names, "'"), collapse = ", "),
+         " of the input table must not contain any missing values.")
+  }
+}
+
+#' Check that the zones argument is a list of integer or factor vectors.
+#' @param zones Should be a list of integer or factor vectors.
+validate_zones <- function(zones) {
+  if (class(zones) != "list") {
+    stop("The argument 'zones' must be a list of integer or factor vectors.")
+  }
+  if (!all(vapply(zones, class, character(1)) %in% c("integer", "factor"))) {
+    stop("The argument 'zones' must be a list of integer or factor vectors.")
+  }
+}
+
+validate_scan <- function(table, zones, col_names) {
+  validate_colnames(table, col_names)
+  validate_values(table, col_names)
+  validate_zones(zones)
 }
