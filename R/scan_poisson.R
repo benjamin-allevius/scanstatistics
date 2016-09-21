@@ -92,6 +92,7 @@
 #' result <- scan_poisson(table, zones, 100)
 #' result
 scan_poisson <- function(table, zones, n_mcsim = 0) {
+  validate_scan(table, zones, c("count", "mean", "duration", "location"))
   scanstatistic_object(poisson_calculations(table, zones), 
                        poisson_mcsim(table, zones, n_mcsim),
                        list(table = table,

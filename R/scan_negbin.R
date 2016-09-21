@@ -1,3 +1,20 @@
+# Functions in this file:
+#   scan_negbin
+#   gen_negbin_counts
+#   sim_negbin_statistic
+#   negbin_mcsim
+#   negbin_overdispersion
+#   negbin_score_terms
+#   poisson_score_terms
+#   score_zone_sums
+#   negbin_calculations
+#   negbin_score
+#   negbin_increasing_calculations
+#   negbin_increasing_score
+#   convolute_numerator
+#   convolute_denominator
+
+
 # Main function ----------------------------------------------------------------
 
 #' Calculate the negative binomial scan statistic.
@@ -100,6 +117,9 @@
 #' result1 <- scan_negbin(table, zones, 100, "ordinary")
 #' result2 <- scan_negbin(table, zones, 100, "increasing")
 scan_negbin <- function(table, zones, n_mcsim = 0, version = "ordinary") {
+  validate_scan(table, 
+                zones, 
+                c("count", "mean", "duration", "location", "theta"))
   details <- list(table = table,
                             zones = zones, 
                             distribution = "negative binomial",

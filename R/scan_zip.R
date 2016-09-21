@@ -116,6 +116,7 @@
 #' result <- scan_poisson(table, zones, 100)
 #' result
 scan_zip <- function(table, zones, n_mcsim = 0, ...) {
+  validate_scan(table, zones, c("count", "mean", "duration", "location", "p"))
   maxdur <- table[, max(duration)]
   scanstatistic_object(zip_calculations(table, zones, maxdur, ...), 
                        zip_mcsim(table, zones, n_mcsim, maxdur, ...),
