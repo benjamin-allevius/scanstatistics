@@ -13,7 +13,8 @@ License: GPL (>= 3)
 URL: https://github.com/BenjaK/scanstatistics
 BugReports: https://github.com/BenjaK/scanstatistics/issues
 Depends:
-    data.table
+    data.table,
+    R (>= 2.10)
 Imports:
     gamlss.dist, 
     magrittr,
