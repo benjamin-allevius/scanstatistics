@@ -4,3 +4,4 @@ scanstatistics
 ggplot2
 sp
 magrittr
+dplyr
