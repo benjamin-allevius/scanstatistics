@@ -71,7 +71,7 @@ To demonstrate the scan statistics in this package, we will use a dataset of the
 annual number of brain cancer cases in the counties of New Mexico, for the years 
 $1973-1991$. This data was studied by @Kulldorff1998, who detected a cluster of 
 cancer cases in the counties Los Alamos and Santa Fe during the years 
-$1986-1989$, though the excess of brain cancer in this cluster was not 
+$1986-1989$, though the excess of brain cancer in this cluster was not deemed
 statistically significant. The data originally comes from the package _rsatscan_ 
 [@rsatscan], which provides an interface to the program 
 [SatScan](http://www.satscan.org), but it has been aggregated and extended for 
@@ -119,7 +119,7 @@ features. In this example, the locations are the counties of New Mexico and the
 features are the coordinates of the county seats. These are made available in 
 the data table `NM_geo`. Similarity will be measured using the geographical 
 distance between the seats of the counties, taking into account the curvature
-of the earth. A distance matrix is calculated using the `sp_Dists` function from 
+of the earth. A distance matrix is calculated using the `spDists` function from 
 the _sp_ package, which is then passed to `dist_to_knn` (with $k=15$ neighbors) 
 and on to `knn_zones`:
 ```{r, cache=TRUE}
@@ -177,7 +177,6 @@ Calculating the scan statistic then involves three steps:
   corresponding window $W^*$ as the most likely cluster (MLC).
 
 #### Using the Poisson scan statistic
-
 The first argument to `scan_poisson` should be a __data table__ with columns
 'location', 'duration', 'count' and 'mu'. The latter two columns contain the 
 observed counts and the estimated Poisson expected value parameters 
@@ -210,7 +209,6 @@ time trend and an offset for county population size will suffice to demonstrate
 the scan statistic. We fit such a model and create the needed column as follows:
 
 ```{r, cache=TRUE}
-# Fit model and add predicted expected value parameters
 mod_poisson <- glm(count ~ offset(log(population)) + 1 + I(year - 1985), 
                    data = NM_popcas[year < 1986, ], 
                    family = poisson(link = "log"))
@@ -327,7 +325,6 @@ statistic is calculated using the score and Fisher information rather than a
 likelihood ratio.
 
 #### Using the negative binomial scan statistic
-
 Similar to `scan_poisson`, the first argument to `scan_negbin` should be a 
 __data table__ with columns 'location', 'duration', 'count', 'mu' and 'theta'.
 The second and third arguments specify the spatial zones and the number of Monte
@@ -338,9 +335,9 @@ hypothesis; the choices are `version = "ordinary"` (default) and
 To demonstrate the negative binomial scan statistic, we fit a negative binomial
 GLM to the data. It should be noted that this is purely for demonstrational 
 purposes: the negative binomial distribution does not fit this data well at all.
+So if you happen to know of a dataset more suitable, please let me know!
 
 ```{r, cache=TRUE}
-# Fit model and add predicted expected value parameters
 suppressWarnings(
 mod_negbin <- MASS::glm.nb(count ~ offset(log(population)) + 1 + I(year - 1985), 
                          data = NM_popcas[year < 1986, ],
@@ -378,5 +375,54 @@ Since these functions have already been demonstrated, we move on to a scan
 statistic for data with an excess of zeros.
 
 ### A scan statistic for zero-inflated Poisson data
+For zero-inflated count data, the _scanstatistics_ package provides the function 
+`scan_zip`, which an expectation-based scan statistic for zero-inflated Poisson
+(ZIP) data devised by @Kjellson2015. The ZIP distribution is parametrized by
+the expected value $\mu$ of the Poisson component and the probability $p$ of a
+structural zero.
+
+#### Theoretical motivation
+The ZIP scan statistic makes a similar assumtion regarding outbreaks as the 
+Poisson scan statistic does: an anomaly that occurs in a space-time window $W$ 
+will have the effect of increasing the Poisson expected value parameter of the 
+counts in that window by a factor $q_W>1$ in comparison to what was predicted. 
+This factor $q_W$ is the same for all locations in $W$ and constant over the 
+duration of the anomaly. For all windows $W$ considered, $q_W$ is estimated 
+using the EM algorithm and a likelihood ratio statistic is computed. The scan
+statistic is the maximum of these statistics over all windows $W$.
+
+#### Using the ZIP scan statistic
+Similar to `scan_poisson`, the first argument to `scan_zip` should be a 
+__data table__ with columns 'location', 'duration', 'count', 'mu' and 'p'.
+The second and third arguments specify the spatial zones and the number of Monte
+Carlo replications respectively. 
+
+To demonstrate the ZIP scan statistic, we fit a zero-inflated Poisson regression
+model to the data. Just as for the negative binomial distribution, it should be 
+noted that this is purely for demonstrational purposes: there are probably more
+suitable datasets out there, and if you happen to know of one, please let me 
+know!
+
+```{r, cache=TRUE}
+library(pscl, quietly = TRUE)
+mod_zip <- zeroinfl(count ~ offset(log(population)) + 1 + I(year - 1985),
+                    data = NM_popcas[year < 1986, ],
+                    dist = "poisson", link = "logit")
+
+# Add the parameters as columns
+tab[, mu := predict(mod_zip, tab, type = "count")]
+tab[, p := predict(mod_zip, tab, type = "zero")]
+```
+
+We can now use `scan_zip` to find the most likely cluster, again making 99 Monte 
+Carlo replications to obtain a $p$-value:
+
+```{r, cache=TRUE}
+set.seed(1)
+zip_result <- scan_zip(tab, zones, n_mcsim = 99)
+print(zip_result)
+```
+
+The zero-inflated Poisson statistic finds the same cluster as @Kulldorff1998.
 
 # References

@@ -5,3 +5,6 @@ ggplot2
 sp
 magrittr
 dplyr
+MASS
+lattice
+pscl
