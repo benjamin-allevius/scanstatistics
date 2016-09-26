@@ -139,7 +139,7 @@ function `scan_poisson`, which is a scan statistic for univariate
 Poisson-distributed data proposed by @Neill2005.
 
 The first argument to `scan_poisson` should be a __data table__ with columns
-'location', 'duration', 'count' and 'mean'. This table holds data for the period
+'location', 'duration', 'count' and 'mu'. This table holds data for the period
 in which we want to detect anomalies. Locations should be encoded as the 
 integers 1, 2, ..., which means that factor variables can be used for this 
 purpose. The duration column counts time backwards, so that a duration of 1 is 
@@ -158,7 +158,7 @@ tab[, duration := max(year) - year + 1]
 tab[, location := county]
 ```
 
-We still need to add the column 'mean', which should hold the predicted Poisson
+We still need to add the column 'mu', which should hold the predicted Poisson
 expected value parameter $\mu_{it}$ for each location $i$ and time interval $t$.
 In this example we would like to detect a potential cluster of brain cancer in 
 the counties of New Mexico during the years 1986--1989. Thus, we will use data 
@@ -168,13 +168,13 @@ time trend and an offset for county population size will suffice to demonstrate
 the scan statistic. We fit such a model and create the needed column as follows:
 
 ```{r, cache=TRUE}
-# Fit model and add predicted mean parameters
+# Fit model and add predicted expected value parameters
 mod_poisson <- glm(count ~ offset(log(population)) + 1 + I(year - 1985), 
                    data = NM_popcas[year < 1986, ], 
                    family = poisson(link = "log"))
 
-# Add the mean column
-tab[, mean := predict(mod_poisson, tab, type = "response")]
+# Add the expected value parameter column
+tab[, mu := predict(mod_poisson, tab, type = "response")]
 ```
 
 We can now calculate the Poisson scan statistic. To give us more confidence 
@@ -203,6 +203,7 @@ was retrospective rather than prospective as ours was. Ours was also data
 dredging (adjective) as we used the same study period with hopes of detecting
 the same cluster.
 
+#### A heuristic score for locations
 We can score each county according to how likely it is to be part of a cluster
 in a heuristic fashion using the function `score_locations`, and visualize the
 results on a heatmap as follows:
@@ -231,5 +232,44 @@ ggplot() +
 
 As we can see, this does not match up entirely with the previous results as 
 Torrance was not part of the most likely cluster.
+
+#### Finding the top-scoring clusters
+Finally, if we want to know not just the most likely cluster, but say the five
+top-scoring space-time clusters, we can use the function `top_clusters`.
+The clusters returned can either be overlapping or non-overlapping in the 
+spatial dimension, according to our liking.
+```{r, cache=TRUE}
+library(dplyr)
+
+top5 <- top_clusters(poisson_result, k = 5, overlapping = FALSE)
+
+# Add the counties corresponding to the zone as a column
+top_counties <- top5$zone %>%
+  purrr::map(get_zone, zones = zones) %>%
+  purrr::map(function(x) counties[x])
+top5[, counties := top_counties]
+```
+
+To get $p$-values for these clusters, the values of the cluster-specific 
+statistics in the table above can be compared to the replicate scan statistics
+calculated earlier. These $p$-values will be conservative, since secondary 
+clusters from the original data are compared to the most likely clusters from
+the replicate data sets.
+```{r, cache=TRUE}
+top5[, pvalue := mc_pvalue(statistic, poisson_result$replicated)]
+
+top5
+```
+
+### A scan statistic for negative binomial data
+For count data with overdispersion, the _scanstatistics_ package provides the 
+function `scan_negbin`, which is the expectation-based scan statistic invented 
+by @Tango2011. This scan statistic assumes that the data follows a negative 
+binomial distribution parametrized by its expected value $\mu$ and a parameter 
+$\theta$ such that a count $Y$ has variance 
+$\text{Var}(Y) = \mu + \mu^2 / \theta$. The parameters $\mu$ and $\theta$ may
+vary over both location and time.
+
+### A scan statistic for zero-inflated Poisson data
 
 # References

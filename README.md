@@ -154,6 +154,8 @@ counties[c(15, 26)]
 
 These are the same counties detected by Kulldorff et al. (1998), though their analysis was retrospective rather than prospective as ours was. Ours was also data dredging (adjective) as we used the same study period with hopes of detecting the same cluster.
 
+#### A heuristic score for locations
+
 We can score each county according to how likely it is to be part of a cluster in a heuristic fashion using the function `score_locations`, and visualize the results on a heatmap as follows:
 
 ``` r
@@ -182,6 +184,42 @@ ggplot() +
 ![](README_figures/unnamed-chunk-8-1.png)
 
 As we can see, this does not match up entirely with the previous results as Torrance was not part of the most likely cluster.
+
+#### Finding the top-scoring clusters
+
+Finally, if we want to know not just the most likely cluster, but say the five top-scoring space-time clusters, we can use the function `top_clusters`. The clusters returned can either be overlapping or non-overlapping in the spatial dimension, according to our liking.
+
+``` r
+library(dplyr)
+
+top5 <- top_clusters(poisson_result, k = 5, overlapping = FALSE)
+
+# Add the counties corresponding to the zone as a column
+top_counties <- top5$zone %>%
+  purrr::map(get_zone, zones = zones) %>%
+  purrr::map(function(x) counties[x])
+top5[, counties := top_counties]
+```
+
+To get \(p\)-values for these clusters, the values of the cluster-specific statistics in the table above can be compared to the replicate scan statistics calculated earlier. These \(p\)-values will be conservative, since secondary clusters from the original data are compared to the most likely clusters from the replicate data sets.
+
+``` r
+top5[, pvalue := mc_pvalue(statistic, poisson_result$replicated)]
+
+top5
+#>    zone duration statistic
+#> 1:   49        4 9.1806711
+#> 2:    3        2 6.8196550
+#> 3:  140        4 3.5377879
+#> 4:   10        4 3.4072029
+#> 5:    9        2 0.8372729
+#>                                               counties pvalue
+#> 1:                                   losalamos,santafe   0.01
+#> 2:                                              chaves   0.01
+#> 3: bernalillo,lincoln,sierra,socorro,torrance,valencia   0.48
+#> 4:                                           guadalupe   0.50
+#> 5:                                               grant   1.00
+```
 
 References
 ==========
