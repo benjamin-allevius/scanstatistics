@@ -2,7 +2,7 @@ Package: scanstatistics
 Type: Package
 Title: Space-Time Anomaly Detection using Scan Statistics
 Description: Anomaly detection in a spatiotemporal or spatial setting.
-Version: 0.0.0.9000
+Version: 0.1
 Date: 2015-02-09
 Authors@R: person("Benjamin", "Kjellson", email = "benjak@math.su.se",
   role = c("aut", "cre"))
