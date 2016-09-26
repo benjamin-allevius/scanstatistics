@@ -5,7 +5,7 @@ context("Negative Binomial Scanstatistics")
 test_that("negbin_mcsim", {
   table <- create_table(list(location = 1:2, duration = 1:3), 
                         keys = c("location", "duration"))
-  table[, mean := 1:6 + 0.5]
+  table[, mu := 1:6 + 0.5]
   table[, theta := c(0.2, 0.5, 2.5, 5, 10, 100)]
   table[, count := c(5, 2, 5, 15, 12, 3)]
   zones <- sets::set(sets::as.set(1L), 
@@ -29,7 +29,7 @@ test_that("negbin_score_terms: calculates correctly", {
   m <- c(0, 3, 1, 10) + 0.5
   s <- 1:4
   table[, count := x]
-  table[, mean := m]
+  table[, mu := m]
   table[, overdispersion := s]
   expected_num <- (x - m) / s
   expected_den <- m / s
@@ -44,7 +44,7 @@ test_that("poisson_score_terms: calculates correctly", {
   x <- c(1, 3, 5, 7)
   m <- c(0, 3, 1, 10) + 0.5
   table[, count := x]
-  table[, mean := m]
+  table[, mu := m]
   expected_num <- x - m
   expected_den <- m
   actual <- poisson_score_terms(table)

@@ -24,14 +24,14 @@
 #' parameters for each location and time. A p-value for the observed scan
 #' statistic can be obtained by Monte Carlo simulation.
 #' 
-#' @param table A \code{data.table} with columns \code{location, duration, mean,
+#' @param table A \code{data.table} with columns \code{location, duration, mu,
 #'    theta, count}. The \code{location} column should consist of integers that 
 #'    are unique to each location. The \code{duration} column should also 
 #'    consist of integers, starting at 1 for the most recent time period and 
 #'    increasing in reverse chronological order. 
 #'    
 #'    A negative binomial distribution parametrized by \eqn{\mu} and 
-#'    \eqn{\theta} (columns \code{mean} and \code{theta} respectively) has 
+#'    \eqn{\theta} (columns \code{mu} and \code{theta} respectively) has 
 #'    expected value \eqn{\mu} and variance \eqn{\mu+\mu^2/\theta}. The 
 #'    parameter \eqn{\theta} is referred to as the \code{size} in 
 #'    \code{\link[stats]{NegBinomial}}, and \code{theta} in 
@@ -98,7 +98,7 @@
 #'    and Fisher information under the null hypothesis of no anomaly.
 #'    The scan statistic is calculated as the maximum of these quantities over 
 #'    all space-time windows. Point estimates of the parameters \eqn{\mu_{it}} 
-#'    and \eqn{\theta_{it}} must be specified in the column \code{mean} and 
+#'    and \eqn{\theta_{it}} must be specified in the column \code{mu} and 
 #'    \code{theta} of the argument \code{table} before this function is called.
 #' @references 
 #'    Tango, T., Takahashi, K. & Kohriyama, K. (2011), \emph{A space-time scan 
@@ -108,18 +108,18 @@
 #' set.seed(1)
 #' table <- scanstatistics:::create_table(list(location = 1:4, duration = 1:4),
 #'                                         keys = c("location", "duration"))
-#' table[, mean := 3 * location]
+#' table[, mu := 3 * location]
 #' table[, theta := 2]
-#' table[, count := rnbinom(.N, mu = mean, size = theta)]
+#' table[, count := rnbinom(.N, mu = mu, size = theta)]
 #' table[location %in% c(1, 4) & duration < 3, 
-#'       count :=  rnbinom(.N, mu = 2 * mean, size = theta)]
+#'       count :=  rnbinom(.N, mu = 2 * mu, size = theta)]
 #' zones <- scanstatistics:::powerset_zones(4)
 #' result1 <- scan_negbin(table, zones, 100, "ordinary")
 #' result2 <- scan_negbin(table, zones, 100, "increasing")
 scan_negbin <- function(table, zones, n_mcsim = 0, version = "ordinary") {
   validate_scan(table, 
                 zones, 
-                c("count", "mean", "duration", "location", "theta"))
+                c("count", "mu", "duration", "location", "theta"))
   details <- list(table = table,
                             zones = zones, 
                             distribution = "negative binomial",
@@ -143,7 +143,7 @@ scan_negbin <- function(table, zones, n_mcsim = 0, version = "ordinary") {
 #' This function randomly generates counts from a negative binomial distribution
 #' according to the parameters on each row of the input \code{data.table}, and 
 #' adds the counts to a new column \code{count}. 
-#' @param table A \code{data.table} with at least the columns \code{mean} and
+#' @param table A \code{data.table} with at least the columns \code{mu} and
 #'    \code{theta}. The parameter \eqn{\theta} (theta) is the same as 
 #'    \code{size} in \code{\link[stats]{rnbinom}}.
 #' @return The same table, with a new column \code{count}.
@@ -152,8 +152,8 @@ scan_negbin <- function(table, zones, n_mcsim = 0, version = "ordinary") {
 #' @keywords internal
 gen_negbin_counts <- function(table) {
   table[is.finite(theta), 
-        count := as.integer(rnbinom(.N, mu = mean, size = theta))]
-  table[is.infinite(theta), count := rpois(.N, mean)][]
+        count := as.integer(rnbinom(.N, mu = mu, size = theta))]
+  table[is.infinite(theta), count := rpois(.N, mu)][]
 }
 
 #' Simulate a single negative binomial score scan statistic.
@@ -168,7 +168,7 @@ gen_negbin_counts <- function(table) {
 #' @importFrom magrittr %>%
 #' @keywords internal
 sim_negbin_statistic <- function(table, zones, wstat_fun) {
-  table[, .(mean, theta), by = .(location, duration)] %>%
+  table[, .(mu, theta), by = .(location, duration)] %>%
     gen_negbin_counts %>%
     negbin_overdispersion %>%
     wstat_fun(zones) %>%
@@ -197,7 +197,7 @@ negbin_mcsim <- function(table, zones, n_mcsim, version = "ordinary") {
     window_stats <- negbin_calculations
   }
   replicate(n_mcsim,
-            table[, .(mean, theta), by = .(location, duration)] %>%
+            table[, .(mu, theta), by = .(location, duration)] %>%
               gen_negbin_counts %>%
               negbin_overdispersion %>%
               window_stats(zones) %>%
@@ -207,32 +207,32 @@ negbin_mcsim <- function(table, zones, n_mcsim, version = "ordinary") {
 #' Computes the overdispersion parameter for a fitted negative binomial model.
 #' 
 #' Computes the overdispersion parameter \eqn{w=1+\mu/\theta} for a negative
-#' binomial distribution parametrized by its mean \eqn{\mu} and with variance
-#' \eqn{\mu+\mu^2/\theta}. The overdispersion is added as a new column to the 
-#' input \code{data.table}, meaning that this function \code{modifies} its 
-#' input.
-#' @param table A \code{data.table} with columns \code{mean, theta} and possibly
+#' binomial distribution parametrized by its expected value \eqn{\mu} and with 
+#' variance \eqn{\mu+\mu^2/\theta}. The overdispersion is added as a new column 
+#' to the input \code{data.table}, meaning that this function \code{modifies} 
+#' its input.
+#' @param table A \code{data.table} with columns \code{mu, theta} and possibly
 #'    others.
 #' @return The same table, with a new column \code{overdispersion}.
 #' @keywords internal
 negbin_overdispersion <- function(table) {
-  table[, overdispersion := 1 + mean / theta][]
+  table[, overdispersion := 1 + mu / theta][]
 }
 
 
-#' Computes the numerator and denominator terms for the NegBin score
+#' Computes the numerator and denominator terms for the NegBin score.
 #' 
 #' This function calculates the terms found in the numerator and denominator 
 #' sums for the ordinary version of the negative binomial scan statistic.
-#' @param table A \code{data.table} with columns \code{location, duration, mean,
+#' @param table A \code{data.table} with columns \code{location, duration, mu,
 #'    overdispersion, count}.
 #' @return A \code{data.table} with columns \code{location, duration, num, 
 #'    denom}.
 #' @keywords internal
 negbin_score_terms <- function(table) {
   table[, 
-        .(num = sum((count - mean) / overdispersion),
-          denom = sum(mean / overdispersion)),
+        .(num = sum((count - mu) / overdispersion),
+          denom = sum(mu / overdispersion)),
         by = .(location, duration)]
 }
 
@@ -241,15 +241,15 @@ negbin_score_terms <- function(table) {
 #' This function calculates the terms found in the numerator and denominator 
 #' sums for the ordinary version of the Poisson scan statistic (Tango et al. 
 #' version). 
-#' @param table A \code{data.table} with columns \code{location, duration, mean,
+#' @param table A \code{data.table} with columns \code{location, duration, mu,
 #'    count}.
 #' @return A \code{data.table} with columns \code{location, duration, num, 
 #'    denom}.
 #' @keywords internal
 poisson_score_terms <- function(table) {
   table[,
-        .(num = sum((count - mean)),
-          denom = sum(mean)),
+        .(num = sum((count - mu)),
+          denom = sum(mu)),
         by = .(location, duration)]
 }
 
@@ -275,14 +275,15 @@ score_zone_sums <- function(table, zones) {
 #' Calculate the ordinary NegBin score for each space-time window.
 #' 
 #' Calculate the ordinary negative binomial score for each space-time window, 
-#' given the initial data of counts, means, and overdispersion parameters.
+#' given the initial data of counts, expected values, and overdispersion 
+#' parameters.
 #' @inheritParams scan_negbin
 #' @inheritParams partition_zones
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @importFrom magrittr %>%
 #' @keywords internal
 negbin_calculations <- function(table, zones) {
-  table[, .(location, duration, count, mean, theta)] %>% 
+  table[, .(location, duration, count, mu, theta)] %>% 
     negbin_overdispersion %>%
     negbin_score_terms %>%
     score_zone_sums(zones) %>%
@@ -310,14 +311,14 @@ negbin_score <- function(table) {
 #' Calculate the increasing score for each space-time window.
 #' 
 #' Calculate the increasing score for each space-time window, given the initial 
-#' data of counts, means, and overdispersion parameters.
+#' data of counts, expected values, and overdispersion parameters.
 #' @inheritParams scan_negbin
 #' @inheritParams partition_zones
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @importFrom magrittr %>%
 #' @keywords internal
 negbin_increasing_calculations <- function(table, zones) {
-  table[, .(location, duration, count, mean, theta)] %>% 
+  table[, .(location, duration, count, mu, theta)] %>% 
     negbin_overdispersion %>%
     negbin_score_terms %>%
     score_zone_sums(zones) %>%

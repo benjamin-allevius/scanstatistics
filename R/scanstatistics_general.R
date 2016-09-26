@@ -141,9 +141,9 @@ print.scanstatistic <- function(x, ...) {
 #' set.seed(1)
 #' table <- scanstatistics:::create_table(list(location = 1:4, duration = 1:4),
 #'                                         keys = c("location", "duration"))
-#' table[, mean := 3 * location]
-#' table[, count := rpois(.N, mean)]
-#' table[location %in% c(1, 4) & duration < 3, count := rpois(.N, 2 * mean)]
+#' table[, mu := 3 * location]
+#' table[, count := rpois(.N, mu)]
+#' table[location %in% c(1, 4) & duration < 3, count := rpois(.N, 2 * mu)]
 #' zones <- scanstatistics:::powerset_zones(4)
 #' result <- scan_poisson(table, zones, 100)
 #' score_locations(result)
@@ -180,9 +180,9 @@ score_locations <- function(x) {
 #' set.seed(1)
 #' table <- scanstatistics:::create_table(list(location = 1:4, duration = 1:4), 
 #'                                         keys = c("location", "duration"))
-#' table[, mean := 3 * location]
-#' table[, count := rpois(.N, mean)]
-#' table[location %in% c(1, 4) & duration < 3, count := rpois(.N, 2 * mean)]
+#' table[, mu := 3 * location]
+#' table[, count := rpois(.N, mu)]
+#' table[location %in% c(1, 4) & duration < 3, count := rpois(.N, 2 * mu)]
 #' zones <- scanstatistics:::powerset_zones(4)
 #' result <- scan_poisson(table, zones, 0)
 #' top_clusters(result, k = 4, overlapping = FALSE)

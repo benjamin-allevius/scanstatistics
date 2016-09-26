@@ -17,11 +17,11 @@
 #' statistic can be obtained by Monte Carlo simulation.
 #' 
 #' @param table A \code{data.table} with columns 
-#'    \code{location, duration, count, mean}. The \code{location} column should 
+#'    \code{location, duration, count, mu}. The \code{location} column should 
 #'    consist of integers that are unique to each location. The 
 #'    \code{duration} column should also consist of integers, starting at 1 for 
 #'    the most recent time period and increasing in reverse chronological order.
-#'    The column \code{mean} should contain the estimated Poisson expected value
+#'    The column \code{mu} should contain the estimated Poisson expected value
 #'    parameter.
 #' @param zones A \code{set} of zones, each zone itself a 
 #'    set containing one or more locations of those found in \code{table}.
@@ -78,21 +78,21 @@
 #'    expectation-based Poisson scan statistic is calculated as the maximum of 
 #'    these quantities over all space-time windows.
 #'    Point estimates of the parameters \eqn{\mu_{it}} must be specified in the
-#'    column \code{mean} of the argument \code{table} before this function is 
+#'    column \code{mu} of the argument \code{table} before this function is 
 #'    called.
 #' @examples
 #' # Simple example
 #' set.seed(1)
 #' table <- scanstatistics:::create_table(list(location = 1:4, duration = 1:4), 
 #'                                         keys = c("location", "duration"))
-#' table[, mean := 3 * location]
-#' table[, count := rpois(.N, mean)]
-#' table[location %in% c(1, 4) & duration < 3, count := rpois(.N, 2 * mean)]
+#' table[, mu := 3 * location]
+#' table[, count := rpois(.N, mu)]
+#' table[location %in% c(1, 4) & duration < 3, count := rpois(.N, 2 * mu)]
 #' zones <- scanstatistics:::powerset_zones(4)
 #' result <- scan_poisson(table, zones, 100)
 #' result
 scan_poisson <- function(table, zones, n_mcsim = 0) {
-  validate_scan(table, zones, c("count", "mean", "duration", "location"))
+  validate_scan(table, zones, c("count", "mu", "duration", "location"))
   scanstatistic_object(poisson_calculations(table, zones), 
                        poisson_mcsim(table, zones, n_mcsim),
                        list(table = table,
@@ -108,27 +108,26 @@ scan_poisson <- function(table, zones, n_mcsim = 0) {
 #' This function randomly generates counts from a Poisson distribution according 
 #' to the parameters on each row of the input \code{data.table}, and adds the 
 #' counts to a new column \code{count}. 
-#' @param table A \code{data.table} with at least the column \code{mean}, 
+#' @param table A \code{data.table} with at least the column \code{mu}, 
 #'    corresponding to the parameter \code{lambda} in 
 #'    \code{\link[stats]{rpois}}.
 #' @importFrom stats rpois
 #' @keywords internal
 generate_poisson_counts <- function(table) {
-  table[, count := rpois(.N, lambda = mean)][]
+  table[, count := rpois(.N, lambda = mu)][]
 }
 
 #' Simulate a single expectation-based Poisson scan statistic.
 #' 
 #' Simulate Poisson-distributed data according to the supplied parameters and
 #' calculate the value of the expectation-based Poisson scan statistic.
-#' @param table A \code{data.table} with columns \code{location, duration, 
-#'    mean}.
+#' @param table A \code{data.table} with columns \code{location, duration, mu}.
 #' @inheritParams partition_zones
 #' @return A scalar; the scan statistic for the simulated data.
 #' @importFrom magrittr %>%
 #' @keywords internal
 simulate_poisson_scanstatistic <- function(table, zones) {
-  table[, .(mean), by = .(location, duration)] %>%
+  table[, .(mu), by = .(location, duration)] %>%
     generate_poisson_counts %>% 
     poisson_calculations(zones = zones) %>%
     extract_scanstatistic
@@ -160,9 +159,9 @@ poisson_mcsim <- function(table, zones, n_mcsim = 999L) {
 #' Calculate the expectation-based Poisson statistic for each space-time window.
 #' 
 #' Calculate the expectation-based Poisson statistic for each space-time window,
-#' given the initial data of counts and means.
+#' given the initial data of counts and mus.
 #' @param table A \code{data.table} with columns \code{location, duration, 
-#'    count, mean}.
+#'    count, mu}.
 #' @param zones A \code{list} or \code{set} of zones, each zone itself a 
 #'    set containing one or more locations of those found in \code{table}.
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
@@ -171,10 +170,10 @@ poisson_mcsim <- function(table, zones, n_mcsim = 999L) {
 #' @importFrom magrittr %>%
 #' @keywords internal
 poisson_calculations <- function(table, zones) {
-  table[, .(location, duration, count, mean)] %>% 
+  table[, .(location, duration, count, mu)] %>% 
     join_zones(zones = zones, keys = c("zone", "duration")) %>%
-    zone_sum(sumcols = c("count", "mean")) %>%
-    cumsum_duration(sumcols = c("count", "mean"), bycols = c("zone")) %>%
+    zone_sum(sumcols = c("count", "mu")) %>%
+    cumsum_duration(sumcols = c("count", "mu"), bycols = c("zone")) %>%
     poisson_relrisk %>%
     poisson_statistic
 }
@@ -183,10 +182,10 @@ poisson_calculations <- function(table, zones) {
 #' 
 #' This function calculates the logarithm of the expectation-based Poisson 
 #' statistic for each space-time window, given already calculated relative risks
-#' and aggregate counts and means.
+#' and aggregate counts and mus.
 #' @param table A \code{data.table} with columns \code{zone, duration, count,
-#'    mean, relrisk}. The columns \code{count} and \code{mean} contain the sums
-#'    of the counts and means for the locations inside each zone and up to the
+#'    mu, relrisk}. The columns \code{count} and \code{mu} contain the sums
+#'    of the counts and mus for the locations inside each zone and up to the
 #'    given duration. The column \code{relrisk} contains the maximum likelihood
 #'    estimate for the relative risk for each zone-duration combination.
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
@@ -194,7 +193,7 @@ poisson_calculations <- function(table, zones) {
 #'    each zone-duration combination.
 #' @keywords internal
 poisson_statistic <- function(table) {
-  table[, .(statistic = log(relrisk) * count - (relrisk - 1) * mean),
+  table[, .(statistic = log(relrisk) * count - (relrisk - 1) * mu),
         by = .(zone, duration)]
 }
 
@@ -202,13 +201,14 @@ poisson_statistic <- function(table) {
 #' 
 #' This function adds a column for the maximum likelihood estimate for the
 #' relative risk (assumed to be 1 or greater). The table should contain the
-#' aggregates (sums) of the counts and means for each zone and duration.
+#' aggregates (sums) of the counts and expected value parameters for each zone 
+#' and duration.
 #' @param table A \code{data.table} with columns \code{zone, duration, count,
-#'    mean}. The latter two are the sums of counts and means for the locations
-#'    comprising the zone and up to the given duration (i.e. cumulative sum 
-#'    for the duration).
+#'    mu}. The latter two are the sums of observed counts and estimated expected
+#'    value parameters for the locations comprising the zone and up to the given 
+#'    duration (i.e. cumulative sum for the duration).
 #' @return The same table, with an extra column \code{relrisk}.
 #' @keywords internal
 poisson_relrisk <- function(table) {
-  table[, relrisk := max(1, count / mean), by = .(zone, duration)]
+  table[, relrisk := max(1, count / mu), by = .(zone, duration)]
 }

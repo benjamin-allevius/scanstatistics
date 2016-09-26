@@ -25,13 +25,13 @@
 #' simulation.
 #' 
 #' @param table A \code{data.table} with columns 
-#'    \code{location, duration, count, mean, p}. The \code{location} column 
+#'    \code{location, duration, count, mu, p}. The \code{location} column 
 #'    should consist of integers that are unique to each location. The 
 #'    \code{duration} column should also consist of integers, starting at 1 for 
 #'    the most recent time period and increasing in reverse chronological order.
-#'    The column \code{mean} should contain the estimated Poisson expected value 
-#'    parameter, and the column \code{p} the estimated structural zero 
-#'    probability.
+#'    The column \code{mu} should contain the estimated Poisson expected value 
+#'    parameters, and the column \code{p} the estimated structural zero 
+#'    probabilities.
 #' @param zones A \code{set} of zones, each zone itself a set containing one or 
 #'    more locations of those found in \code{table}.
 #' @param n_mcsim A non-negative integer; the number of replicate scan 
@@ -95,7 +95,7 @@
 #'    as the maximum of these quantities over all space-time windows. The 
 #'    expectation-maximization (EM) algorithm is used to obtain maximum 
 #'    likelihood estimates. Point estimates of the parameters \eqn{\mu_{it}} 
-#'    must be specified in the column \code{mean} of the argument \code{table} 
+#'    must be specified in the column \code{mu} of the argument \code{table} 
 #'    before this function is called.
 #' @references 
 #'    Kjellson, B. (2015), \emph{Spatiotemporal Outbreak Detection: A Scan 
@@ -107,16 +107,16 @@
 #' set.seed(1)
 #' table <- scanstatistics:::create_table(list(location = 1:4, duration = 1:4),
 #'                                         keys = c("location", "duration"))
-#' table[, mean := 3 * location]
+#' table[, mu := 3 * location]
 #' table[, p := runif(.N, 0, 0.3)]
-#' table[, count := gamlss.dist::rZIP(.N, mu = mean, sigma = p)]
+#' table[, count := gamlss.dist::rZIP(.N, mu = mu, sigma = p)]
 #' table[location %in% c(1, 4) & duration < 3, 
-#'       count := gamlss.dist::rZIP(.N, mu = 2 * mean, sigma = p)]
+#'       count := gamlss.dist::rZIP(.N, mu = 2 * mu, sigma = p)]
 #' zones <- scanstatistics:::powerset_zones(4)
 #' result <- scan_poisson(table, zones, 100)
 #' result
 scan_zip <- function(table, zones, n_mcsim = 0, ...) {
-  validate_scan(table, zones, c("count", "mean", "duration", "location", "p"))
+  validate_scan(table, zones, c("count", "mu", "duration", "location", "p"))
   maxdur <- table[, max(duration)]
   scanstatistic_object(zip_calculations(table, zones, maxdur, ...), 
                        zip_mcsim(table, zones, n_mcsim, maxdur, ...),
@@ -134,10 +134,10 @@ scan_zip <- function(table, zones, n_mcsim = 0, ...) {
 #' This function randomly generates counts from a zero-inflated Poisson 
 #' distribution according to the parameters on each row of the input 
 #' \code{data.table}, and adds the counts to a new column \code{count}. 
-#' @param table A \code{data.table} with columns \code{mean} and \code{p}. These
+#' @param table A \code{data.table} with columns \code{mu} and \code{p}. These
 #'    correspond to the parameters \code{mu} and \code{sigma} in 
-#'    \code{\link[gamlss.dist]{rZIP}}; the former is the Poisson mean and the 
-#'    latter is the excess zero probability.
+#'    \code{\link[gamlss.dist]{rZIP}}; the former is the Poisson expected value
+#'    parameter and the latter is the excess zero probability.
 #' @param abs_tol A scalar; if the excess zero probability is less than this 
 #'    value the count will be generated from a Poisson distribution.
 #' @return The same table, with a new column \code{count}.
@@ -147,8 +147,8 @@ scan_zip <- function(table, zones, n_mcsim = 0, ...) {
 generate_zip_counts <- function(table, abs_tol = 1e-03) {
   # Note: rZIP returns a numeric vector
   table[, count := 0]
-  table[p < abs_tol, count := as.numeric(rpois(.N, mean))]
-  table[p >= abs_tol, count := gamlss.dist::rZIP(.N, mu = mean, sigma = p)][]
+  table[p < abs_tol, count := as.numeric(rpois(.N, mu))]
+  table[p >= abs_tol, count := gamlss.dist::rZIP(.N, mu = mu, sigma = p)][]
 }
 
 #' Simulate a single expectation-based ZIP-EM scan statistic.
@@ -156,7 +156,7 @@ generate_zip_counts <- function(table, abs_tol = 1e-03) {
 #' Simulate zero-inflated -distributed data according to the supplied parameters 
 #' and calculate the value of the expectation-based Poisson scan statistic.
 #' @param table A \code{data.table} with columns \code{location, duration, p,
-#'    mean}. The column \code{mean} contains the Poisson means, the column 
+#'    mu}. The column \code{mu} contains the Poisson expected values, the column 
 #'    \code{p} contains the excess zero probabilities.
 #' @inheritParams partition_zones
 #' @param ... Arguments passed to \code{\link{zip_calculations}}.
@@ -165,7 +165,7 @@ generate_zip_counts <- function(table, abs_tol = 1e-03) {
 #' @importFrom magrittr %>%
 #' @keywords internal
 simulate_zip_scanstatistic <- function(table, zones, ...) {
-  table[, .(p, mean), by = .(location, duration)] %>%
+  table[, .(p, mu), by = .(location, duration)] %>%
     generate_zip_counts %>% 
     zip_calculations(zones = zones, ...) %>%
     extract_scanstatistic
@@ -178,7 +178,7 @@ simulate_zip_scanstatistic <- function(table, zones, ...) {
 #' the scan statistic for each generated data set using the supplied 
 #' \code{zones}.
 #' @param table A \code{data.table} with columns \code{location, duration, p,
-#'    mean}.
+#'    mu}.
 #' @inheritParams partition_zones
 #' @param n_mcsim A positive integer; the number of replicate scan 
 #'    statistics to generate.
@@ -188,11 +188,10 @@ simulate_zip_scanstatistic <- function(table, zones, ...) {
 #' @keywords internal
 zip_mcsim <- function(table, zones, n_mcsim = 0, ...) {
   if (n_mcsim > 0) {
-    return(replicate(n_mcsim, simulate_poisson_scanstatistic(table, zones)))
+    return(replicate(n_mcsim, simulate_zip_scanstatistic(table, zones, ...)))
   } else {
     return(numeric(0))
   }
-  replicate(n_mcsim, simulate_zip_scanstatistic(table, zones, ...))
 }
 
 
@@ -203,21 +202,22 @@ zip_mcsim <- function(table, zones, n_mcsim = 0, ...) {
 #' Estimate the excess zero indicator for a zero-inflated Poisson distribution,
 #' under the null hypothesis of no outbreak. The estimate is added as a new 
 #' column to the input table.
-#' @param table A \code{data.table} with columns \code{p, mean, count}. \code{p}
-#'    is the given/estimated probability of an excess zero, and \code{mean} is
-#'    the estimated Poisson mean. \code{count} is the observed count.
+#' @param table A \code{data.table} with columns \code{p, mu, count}. \code{p}
+#'    is the given/estimated probability of an excess zero, and \code{mu} is
+#'    the estimated Poisson expected value parameter. \code{count} is the 
+#'    observed count.
 #' @return The same table, \strong{modified} with a new column \code{ddagger}.
 #' @keywords internal
 estimate_d_dagger <- function(table) {
-  table[, ddagger := estimate_d(p, mean, count)][]
+  table[, ddagger := estimate_d(p, mu, count)][]
 }
 
 #' Calculate the ZIP window statistic over all durations, for a given zone.
 #' 
 #' This function calculates the zero-inflated Poisson statistic for a given 
 #' spatial zone, for all durations considered.
-#' @param table A \code{data.table} with columns \code{duration, location, 
-#'    p, mean, count}.
+#' @param table A \code{data.table} with columns \code{duration, location, p, 
+#'    mu, count}.
 #' @param maxdur An integer; the maximum duration considered.
 #' @param ... Arguments passed to \code{\link{window_zip_statistic}}.
 #' @return A list with two elements:
@@ -230,7 +230,7 @@ estimate_d_dagger <- function(table) {
 calc_zipstat_over_duration <- function(table, maxdur, ...) {
   stat <- rep(0, maxdur)
   for (t in seq(maxdur)) {
-    stat[t] <- table[duration <= t, window_zip_statistic(p, mean, count, ...)]
+    stat[t] <- table[duration <= t, window_zip_statistic(p, mu, count, ...)]
   }
   list(duration = seq(maxdur), statistic = stat)
 }
@@ -239,8 +239,8 @@ calc_zipstat_over_duration <- function(table, maxdur, ...) {
 #' 
 #' Calculates the zero-inflated Poisson statistic for each space-time window,
 #' using the EM algorithm.
-#' @param table A \code{data.table} with columns \code{zone, location, 
-#'    duration, p, mean, count}.
+#' @param table A \code{data.table} with columns \code{zone, location, duration, 
+#'    p, mu, count}.
 #' @param ... Any of the following named parameters:
 #' \describe{
 #'   \item{maxdur}{As in \code{\link{calc_zipstat_over_duration}}.}
@@ -257,16 +257,16 @@ zip_statistic <- function(table, ...) {
 #' 
 #' Calculate the logarithm of the ZIP statistic for each space-time window, 
 #' summing over the locations and times in the window.
-#' @param table A \code{data.table} with columns \code{location, duration, mean,
-#'    p, count}. The column \code{mean} contains the Poisson means, the column
-#'    \code{p} contains the excess zero probabilities.
+#' @param table A \code{data.table} with columns \code{location, duration, mu,
+#'    p, count}. The column \code{mu} contains the Poisson expected value 
+#'    parameters, the column \code{p} contains the excess zero probabilities.
 #' @inheritParams partition_zones
 #' @param ... Arguments passed to \code{\link{simulate_zip_scanstatistic}}.
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @importFrom magrittr %>%
 #' @keywords internal
 zip_calculations <- function(table, zones, ...) {
-  table[, .(location, duration, count, mean, p)] %>%
+  table[, .(location, duration, count, mu, p)] %>%
     join_zones(zones = zones, keys = c("zone", "duration")) %>%
     zip_statistic(...)
 }
@@ -280,8 +280,8 @@ zip_calculations <- function(table, zones, ...) {
 #' @param d A vector of indicator variables for whether the corresponding count
 #'    in the argument \code{y} is an excess zero or not. Can also be estimates 
 #'    of these indicators.
-#' @param mu A vector of given/estimated Poisson means, of same length as 
-#'    \code{d}.
+#' @param mu A vector of given/estimated Poisson expected value parameters, of 
+#'    same length as \code{d}.
 #' @param y An integer vector of the observed counts, of same length as 
 #'    \code{d}.
 #' @return A scalar, the estimated relative risk.
@@ -292,13 +292,14 @@ estimate_zip_relrisk <- function(d, mu, y) {
 
 #' Estimate the indicators of excess zeros for a ZIP distribution.
 #' 
-#' Given counts and (estimated) Poisson means and excess zero probabilities, 
-#' this function estimates the indicator variable for an excess zero, for each
-#' count.
+#' Given counts and (estimated) Poisson expected value parameters and excess 
+#' zero probabilities, this function estimates the indicator variable for an 
+#' excess zero, for each count.
 #' @param p A numeric vector, each element being the given/estimated 
 #'    probability of an excess zero for the corresponding count in \code{y}.
 #' @param mu A numeric vector, each element being the given/estimated Poisson 
-#'    meanfor the corresponding count in \code{y}. Of same length as \code{p}.
+#'    expected value parameter for the corresponding count in \code{y}. Of same 
+#'    length as \code{p}.
 #' @param y An integer vector containing the observed counts. Of same length as 
 #'    \code{p}.
 #' @return A numeric vector, of same length as the input vector \code{p}.
@@ -320,8 +321,8 @@ estimate_d <- function(p, mu, y) {
 #'    the alternative hypothesis of an outbreak. Of same length as \code{p}.
 #' @param ddagger Numeric vector of estimates of the excess zero indicators, 
 #'    under the null hypothesis of no outbreak. Of same length as \code{p}.
-#' @param mu Numeric vector of given/estimated Poisson means. Of same length as 
-#'    \code{p}.
+#' @param mu Numeric vector of given/estimated Poisson expected value 
+#'    parameters. Of same length as \code{p}.
 #' @param y Integer vector of observed counts. Of same length as \code{p}.
 #' @return A numeric vector of same length as input vector \code{p}.
 #' @keywords internal
@@ -338,8 +339,8 @@ zip_statistic_term <- function(q, p, dstar, ddagger, mu, y) {
 #' @param p Numeric vector of excess zero probabilities.
 #' @param d Numeric vector of estimates of the excess zero indicators. Of same 
 #'    length as \code{p}.
-#' @param mu Numeric vector of given/estimated Poisson means. Of same length as 
-#'    \code{p}.
+#' @param mu Numeric vector of given/estimated Poisson expected value 
+#' parameters. Of same length as \code{p}.
 #' @param y Integer vector of observed counts. Of same length as \code{p}.
 #' @param tol Scalar; probability p below this is considered equal to zero.
 #' @return A numeric vector of same length as input vector \code{p}.
@@ -362,8 +363,8 @@ zip_statistic_factor <- function(p, d, mu, y, tol = 1e-08) {
 #' counts assumed to be generated from a zero-inflated Poisson distribution.
 #' @param p A numeric vector of the given/estimated excess zero probabilities 
 #'    corresponding to each count.
-#' @param mu A numeric vector of the given/estimated Poisson means corresponding 
-#'    to each count. Of same length as \code{p}.
+#' @param mu A numeric vector of the given/estimated Poisson expected value
+#'    parameters corresponding to each count. Of same length as \code{p}.
 #' @param y An integer vector of the observed counts, of same length as 
 #'    \code{p}.
 #' @param d_init A scalar between 0 and 1. The initial guess for the estimate of 

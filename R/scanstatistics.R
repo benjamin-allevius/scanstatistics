@@ -41,6 +41,7 @@ globalVariables(c(
   "location",
   "locsum",
   "loglikelihood",
+  "mu",
   "num",
   "n_zones",
   "overdispersion",
