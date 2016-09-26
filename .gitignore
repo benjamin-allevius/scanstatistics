@@ -9,3 +9,5 @@ src/*.dll
 inst/doc
 man/*.Rd
 .Rproj.user
+README_cache/
+README_figures/
