@@ -211,6 +211,7 @@ top_clusters <- function(x, k = 5, overlapping = FALSE) {
 #' Check that the input table has the right columns. Raises error if not.
 #' @param table A data.table passed to a scan statistic function.
 #' @param col_names A character vector of column names required.
+#' @keywords internal
 validate_colnames <- function(table, col_names) {
   test <- col_names %in% names(table)
   missing_cols <- col_names[!test]
@@ -225,6 +226,7 @@ validate_colnames <- function(table, col_names) {
 #' @param table A data.table passed to a scan statistic function.
 #' @param col_names A character vector of column names; these columns in the
 #'    table must not have any missing values.
+#' @keywords internal
 validate_values <- function(table, col_names) {
   if (any(is.na(table[, col_names, with = FALSE]))) {
     stop("The columns ",
@@ -244,6 +246,12 @@ validate_zones <- function(zones) {
   }
 }
 
+#' Check that input to scanstatistic function is valid.
+#' @param table A data.table passed to a scan statistic function.
+#' @param zones Should be a list of integer or factor vectors.
+#' @param col_names A character vector of column names; these columns in the
+#'    table must not have any missing values.
+#' @keywords internal
 validate_scan <- function(table, zones, col_names) {
   validate_colnames(table, col_names)
   validate_values(table, col_names)
