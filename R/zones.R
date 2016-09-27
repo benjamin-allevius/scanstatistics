@@ -50,6 +50,15 @@ coords_to_knn <- function(x,
 #' @return A matrix of integers, row \eqn{i} containing the \eqn{k} nearest 
 #'    neighbors of location \eqn{i}, including itself.
 #' @export
+#' @examples 
+#' x <- matrix(c(0, 0,
+#'               1, 0,
+#'               2, 1,
+#'               0, 4,
+#'               1, 3),
+#'             ncol = 2, byrow = TRUE)
+#' d <- dist(x, diag = TRUE, upper = TRUE)
+#' dist_to_knn(d, k = 3)
 dist_to_knn <- function(x, k = min(10, nrow(x))) {
   if (class(x) == "dist" && (!attr(x, "Diag") || !attr(x, "Upper"))) {
     stop("If x is a 'dist' object, it must have diag=TRUE and upper=TRUE")
