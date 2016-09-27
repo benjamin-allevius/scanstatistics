@@ -21,9 +21,14 @@ Imports:
     plyr,
     sets
 Suggests:
+    ggplot2,
     knitr,
+    MASS,
+    pscl,
+    purrr,
     reshape2,
     rmarkdown,
+    sp,
     testthat
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1

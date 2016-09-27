@@ -11,3 +11,4 @@ man/*.Rd
 .Rproj.user
 README_cache/
 README_figures/
+vignettes/*.html

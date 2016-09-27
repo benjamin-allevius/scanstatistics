@@ -7,3 +7,5 @@
 ^README_figures/*
 ^references.bib$
 ^figures/*
+vignettes/introduction_cache/*
+vignettes/introduction_files/*
