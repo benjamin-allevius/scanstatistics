@@ -237,6 +237,7 @@ validate_values <- function(table, col_names) {
 
 #' Check that the zones argument is a list of integer or factor vectors.
 #' @param zones Should be a list of integer or factor vectors.
+#' @keywords internal
 validate_zones <- function(zones) {
   if (class(zones) != "list") {
     stop("The argument 'zones' must be a list of integer or factor vectors.")
