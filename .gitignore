@@ -12,3 +12,4 @@ man/*.Rd
 README_cache/
 README_figures/
 vignettes/*.html
+revdep/*

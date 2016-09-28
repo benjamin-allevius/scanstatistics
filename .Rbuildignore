@@ -10,3 +10,4 @@
 vignettes/introduction_cache/*
 vignettes/introduction_files/*
 cran-comments.md
+revdep/*
