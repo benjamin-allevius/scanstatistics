@@ -5,8 +5,9 @@
 ^README-.*\.png$
 ^README_cache/*
 ^README_figures/*
-^references.bib$
+^references\.bib$
 ^figures/*
 vignettes/introduction_cache/*
 vignettes/introduction_files/*
-cran-comments.md
+cran-comments\.md
+^NEWS\.md$
