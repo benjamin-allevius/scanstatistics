@@ -23,6 +23,8 @@ Imports:
     plyr,
     sets
 Suggests:
+    doParallel,
+    foreach,
     ggplot2,
     knitr,
     MASS,
