@@ -40,11 +40,11 @@ extract_mlc <- function(table) {
 
 #' Calculate the Monte Carlo \eqn{p}-value for a scan statistic.
 #' 
-#' Given an observed scan statistic \eqn{y} and a vector of replicate scan 
-#' statistics \eqn{x_i}, \eqn{i=1,\ldots,R}, calculate the Monte carlo 
+#' Given an observed scan statistic \eqn{\lambda^*} and a vector of replicate scan 
+#' statistics \eqn{\lambda_i}, \eqn{i=1,\ldots,R}, calculate the Monte carlo 
 #' \eqn{p}-value as
 #' \deqn{
-#' \sum_{i=1}^R \frac{1 + \mathrm{I}(x_i > y)}{1 + R}
+#'  \frac{1 + \sum_{i=1}^R \mathrm{I}(\lambda_i > \lambda^*)}{1 + R}
 #' }
 #' The function is vectorized, so multiple \eqn{p}-values can be calculated if
 #' several scan statistics (e.g. statistics from secondary clusters) are 
