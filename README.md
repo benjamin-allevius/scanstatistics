@@ -28,12 +28,21 @@ Scan statistics are used to detect anomalous clusters in spatial or space-time d
 Main functions
 --------------
 
+### Scan statistics
+
 -   **`scan_poisson`**: computes a scan statistic for data following a Poisson distribution.
 -   **`scan_negbin`**: computes a scan statistic for data following a negative binomial distribution.
 -   **`scan_zip`**: computes a scan statistic for data following a zero-inflated Poisson distribution.
+
+### Zone creation
+
 -   **`knn_zones`**: Creates a set of spatial *zones* (groups of locations) to scan for anomalies. Input is a matrix in which rows are the enumerated locations, and columns the \(k\) nearest neighbors. To create such a matrix, the following two functions are useful:
     -   **`coords_to_knn`**: use `stats::dist` to get the \(k\) nearest neighbors of each location into a format usable by `knn_zones`.
     -   **`dist_to_knn`**: use an already computed distance matrix to get the \(k\) nearest neighbors of each location into a format usable by `knn_zones`.
+-   **`flexible_zones`**: An alternative to `knn_zones` that uses the adjacency structure of locations to create a richer set of zones. The additional input is an adjacency matrix, but otherwise works as `knn_zones`.
+
+### Miscellaneous
+
 -   **`score_locations`**: Score each location by how likely it is to have an ongoing anomaly in it. This score is heuristically motivated, not theoretically so.
 -   **`top_clusters`**: Get the top \(k\) space-time clusters, either overlapping or non-overlapping in the spatial dimension.
 
@@ -78,6 +87,8 @@ ggplot() +
 ```
 
 ![](README_figures/unnamed-chunk-2-1.png)
+
+It should be noted that Cibola county was split from Valencia county in 1981, and cases in Cibola have been counted to Valencia in the data.
 
 ### Creating spatial zones
 

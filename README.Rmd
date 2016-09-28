@@ -40,12 +40,17 @@ data. The gist of the methodology, at least in this package, is this:
    
 ## Main functions
 
+### Scan statistics
+
 - __`scan_poisson`__: computes a scan statistic for data following a Poisson
                       distribution.
 - __`scan_negbin`__: computes a scan statistic for data following a negative 
                      binomial distribution.
 - __`scan_zip`__: computes a scan statistic for data following a zero-inflated 
                   Poisson distribution.
+
+### Zone creation                  
+
 - __`knn_zones`__: Creates a set of spatial _zones_ (groups of locations) to
                    scan for anomalies. Input is a matrix in which rows are the
                    enumerated locations, and columns the $k$ nearest neighbors.
@@ -56,6 +61,13 @@ data. The gist of the methodology, at least in this package, is this:
     + __`dist_to_knn`__: use an already computed distance matrix to get the
                          $k$ nearest neighbors of each location into a format 
                          usable by `knn_zones`.
+- __`flexible_zones`__: An alternative to `knn_zones` that uses the adjacency
+                        structure of locations to create a richer set of zones.
+                        The additional input is an adjacency matrix, but 
+                        otherwise works as `knn_zones`.
+
+### Miscellaneous                        
+
 - __`score_locations`__: Score each location by how likely it is to have an 
                          ongoing anomaly in it. This score is heuristically 
                          motivated, not theoretically so.
@@ -106,6 +118,9 @@ ggplot() +
             mapping = aes(x = long, y = lat, label = subregion)) +
   ggtitle("Counties of New Mexico")
 ```
+
+It should be noted that Cibola county was split from Valencia county in 1981, 
+and cases in Cibola have been counted to Valencia in the data.
 
 ### Creating spatial zones
 The anomalies considered in the _scanstatistics_ package have both a temporal 
