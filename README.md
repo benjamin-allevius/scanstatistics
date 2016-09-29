@@ -1,6 +1,6 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-[![Build Status](https://travis-ci.org/BenjaK/scanstatistics.svg?branch=master)](https://travis-ci.org/BenjaK/scanstatistics)
+[![Build Status](https://travis-ci.org/BenjaK/scanstatistics.svg?branch=master)](https://travis-ci.org/BenjaK/scanstatistics) [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/scanstatistics)](https://cran.r-project.org/package=scanstatistics)
 
 scanstatistics
 ==============

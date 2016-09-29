@@ -15,6 +15,7 @@ knitr::opts_chunk$set(fig.width=10, fig.height=6, fig.path="README_figures/")
 ```
 
 [![Build Status](https://travis-ci.org/BenjaK/scanstatistics.svg?branch=master)](https://travis-ci.org/BenjaK/scanstatistics)
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/scanstatistics)](https://cran.r-project.org/package=scanstatistics)
 
 # scanstatistics
 An R package for space-time anomaly detection using scan statistics.
