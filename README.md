@@ -1,6 +1,20 @@
 
+-   [scanstatistics](#scanstatistics)
+    -   [Installing the package](#installing-the-package)
+    -   [What are scan statistics?](#what-are-scan-statistics)
+    -   [Main functions](#main-functions)
+        -   [Scan statistics](#scan-statistics)
+        -   [Zone creation](#zone-creation)
+        -   [Miscellaneous](#miscellaneous)
+    -   [Example: Brain cancer in New Mexico](#example-brain-cancer-in-new-mexico)
+        -   [Creating spatial zones](#creating-spatial-zones)
+        -   [A scan statistic for Poisson data](#a-scan-statistic-for-poisson-data)
+        -   [A scan statistic for negative binomial data](#a-scan-statistic-for-negative-binomial-data)
+        -   [A scan statistic for zero-inflated Poisson data](#a-scan-statistic-for-zero-inflated-poisson-data)
+-   [References](#references)
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-[![Build Status](https://travis-ci.org/BenjaK/scanstatistics.svg?branch=master)](https://travis-ci.org/BenjaK/scanstatistics) [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/scanstatistics)](https://cran.r-project.org/package=scanstatistics)
+[![Build Status](https://travis-ci.org/BenjaK/scanstatistics.svg?branch=master)](https://travis-ci.org/BenjaK/scanstatistics) [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/scanstatistics)](https://cran.r-project.org/package=scanstatistics) [![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/scanstatistics)](http://cran.rstudio.com/web/packages/scanstatistics/index.html)
 
 scanstatistics
 ==============
@@ -10,7 +24,13 @@ An R package for space-time anomaly detection using scan statistics.
 Installing the package
 ----------------------
 
-To install the development version of this package, type the following:
+To install the latest (CRAN) release of this package, type the following:
+
+``` r
+install.packages("scanstatistics")
+```
+
+To install the development version of this package, type this instead:
 
 ``` r
 devtools::install_github("benjak/scanstatistics")
@@ -24,6 +44,8 @@ Scan statistics are used to detect anomalous clusters in spatial or space-time d
 1.  Monitor one or more data streams at multiple *locations* over intervals of time.
 2.  Form a set of space-time *clusters*, each consisting of (1) a collection of locations, and (2) an interval of time stretching from the present to some number of time periods in the past.
 3.  For each cluster, compute a statistic based on both the observed and the expected responses. Report the clusters with the largest statistics.
+
+My thesis, [available online](https://goo.gl/GdseSh), provides a deeper overview of scan statistics.
 
 Main functions
 --------------
@@ -49,7 +71,7 @@ Main functions
 Example: Brain cancer in New Mexico
 -----------------------------------
 
-To demonstrate the scan statistics in this package, we will use a dataset of the annual number of brain cancer cases in the counties of New Mexico, for the years \(1973-1991\). This data was studied by Kulldorff et al. (1998), who detected a cluster of cancer cases in the counties Los Alamos and Santa Fe during the years \(1986-1989\), though the excess of brain cancer in this cluster was not deemed statistically significant. The data originally comes from the package *rsatscan* (Kleinman 2015), which provides an interface to the program [SatScan](http://www.satscan.org), but it has been aggregated and extended for the *scanstatistics* package.
+To demonstrate the scan statistics in this package, we will use a dataset of the annual number of brain cancer cases in the counties of New Mexico, for the years \(1973-1991\). This data was studied by Kulldorff et al. (1998), who detected a cluster of cancer cases in the counties Los Alamos and Santa Fe during the years \(1986-1989\), though the excess of brain cancer in this cluster was not deemed statistically significant. The data originally comes from the package *rsatscan* (Kleinman 2015), which provides an interface to the program [SatScan™](http://www.satscan.org), but it has been aggregated and extended for the *scanstatistics* package.
 
 To get familiar with the counties of New Mexico, we begin by plotting them on a map using the data table `NM_map` which comes with the *scanstatistics* package:
 
@@ -113,15 +135,19 @@ The Poisson distribution is a natural first option when dealing with (practicall
 
 #### Theoretical motivation
 
-For the expectation-based Poisson scan statistic, the null hypothesis of no anomaly states that at each location \(i\) and duration \(t\), the observed count is Poisson-distributed with expected value \(\mu_{it}\): \[
- H_0 \! : Y_{it} \sim \textrm{Poisson}(\mu_{it}),
-\] for locations \(i=1,\ldots,m\) and durations \(t=1,\ldots,T\), with \(T\) being the maximum duration considered. Under the alternative hypothesis, there is a space-time cluster \(W\) consisting of a spatial zone \(Z \subset \{1,\ldots,m\}\) and a time window \(D = \{1, 2, \ldots, d\} \subseteq \{1,2,\ldots,T\}\) such that the counts in \(W\) have their expected values inflated by a factor \(q_W > 1\) compared to the null hypothesis: \[
-H_1 \! : Y_{it} \sim \textrm{Poisson}(q_W \mu_{it}), ~~(i,t) \in W.
-\] For locations and durations outside of this window, counts are assumed to be distributed as under the null hypothesis. Calculating the scan statistic then involves three steps:
+For the expectation-based Poisson scan statistic, the null hypothesis of no anomaly states that at each location \(i\) and duration \(t\), the observed count is Poisson-distributed with expected value μ<sub>\(it\)</sub>:
 
--   For each space-time window \(W\), find the maximum likelihood estimate of \(q_W\), treating all \(\mu_{it}\)'s as constants.
--   Plug the estimated \(q_W\) into (the logarithm of) a likelihood ratio with the likelihood of the alternative hypothesis in the numerator and the likelihood under the null hypothesis (in which \(q_W=1\)) in the denominator, again for each \(W\).
--   Take the scan statistic as the maximum of these likelihood ratios, and the corresponding window \(W^*\) as the most likely cluster (MLC).
+![PoissonH0](http://quicklatex.com/cache3/4f/ql_f1cf1f5f0b5e44e9eb151e3ee945354f_l3.png)
+
+for locations \(i=1,...,m\) and durations \(t=1,...,T\), with \(T\) being the maximum duration considered. Under the alternative hypothesis, there is a space-time cluster \(W\) consisting of a spatial zone \(Z\) ⊂{1,...,\(m\)} and a time window \(D\) = {1,2,...,d} ⊆ {1,2,...,\(T\)} such that the counts in \(W\) have their expected values inflated by a factor \(q\)<sub>\(W\)</sub> &gt; 1 compared to the null hypothesis:
+
+![PoissonH1](http://quicklatex.com/cache3/ef/ql_b57728d8c880c61acf8037be2baa02ef_l3.png)
+
+For locations and durations outside of this window, counts are assumed to be distributed as under the null hypothesis. Calculating the scan statistic then involves three steps:
+
+-   For each space-time window \(W\), find the maximum likelihood estimate of \(q\)<sub>\(W\)</sub>, treating all μ<sub>\(it\)</sub>'s as constants.
+-   Plug the estimated \(q\)<sub>\(W\)</sub> into (the logarithm of) a likelihood ratio with the likelihood of the alternative hypothesis in the numerator and the likelihood under the null hypothesis (in which \(q\)<sub>\(W\)</sub> = 1) in the denominator, again for each \(W\).
+-   Take the scan statistic as the maximum of these likelihood ratios, and the corresponding window \(W\)<sup>\*</sup> as the most likely cluster (MLC).
 
 #### Using the Poisson scan statistic
 
@@ -137,7 +163,7 @@ tab[, duration := max(year) - year + 1]
 tab[, location := county]
 ```
 
-We still need to add the column 'mu', which should hold the predicted Poisson expected value parameter \(\mu_{it}\) for each location \(i\) and time interval \(t\). In this example we would like to detect a potential cluster of brain cancer in the counties of New Mexico during the years \(1986-1989\). Thus, we will use data from the years prior to 1986 to estimate the Poisson parameter for all counties in the years following. A simple generalized linear model (GLM) with a linear time trend and an offset for county population size will suffice to demonstrate the scan statistic. We fit such a model and create the needed column as follows:
+We still need to add the column 'mu', which should hold the predicted Poisson expected value parameter μ<sub>\(it\)</sub> for each location \(i\) and time interval \(t\). In this example we would like to detect a potential cluster of brain cancer in the counties of New Mexico during the years \(1986-1989\). Thus, we will use data from the years prior to 1986 to estimate the Poisson parameter for all counties in the years following. A simple generalized linear model (GLM) with a linear time trend and an offset for county population size will suffice to demonstrate the scan statistic. We fit such a model and create the needed column as follows:
 
 ``` r
 mod_poisson <- glm(count ~ offset(log(population)) + 1 + I(year - 1985), 
@@ -244,11 +270,11 @@ top5
 
 ### A scan statistic for negative binomial data
 
-For count data with overdispersion, the *scanstatistics* package provides the function `scan_negbin`, which is the expectation-based scan statistic invented by Tango, Takahashi, and Kohriyama (2011). This scan statistic assumes that the data follows a negative binomial distribution parametrized by its expected value \(\mu\) and a parameter \(\theta\) such that a count \(Y\) has variance \(\text{Var}(Y) = \mu + \mu^2 / \theta\). The parameters \(\mu\) and \(\theta\) may vary over both location and time.
+For count data with overdispersion, the *scanstatistics* package provides the function `scan_negbin`, which is the expectation-based scan statistic invented by Tango, Takahashi, and Kohriyama (2011). This scan statistic assumes that the data follows a negative binomial distribution parametrized by its expected value μ and a parameter θ such that a count \(Y\) has variance Var(\(Y\)) = μ + μ<sup>2</sup> / θ. The parameters μ and θ may vary over both location and time.
 
 #### Theoretical motivation
 
-The negative binomial scan statistic comes in two versions, each with a different assumption of how an anomaly with manifest in the data. The first version makes the same assumption as the Poisson scan statistic in the previous section: an anomaly that occurs in a space-time window \(W\) will have the effect of increasing the expected value of the counts in that window by a factor \(q_W>1\) in comparison to what was predicted. This factor \(q_W\) is the same for all locations in \(W\) and constant over time. In the second version of the scan statistic, the factor \(q_W\) increases monotonically over time. The null and alternative hypotheses are otherwise as for the Poisson scan statistic, except that the negative binomial distribution is used instead. Further, the scan statistic is calculated using the score and Fisher information rather than a likelihood ratio.
+The negative binomial scan statistic comes in two versions, each with a different assumption of how an anomaly with manifest in the data. The first version makes the same assumption as the Poisson scan statistic in the previous section: an anomaly that occurs in a space-time window \(W\) will have the effect of increasing the expected value of the counts in that window by a factor \(q\)<sub>\(W\)</sub> &gt; 1 in comparison to what was predicted. This factor \(q\)<sub>\(W\)</sub> is the same for all locations in \(W\) and constant over time. In the second version of the scan statistic, the factor \(q\)<sub>\(W\)</sub> increases monotonically over time. The null and alternative hypotheses are otherwise as for the Poisson scan statistic, except that the negative binomial distribution is used instead. Further, the scan statistic is calculated using the score and Fisher information rather than a likelihood ratio.
 
 #### Using the negative binomial scan statistic
 
@@ -306,11 +332,11 @@ The cluster found here consists of Chaves county in the years 1988-1989, which w
 
 ### A scan statistic for zero-inflated Poisson data
 
-For zero-inflated count data, the *scanstatistics* package provides the function `scan_zip`, which an expectation-based scan statistic for zero-inflated Poisson (ZIP) data devised by Kjellson (2015). The ZIP distribution is parametrized by the expected value \(\mu\) of the Poisson component and the probability \(p\) of a structural zero.
+For zero-inflated count data, the *scanstatistics* package provides the function `scan_zip`, which an expectation-based scan statistic for zero-inflated Poisson (ZIP) data devised by Kjellson (2015). The ZIP distribution is parametrized by the expected value μ of the Poisson component and the probability \(p\) of a structural zero.
 
 #### Theoretical motivation
 
-The ZIP scan statistic makes a similar assumtion regarding outbreaks as the Poisson scan statistic does: an anomaly that occurs in a space-time window \(W\) will have the effect of increasing the Poisson expected value parameter of the counts in that window by a factor \(q_W>1\) in comparison to what was predicted. This factor \(q_W\) is the same for all locations in \(W\) and constant over the duration of the anomaly. For all windows \(W\) considered, \(q_W\) is estimated using the EM algorithm and a likelihood ratio statistic is computed. The scan statistic is the maximum of these statistics over all windows \(W\).
+The ZIP scan statistic makes a similar assumtion regarding outbreaks as the Poisson scan statistic does: an anomaly that occurs in a space-time window \(W\) will have the effect of increasing the Poisson expected value parameter of the counts in that window by a factor \(q\)<sub>\(W\)</sub> &gt;1 in comparison to what was predicted. This factor \(q\)<sub>\(W\)</sub> is the same for all locations in \(W\) and constant over the duration of the anomaly. For all windows \(W\) considered, \(q\)<sub>\(W\)</sub> is estimated using the EM algorithm and a likelihood ratio statistic is computed. The scan statistic is the maximum of these statistics over all windows \(W\).
 
 #### Using the ZIP scan statistic
 
@@ -351,7 +377,7 @@ The zero-inflated Poisson statistic finds the same cluster as Kulldorff et al. (
 References
 ==========
 
-Kjellson, Benjamin. 2015. “Spatiotemporal Outbreak Detection: A Scan Statistic Based on the Zero-Inflated Poisson Distribution.” Master’s thesis, Sweden: Stockholm University, Division of Mathematical Statistics.
+Kjellson, Benjamin. 2015. “Spatiotemporal Outbreak Detection: A Scan Statistic Based on the Zero-Inflated Poisson Distribution.” Master’s thesis, Sweden: Stockholm University, Division of Mathematical Statistics. <https://goo.gl/GdseSh>.
 
 Kleinman, Ken. 2015. *Rsatscan: Tools, Classes, and Methods for Interfacing with SaTScan Stand-Alone Software*. <https://CRAN.R-project.org/package=rsatscan>.
 
