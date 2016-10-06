@@ -378,7 +378,7 @@ The zero-inflated Poisson statistic finds the same cluster as Kulldorff et al. (
 Feedback
 ========
 
-If you think this package lacks some functionality, or that something needs better documentation, I happily accept feedback either here at GitHub or via email at <benjak@math.su.se>. I'm also very interested applying the methods in this package (current and future) to new problems, so if you know of any suitable public datasets, please tell me! A dataset with a multivariate response (e.g. multiple counter variables) would be of particular interest for some of the scan statistics that will appear in future versions of the package.
+If you think this package lacks some functionality, or that something needs better documentation, I happily accept feedback either here at GitHub or via email at <benjak@math.su.se>. I'm also very interested in applying the methods in this package (current and future) to new problems, so if you know of any suitable public datasets, please tell me! A dataset with a multivariate response (e.g. multiple counter variables) would be of particular interest for some of the scan statistics that will appear in future versions of the package.
 
 References
 ==========
