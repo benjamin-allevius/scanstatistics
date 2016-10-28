@@ -2,7 +2,7 @@
 #   partition_zones
 #   zone_apply
 #   join_zones
-#   zone_table_creator
+#   create_zone_table
 #   get_zone
 #   powerset_zones
 
@@ -93,7 +93,7 @@ partition_zones <- function(zones, n_parts = min(10L, length(zones))) {
 #           .combine = rbind,
 #           .packages = c("data.table", "magrittr")) %do% {
 #     locations <- unique(unlist(zones_in_part))
-#     zone_table <- zone_table_creator(zones_in_part, 
+#     zone_table <- create_zone_table(zones_in_part, 
 #                                      keys = c("location"), 
 #                                      offset = offset)
 #     merge(location_table[location %in% locations, ],
@@ -115,7 +115,7 @@ partition_zones <- function(zones, n_parts = min(10L, length(zones))) {
 #' a column for zone added to the columns in the supplied table, 
 #' according to the zones in the supplied list of zones.
 #' The key colums of the resulting \code{data.table} can be specified.
-#' @param locations_etc A \code{data.table} with column \code{location}
+#' @param table A \code{data.table} with column \code{location}
 #'    and other columns (but none for \code{zone}).
 #' @param zones A list of zones, elements being vectors of locations.
 #' @param keys Character vector of one or more column names; these columns
@@ -124,13 +124,15 @@ partition_zones <- function(zones, n_parts = min(10L, length(zones))) {
 #'    to the supplied table of locations etc. (not modified).
 #' @examples
 #' \dontrun{
-#' locs_etc <- table_creator(list(location = 1:2, duration = 1:3, stream = 1:2))
+#' locs_etc <- as.data.table(expand.grid(location = 1:2, 
+#'                                       duration = 1:3, 
+#'                                       stream = 1:2))
 #' join_zones(locs_etc, list(1, 2, 1:2), keys = c("duration", "zone"))
 #' }
 #' @keywords internal
-join_zones <- function(locations_etc, zones, keys = c("zone")) {
-  zone_table_creator(zones, keys = "location")[
-    locations_etc, allow.cartesian = TRUE][, .SD, keyby = keys]
+join_zones <- function(table, zones, keys = c("zone")) {
+  create_zone_table(zones, keys = "location")[
+    table, allow.cartesian = TRUE][, .SD, keyby = keys]
 }
 
 #' Converts a list of zones to a \code{data.table} of zones and locations.
@@ -147,15 +149,15 @@ join_zones <- function(locations_etc, zones, keys = c("zone")) {
 #'    \code{offset} + 1.
 #' @examples 
 #' \dontrun{
-#' zone_table_creator(list(1L, 2L, 1:2))
-#' zone_table_creator(sets::set(sets::set(1L), 
+#' create_zone_table(list(1L, 2L, 1:2))
+#' create_zone_table(sets::set(sets::set(1L), 
 #'                      sets::set(2L), sets::as.set(1:2)))
-#' zone_table_creator(list(1L, 2L, 1:2), keys = "location")
-#' zone_table_creator(list(1L, 2L, 1:2), keys = "zone")
-#' zone_table_creator(list(a = "x", b = "y", c = c("x", "y")))
+#' create_zone_table(list(1L, 2L, 1:2), keys = "location")
+#' create_zone_table(list(1L, 2L, 1:2), keys = "zone")
+#' create_zone_table(list(a = "x", b = "y", c = c("x", "y")))
 #' }
 #' @keywords internal
-zone_table_creator <- function(zones, keys = NULL, offset = 0L) {
+create_zone_table <- function(zones, keys = NULL, offset = 0L) {
   zone_names <- names(zones)
   if (is.null(zone_names)) {
     zone_names <- seq_along(zones) + offset
