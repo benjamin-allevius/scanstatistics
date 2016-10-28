@@ -110,7 +110,7 @@ partition_zones <- function(zones, n_parts = min(10L, length(zones))) {
 #' Creates a new \code{data.table} from a table containing locations,
 #' adding a column for zone.
 #' 
-#' Takes a \code{data.table} with containing column \code{location} and 
+#' Takes a \code{data.table} containing the column \code{location} and 
 #' possibly other columns, and creates a new \code{data.table} with 
 #' a column for zone added to the columns in the supplied table, 
 #' according to the zones in the supplied list of zones.
