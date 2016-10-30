@@ -195,12 +195,6 @@ get_zone <- function(n, zones) {
 #' @importFrom utils combn
 #' @keywords internal
 powerset_zones <- function(n) {
-  zones <- sets::set()
-  for (k in 1:n) {
-    ss <- combn(1:n, k)
-    for (j in 1:ncol(ss)) {
-      zones <- sets::set_union(zones, sets::set(sets::as.set(ss[, j])))
-    }
-  }
+  zones <- sets::set_power(seq_len(n)) - sets::set(sets::as.set(integer(0)))
   lapply(zones, FUN = function(x) unlist(as.list(x)))
 }
