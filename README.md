@@ -72,7 +72,7 @@ Main functions
 Example: Brain cancer in New Mexico
 -----------------------------------
 
-To demonstrate the scan statistics in this package, we will use a dataset of the annual number of brain cancer cases in the counties of New Mexico, for the years 1973-1991. This data was studied by Kulldorff et al. (1998), who detected a cluster of cancer cases in the counties Los Alamos and Santa Fe during the years 1986-1989, though the excess of brain cancer in this cluster was not deemed statistically significant. The data originally comes from the package *rsatscan* (Kleinman 2015), which provides an interface to the program [SatScan™](http://www.satscan.org), but it has been aggregated and extended for the *scanstatistics* package.
+To demonstrate the scan statistics in this package, we will use a dataset of the annual number of brain cancer cases in the counties of New Mexico, for the years 1973-1991. This data was studied by Kulldorff et al. (1998), who detected a cluster of cancer cases in the counties Los Alamos and Santa Fe during the years 1986-1989, though the excess of brain cancer in this cluster was not deemed statistically significant. The data originally comes from the package *rsatscan* (Kleinman 2015), which provides an interface to the program [SaTScan™](http://www.satscan.org), but it has been aggregated and extended for the *scanstatistics* package.
 
 To get familiar with the counties of New Mexico, we begin by plotting them on a map using the data table `NM_map` which comes with the *scanstatistics* package:
 
@@ -385,11 +385,11 @@ References
 
 Kjellson, Benjamin. 2015. “Spatiotemporal Outbreak Detection: A Scan Statistic Based on the Zero-Inflated Poisson Distribution.” Master’s thesis, Sweden: Stockholm University, Division of Mathematical Statistics. <https://goo.gl/GdseSh>.
 
-Kleinman, Ken. 2015. *Rsatscan: Tools, Classes, and Methods for Interfacing with SaTScan Stand-Alone Software*. <https://CRAN.R-project.org/package=rsatscan>.
+Kleinman, Ken. 2015. *Rsatscan: Tools, Classes, and Methods for Interfacing with Satscan Stand-Alone Software*. <https://CRAN.R-project.org/package=rsatscan>.
 
 Kulldorff, Martin, William F. Athas, Eric J. Feuer, Barry A. Miller, and Charles R. Key. 1998. “Evaluating Cluster Alarms: A Space-Time Scan Statistic and Brain Cancer in Los Alamos.” *American Journal of Public Health* 88 (9): 1377–80.
 
-Neill, Daniel B., Andrew W. Moore, Maheshkumar Sabhnani, and Kenny Daniel. 2005. “Detection of Emerging Space-Time Clusters.” In *Proceedings of the Eleventh ACM SIGKDD International Conference on Knowledge Discovery in Data Mining*, 218–27. ACM.
+Neill, Daniel B., Andrew W. Moore, Maheshkumar Sabhnani, and Kenny Daniel. 2005. “Detection of Emerging Space-Time Clusters.” In *Proceedings of the Eleventh Acm Sigkdd International Conference on Knowledge Discovery in Data Mining*, 218–27. ACM.
 
 Tango, Toshiro, Kunihiko Takahashi, and Kazuaki Kohriyama. 2011. “A Space-Time Scan Statistic for Detecting Emerging Outbreaks.” *Biometrics* 67 (1): 106–15.
 

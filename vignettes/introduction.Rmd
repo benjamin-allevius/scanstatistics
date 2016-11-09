@@ -70,7 +70,7 @@ cancer cases in the counties Los Alamos and Santa Fe during the years
 1986-1989, though the excess of brain cancer in this cluster was not deemed
 statistically significant. The data originally comes from the package _rsatscan_ 
 [@rsatscan], which provides an interface to the program 
-[SatScan](http://www.satscan.org), but it has been aggregated and extended for 
+[SaTScan](http://www.satscan.org), but it has been aggregated and extended for 
 the _scanstatistics_ package.
 
 To get familiar with the counties of New Mexico, we begin by plotting them on a 
