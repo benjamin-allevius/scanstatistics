@@ -57,10 +57,10 @@ test_that("k_nearest_neighbors: returns correct order", {
 
 
 test_that("closest_subsets: returns correct sets", {
-  expres <- sets::set(sets::as.set(1L),
+  expres <- lapply(sets::set(sets::as.set(1L),
                       sets::as.set(1:2),
                       sets::as.set(1:3),
-                      sets::as.set(1:4))
+                      sets::as.set(1:4)), as.integer)
   expect_equal(closest_subsets(1:4), expres)
 })
 
@@ -71,7 +71,7 @@ test_that("knn_zones: returns correct sets", {
                  c(4L, 1L, 2L, 3L, 5L),
                  c(5L, 3L, 4L, 2L, 1L)),
                ncol = 5, byrow = TRUE)
-  regs <- sets::set(sets::as.set(1L),
+  zones <- sets::set(sets::as.set(1L),
                     sets::as.set(2L),
                     sets::as.set(3L),
                     sets::as.set(4L),
@@ -80,8 +80,10 @@ test_that("knn_zones: returns correct sets", {
                     sets::as.set(c(3L, 2L)),
                     sets::as.set(c(4L, 1L)),
                     sets::as.set(c(5L, 3L)))
-  regs <- lapply(regs, function(x) unlist(as.list(x)))
-  expect_equal(knn_zones(nn[, 1:2]), regs)
+  res <- knn_zones(nn[, 1:2])
+  expect_length(res, length(zones))
+  res <- sets::as.set(lapply(res, sets::as.set))
+  expect_equal(res, zones)
 })
 
 # Flexible zone shape (Tango 2005) -------------------------------------------
@@ -102,7 +104,7 @@ test_that("flexible_zones: works", {
                  5,4,6,1,3,2,
                  6,5,4,1,3,2)),
                nrow = 6, byrow = TRUE)
-  tru <- sets::set(sets::set(1L),
+  zones <- sets::set(sets::set(1L),
                          sets::set(2L),
                          sets::set(3L),
                          sets::set(4L),
@@ -112,8 +114,10 @@ test_that("flexible_zones: works", {
                          sets::set(2L, 3L),
                          sets::set(4L, 5L),
                          sets::set(1L, 2L, 3L))
-  tru <- lapply(tru, FUN = function(x) unlist(as.list(x)))
-  expect_equal(flexible_zones(kn, A), tru)
+  res <- flexible_zones(kn, A)
+  expect_length(res, length(zones))
+  res <- sets::as.set(lapply(res, sets::as.set))
+  expect_equal(res, zones)
 })
 
 test_that("connected_neighbors: works", {
