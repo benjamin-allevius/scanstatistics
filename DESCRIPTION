@@ -18,6 +18,7 @@ Depends:
     data.table,
     R (>= 2.10)
 Imports:
+    digest,
     gamlss.dist, 
     magrittr,
     plyr,
