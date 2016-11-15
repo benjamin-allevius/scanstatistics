@@ -140,3 +140,21 @@ get_set <- function(set_of_sets, index) {
     i <- i + 1
   }
 }
+
+#' Remove duplicates from a list of integer vectors.
+#' 
+#' Remove duplicates from a list of integer vectors.
+#' @param x A list of integer vectors.
+#' @return A list of integer vectors; the same as input \code{x} but with 
+#'    duplicates removed. The returned list is not named.
+#' @importFrom digest digest
+#' @keywords internal
+remove_intlist_duplicates <- function(x) {
+  idx_keep <- x %>%
+    vapply(digest, character(1), algo = "md5") %>%
+    as.data.table() %>%
+    .[, list(list(.I)), by = .] %>%
+    .[, vapply(V1, function(x) x[1], integer(1))]
+  
+  unname(lapply(x[idx_keep], as.integer))
+}

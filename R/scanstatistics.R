@@ -65,6 +65,7 @@ globalVariables(c(
   "timesum",
   "total_score",
   "totalsum",
+  "V1",
   "variance",
   "W",
   "zone",  
