@@ -1,0 +1,12 @@
+NOTE TO SELF: be sure to keep the three references.bib listed below identical.
+ISSUE: pkgdown moves README.Rmd, vignettes/*.Rmd, and vignettes/articles/*.Rmd 
+to docs/, and expects the same relative paths for the references.bib file to 
+hold. They do not. As a workaround, I have put the references.bib file in three 
+places:
+./references.bib
+./vignettes/references.bib
+./docs/references.bib
+A fourth one is automatically copied by pkgdown (when running 
+pkgdown::build_site()) to ./docs/articles/references.bib.
+
+

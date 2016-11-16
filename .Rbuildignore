@@ -12,3 +12,4 @@ vignettes/introduction_files/*
 vignettes/articles/*
 cran-comments\.md
 ^docs/*
+NOTES.txt

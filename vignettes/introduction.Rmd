@@ -3,7 +3,7 @@ title: "Introduction to scanstatistics"
 author: "Benjamin Kjellson"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
-bibliography: ~/Dropbox/my-R-packages/scanstatistics/references.bib
+bibliography: references.bib
 vignette: >
   %\VignetteIndexEntry{Introduction to scanstatistics}
   %\VignetteEngine{knitr::rmarkdown}

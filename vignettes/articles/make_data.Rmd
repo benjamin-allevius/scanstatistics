@@ -9,7 +9,7 @@ output:
     fig_height: 5
     toc: true
     toc_depth: 3
-bibliography: ~/Dropbox/my-R-packages/scanstatistics/references.bib
+bibliography: ../references.bib
 ---
 
 ## Process the brain cancer data
