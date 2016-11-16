@@ -2,7 +2,7 @@
 output: 
   github_document:
     toc: true
-bibliography: references.bib
+bibliography: ~/Dropbox/my-R-packages/scanstatistics/references.bib
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->

@@ -9,7 +9,7 @@ output:
     fig_height: 5
     toc: true
     toc_depth: 3
-bibliography: references.bib
+bibliography: ~/Dropbox/my-R-packages/scanstatistics/references.bib
 ---
 
 ## Process the brain cancer data
@@ -42,7 +42,7 @@ package for its calculations, and the main argument to all `scan_` functions
 will be data tables. Therefore, we convert the data frames to data tables 
 straight away as we load it:
 
-```{r, cache=FALSE}
+```{r, cache=TRUE}
 library(rsatscan)
 library(data.table)
 
@@ -52,7 +52,7 @@ NM_cas <- as.data.table(NMcas)
 
 To get more familiar with the counties of New Mexico, let's plot them on a map:
 
-```{r, cache=FALSE}
+```{r, cache=TRUE}
 library(ggplot2)
 
 # Grab polygon data for plotting
@@ -90,7 +90,7 @@ Thus we will make the county names into a factor variable, which are integer
 vectors with additional attributes. All levels of the factor should also be
 present in the data.
 
-```{r, cache=FALSE}
+```{r, cache=TRUE}
 library(magrittr)
 library(stringr)
 library(plyr, warn.conflicts = FALSE)
@@ -137,7 +137,7 @@ Kudos to Cory Nissen for
 [this blogpost](http://blog.corynissen.com/2015/01/using-rvest-to-scrape-html-table.html), 
 which shows how to fetch data from a table on Wikipedia.
 
-```{r, cache=FALSE}
+```{r, cache=TRUE}
 library(rvest)
 
 # Grab the table from Wikipedia
@@ -181,7 +181,7 @@ timepoints with zero counts must be filled in as such, and not left out.
 Thus, we will add the needed zeros to the case data. We will only consider the 
 total number of cancer cases in each county and year, so we also take the 
 oppotunity to aggregate the case counts over each age group and sex:
-```{r, cache=FALSE}
+```{r, cache=TRUE}
 # Aggregate population and cases over sex and age group
 NM_cas <- NM_cas[, .(count = sum(cases)), by = .(year, county)]
 NM_pop <- NM_pop[, .(population = sum(population)), by = .(year, county)]
@@ -221,7 +221,7 @@ sex, and then aggregate over the latter two categories in the hope that this
 would cancel out the errors made in each interpolation. However, this seems to
 lead to some unreasonable year-to-year population changes for some of the 
 counties.
-```{r, cache=FALSE}
+```{r, cache=TRUE}
 NM_pop[, population := as.numeric(population)]
 
 # Interpolate county populations
@@ -237,7 +237,7 @@ for (s in counties) {
 
 Finally, we join the population and case tables and plot how the number of
 cases evolve in each county over the years:
-```{r, cache=FALSE}
+```{r, cache=TRUE}
 NM_popcas <- merge(NM_pop, NM_cas)
 setkeyv(NM_popcas, c("county", "year"))
 
