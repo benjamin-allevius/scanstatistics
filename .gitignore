@@ -12,3 +12,5 @@ man/*.Rd
 README_cache/
 README_figures/
 vignettes/*.html
+vignettes/articles/make_data_cache/*
+docs/*
