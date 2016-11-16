@@ -10,6 +10,6 @@ inst/doc
 man/*.Rd
 .Rproj.user
 README_cache/
-vignettes/*.html
-vignettes/articles/make_data_cache/*
-docs/
+docs/README_cache/
+docs/articles/articles/make_data_cache/
+vignettes/articles/make_data_cache/
