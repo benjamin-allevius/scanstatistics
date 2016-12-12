@@ -367,8 +367,6 @@ zip_statistic_factor <- function(p, d, mu, y, tol = 1e-08) {
 #'    parameters corresponding to each count. Of same length as \code{p}.
 #' @param y An integer vector of the observed counts, of same length as 
 #'    \code{p}.
-#' @param d_init A scalar between 0 and 1. The initial guess for the estimate of 
-#'    the excess zero indicator.
 #' @param tol A scalar between 0 and 1. It is the absolute tolerance criterion
 #'    for the estimate of the excess zero indicator; convergence is reached when
 #'    two successive elements in the sequence of estimates have an absolute 
@@ -379,8 +377,8 @@ zip_statistic_factor <- function(p, d, mu, y, tol = 1e-08) {
 #'   \item{dstar}{Estimates of the excess zero indicator variables.}
 #' }
 #' @keywords internal
-zip_em_estimates <- function(p, mu, y, d_init = 0.5, tol = 0.01) {
-  d_prev <- ifelse(y > 0, rep(0, length(y)), rep(d_init, length(y)))
+zip_em_estimates <- function(p, mu, y, tol = 0.01) {
+  d_prev <- estimate_d(p, mu, y)
   q <- estimate_zip_relrisk(d_prev, mu, y)
   d <- estimate_d(p, q * mu, y)
   
