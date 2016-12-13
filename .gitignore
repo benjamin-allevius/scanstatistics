@@ -7,7 +7,6 @@ src/*.o
 src/*.so
 src/*.dll
 inst/doc
-man/*.Rd
 .Rproj.user
 README_cache/
 docs/README_cache/
