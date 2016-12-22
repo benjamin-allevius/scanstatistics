@@ -287,7 +287,11 @@ zip_calculations <- function(table, zones, ...) {
 #' @return A scalar, the estimated relative risk.
 #' @keywords internal
 estimate_zip_relrisk <- function(d, mu, y) {
-  max(1, sum(y * (1 - d)) / sum(mu * (1 - d)))
+  if (all(d == 1)) {
+    return(1)
+  } else {
+    return(max(1, sum(y * (1 - d)) / sum(mu * (1 - d))))
+  }
 }
 
 #' Estimate the indicators of excess zeros for a ZIP distribution.

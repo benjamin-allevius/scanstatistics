@@ -130,6 +130,12 @@ test_that("zip_mcsim", {
   # expect_true(!any(actual < 0))
 })
 
+test_that("estimate_zip_relrisk", {
+  expect_equal(estimate_zip_relrisk(1, 5, 0), 1)
+  expect_equal(estimate_zip_relrisk(1, 5, 6), 1)
+  expect_equal(estimate_zip_relrisk(rep(1, 5), 1:5, 5:1), 1)
+})
+
 # test_that("zip_scanstatistic", {
 #   table <- create_table(list(location = 1:2, duration = 1:3), 
 #                         keys = c("location", "duration"))
