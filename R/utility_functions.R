@@ -158,3 +158,8 @@ remove_intlist_duplicates <- function(x) {
   
   unname(lapply(x[idx_keep], as.integer))
 }
+
+# Clean up when package is unloaded.
+.onUnload <- function (libpath) {
+  library.dynam.unload("scanstatistics", libpath)
+}

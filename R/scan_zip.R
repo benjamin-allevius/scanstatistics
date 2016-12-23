@@ -274,137 +274,137 @@ zip_calculations <- function(table, zones, ...) {
 
 # Functions with scalar/vector input -------------------------------------------
 
-#' Estimate the relative risk for an outbreak using a ZIP distribution.
-#' 
-#' Scalar estimate of the relative risk \eqn{q} for zero-inflated Poisson data.
-#' @param d A vector of indicator variables for whether the corresponding count
-#'    in the argument \code{y} is an excess zero or not. Can also be estimates 
-#'    of these indicators.
-#' @param mu A vector of given/estimated Poisson expected value parameters, of 
-#'    same length as \code{d}.
-#' @param y An integer vector of the observed counts, of same length as 
-#'    \code{d}.
-#' @return A scalar, the estimated relative risk.
-#' @keywords internal
-estimate_zip_relrisk <- function(d, mu, y) {
-  if (all(d == 1)) {
-    return(1)
-  } else {
-    return(max(1, sum(y * (1 - d)) / sum(mu * (1 - d))))
-  }
-}
+# #' Estimate the relative risk for an outbreak using a ZIP distribution.
+# #' 
+# #' Scalar estimate of the relative risk \eqn{q} for zero-inflated Poisson data.
+# #' @param d A vector of indicator variables for whether the corresponding count
+# #'    in the argument \code{y} is an excess zero or not. Can also be estimates 
+# #'    of these indicators.
+# #' @param mu A vector of given/estimated Poisson expected value parameters, of 
+# #'    same length as \code{d}.
+# #' @param y An integer vector of the observed counts, of same length as 
+# #'    \code{d}.
+# #' @return A scalar, the estimated relative risk.
+# #' @keywords internal
+# estimate_zip_relrisk <- function(d, mu, y) {
+#   if (all(d == 1)) {
+#     return(1)
+#   } else {
+#     return(max(1, sum(y * (1 - d)) / sum(mu * (1 - d))))
+#   }
+# }
 
-#' Estimate the indicators of excess zeros for a ZIP distribution.
-#' 
-#' Given counts and (estimated) Poisson expected value parameters and excess 
-#' zero probabilities, this function estimates the indicator variable for an 
-#' excess zero, for each count.
-#' @param p A numeric vector, each element being the given/estimated 
-#'    probability of an excess zero for the corresponding count in \code{y}.
-#' @param mu A numeric vector, each element being the given/estimated Poisson 
-#'    expected value parameter for the corresponding count in \code{y}. Of same 
-#'    length as \code{p}.
-#' @param y An integer vector containing the observed counts. Of same length as 
-#'    \code{p}.
-#' @return A numeric vector, of same length as the input vector \code{p}.
-#' @keywords internal
-estimate_d <- function(p, mu, y) {
-  d <- rep(0, length(y))
-  zero <- y == 0L
-  d[zero] <- p[zero] / (p[zero] + (1 - p[zero]) * exp(-mu[zero]))
-  d
-}
+# #' Estimate the indicators of excess zeros for a ZIP distribution.
+# #' 
+# #' Given counts and (estimated) Poisson expected value parameters and excess 
+# #' zero probabilities, this function estimates the indicator variable for an 
+# #' excess zero, for each count.
+# #' @param p A numeric vector, each element being the given/estimated 
+# #'    probability of an excess zero for the corresponding count in \code{y}.
+# #' @param mu A numeric vector, each element being the given/estimated Poisson 
+# #'    expected value parameter for the corresponding count in \code{y}. Of same 
+# #'    length as \code{p}.
+# #' @param y An integer vector containing the observed counts. Of same length as 
+# #'    \code{p}.
+# #' @return A numeric vector, of same length as the input vector \code{p}.
+# #' @keywords internal
+# estimate_d <- function(p, mu, y) {
+#   d <- rep(0, length(y))
+#   zero <- y == 0L
+#   d[zero] <- p[zero] / (p[zero] + (1 - p[zero]) * exp(-mu[zero]))
+#   d
+# }
 
-#' Calculate a term in the sum of the logarithm of the ZIP window statistic.
-#' 
-#' This function calculates a term which appears in the sum of the logarithm of
-#' the zero-inflated Poisson statistic for a given space-time window.
-#' @param q Scalar; the relative risk.
-#' @param p Numeric vector of excess zero probabilities.
-#' @param dstar Numeric vector of estimates of the excess zero indicators, under 
-#'    the alternative hypothesis of an outbreak. Of same length as \code{p}.
-#' @param ddagger Numeric vector of estimates of the excess zero indicators, 
-#'    under the null hypothesis of no outbreak. Of same length as \code{p}.
-#' @param mu Numeric vector of given/estimated Poisson expected value 
-#'    parameters. Of same length as \code{p}.
-#' @param y Integer vector of observed counts. Of same length as \code{p}.
-#' @return A numeric vector of same length as input vector \code{p}.
-#' @keywords internal
-zip_statistic_term <- function(q, p, dstar, ddagger, mu, y) {
-  zip_statistic_factor(p, dstar, q * mu, y) - 
-    zip_statistic_factor(p, ddagger, mu, y)
-}
+# #' Calculate a term in the sum of the logarithm of the ZIP window statistic.
+# #' 
+# #' This function calculates a term which appears in the sum of the logarithm of
+# #' the zero-inflated Poisson statistic for a given space-time window.
+# #' @param q Scalar; the relative risk.
+# #' @param p Numeric vector of excess zero probabilities.
+# #' @param dstar Numeric vector of estimates of the excess zero indicators, under 
+# #'    the alternative hypothesis of an outbreak. Of same length as \code{p}.
+# #' @param ddagger Numeric vector of estimates of the excess zero indicators, 
+# #'    under the null hypothesis of no outbreak. Of same length as \code{p}.
+# #' @param mu Numeric vector of given/estimated Poisson expected value 
+# #'    parameters. Of same length as \code{p}.
+# #' @param y Integer vector of observed counts. Of same length as \code{p}.
+# #' @return A numeric vector of same length as input vector \code{p}.
+# #' @keywords internal
+# zip_statistic_term <- function(q, p, dstar, ddagger, mu, y) {
+#   zip_statistic_logfactor(p, dstar, q * mu, y) - 
+#     zip_statistic_logfactor(p, ddagger, mu, y)
+# }
 
-#' Factor(s) in the product of the EB-ZIP window statistic.
-#' 
-#' Computes one or more factors in the product of the numerator or denominator
-#' of the EB-ZIP window statistic (i.e. the one calculated for a given 
-#' space-time window W). Should be able to handle cases where p = 0.
-#' @param p Numeric vector of excess zero probabilities.
-#' @param d Numeric vector of estimates of the excess zero indicators. Of same 
-#'    length as \code{p}.
-#' @param mu Numeric vector of given/estimated Poisson expected value 
-#' parameters. Of same length as \code{p}.
-#' @param y Integer vector of observed counts. Of same length as \code{p}.
-#' @param tol Scalar; probability p below this is considered equal to zero.
-#' @return A numeric vector of same length as input vector \code{p}.
-#' @importFrom stats dpois
-#' @keywords internal
-zip_statistic_factor <- function(p, d, mu, y, tol = 1e-08) {
-  res <- rep(0, length(p))
-  p_is_zero <- p < tol
-  res[p_is_zero] <- dpois(y[p_is_zero], mu[p_is_zero], log = TRUE)
-  res[!p_is_zero] <- d[!p_is_zero] * log(p[!p_is_zero]) + 
-    (1 - d[!p_is_zero]) * (log(1 - p[!p_is_zero]) + 
-                             dpois(y[!p_is_zero], mu[!p_is_zero], log = TRUE))
-  res
-}
+# #' Factor(s) in the product of the EB-ZIP window statistic.
+# #' 
+# #' Computes one or more factors in the product of the numerator or denominator
+# #' of the EB-ZIP window statistic (i.e. the one calculated for a given 
+# #' space-time window W). Should be able to handle cases where p = 0.
+# #' @param p Numeric vector of excess zero probabilities.
+# #' @param d Numeric vector of estimates of the excess zero indicators. Of same 
+# #'    length as \code{p}.
+# #' @param mu Numeric vector of given/estimated Poisson expected value 
+# #' parameters. Of same length as \code{p}.
+# #' @param y Integer vector of observed counts. Of same length as \code{p}.
+# #' @param tol Scalar; probability p below this is considered equal to zero.
+# #' @return A numeric vector of same length as input vector \code{p}.
+# #' @importFrom stats dpois
+# #' @keywords internal
+# zip_statistic_logfactor <- function(p, d, mu, y, tol = 1e-08) {
+#   res <- rep(0, length(p))
+#   p_is_zero <- p < tol
+#   res[p_is_zero] <- dpois(y[p_is_zero], mu[p_is_zero], log = TRUE)
+#   res[!p_is_zero] <- d[!p_is_zero] * log(p[!p_is_zero]) + 
+#     (1 - d[!p_is_zero]) * (log(1 - p[!p_is_zero]) + 
+#                              dpois(y[!p_is_zero], mu[!p_is_zero], log = TRUE))
+#   res
+# }
 
-#' Estimates the ZIP relative risk and excess zero indicators for a window.
-#' 
-#' For a single spatial or space-time window, this function uses the EM 
-#' algorithm to estimate the relative risk and the excess zero indicators for 
-#' counts assumed to be generated from a zero-inflated Poisson distribution.
-#' @param p A numeric vector of the given/estimated excess zero probabilities 
-#'    corresponding to each count.
-#' @param mu A numeric vector of the given/estimated Poisson expected value
-#'    parameters corresponding to each count. Of same length as \code{p}.
-#' @param y An integer vector of the observed counts, of same length as 
-#'    \code{p}.
-#' @param tol A scalar between 0 and 1. It is the absolute tolerance criterion
-#'    for the estimate of the excess zero indicator; convergence is reached when
-#'    two successive elements in the sequence of estimates have an absolute 
-#'    difference less than \code{tol}.
-#' @return A list with two elements:
-#' \describe{
-#'   \item{q}{Scalar estimate of the relative risk.}
-#'   \item{dstar}{Estimates of the excess zero indicator variables.}
-#' }
-#' @keywords internal
-zip_em_estimates <- function(p, mu, y, tol = 0.01) {
-  d_prev <- estimate_d(p, mu, y)
-  q <- estimate_zip_relrisk(d_prev, mu, y)
-  d <- estimate_d(p, q * mu, y)
-  
-  left <- abs(d - d_prev) >= tol
-  while (any(left)) {
-    d_prev[left] <- d[left]
-    q <- estimate_zip_relrisk(d, mu, y)
-    d[left] <- estimate_d(p[left], q * mu[left], y[left])
-    left[left] <- abs(d[left] - d_prev[left]) >= tol
-  }
-  list(q = estimate_zip_relrisk(d, mu, y), dstar = d)
-}
+# #' Estimates the ZIP relative risk and excess zero indicators for a window.
+# #' 
+# #' For a single spatial or space-time window, this function uses the EM 
+# #' algorithm to estimate the relative risk and the excess zero indicators for 
+# #' counts assumed to be generated from a zero-inflated Poisson distribution.
+# #' @param p A numeric vector of the given/estimated excess zero probabilities 
+# #'    corresponding to each count.
+# #' @param mu A numeric vector of the given/estimated Poisson expected value
+# #'    parameters corresponding to each count. Of same length as \code{p}.
+# #' @param y An integer vector of the observed counts, of same length as 
+# #'    \code{p}.
+# #' @param tol A scalar between 0 and 1. It is the absolute tolerance criterion
+# #'    for the estimate of the excess zero indicator; convergence is reached when
+# #'    two successive elements in the sequence of estimates have an absolute 
+# #'    difference less than \code{tol}.
+# #' @return A list with two elements:
+# #' \describe{
+# #'   \item{q}{Scalar estimate of the relative risk.}
+# #'   \item{dstar}{Estimates of the excess zero indicator variables.}
+# #' }
+# #' @keywords internal
+# zip_em_estimates <- function(p, mu, y, tol = 0.01) {
+#   d_prev <- estimate_d(p, mu, y)
+#   q <- estimate_zip_relrisk(d_prev, mu, y)
+#   d <- estimate_d(p, q * mu, y)
+#   
+#   left <- abs(d - d_prev) >= tol
+#   while (any(left)) {
+#     d_prev[left] <- d[left]
+#     q <- estimate_zip_relrisk(d, mu, y)
+#     d[left] <- estimate_d(p[left], q * mu[left], y[left])
+#     left[left] <- abs(d[left] - d_prev[left]) >= tol
+#   }
+#   list(q = estimate_zip_relrisk(d, mu, y), dstar = d)
+# }
 
-#' Calculate the ZIP statistic for a single space-time window.
-#' 
-#' Calculate the single-window statistic for the zero-inflated Poisson 
-#' distribution using the EM algorithm.
-#' @inheritParams zip_em_estimates
-#' @param ... Named parameters passed to \code{\link{zip_em_estimates}}.
-#' @return A scalar, the (logarithm of the) ZIP statistic.
-#' @keywords internal
-window_zip_statistic <- function(p, mu, y, ...) {
-  em <- zip_em_estimates(p, mu, y, ...)
-  sum(zip_statistic_term(em$q, p, em$dstar, estimate_d(p, mu, y), mu, y))
-}
+# #' Calculate the ZIP statistic for a single space-time window.
+# #' 
+# #' Calculate the single-window statistic for the zero-inflated Poisson 
+# #' distribution using the EM algorithm.
+# #' @inheritParams zip_em_estimates
+# #' @param ... Named parameters passed to \code{\link{zip_em_estimates}}.
+# #' @return A scalar, the (logarithm of the) ZIP statistic.
+# #' @keywords internal
+# window_zip_statistic <- function(p, mu, y, ...) {
+#   em <- zip_em_estimates(p, mu, y, ...)
+#   sum(zip_statistic_term(em$q, p, em$dstar, estimate_d(p, mu, y), mu, y))
+# }
