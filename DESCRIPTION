@@ -22,7 +22,8 @@ Imports:
     gamlss.dist, 
     magrittr,
     plyr,
-    sets
+    sets,
+    Rcpp
 Suggests:
     doParallel,
     foreach,
@@ -38,3 +39,4 @@ Suggests:
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1
 ByteCompile: true
+LinkingTo: Rcpp

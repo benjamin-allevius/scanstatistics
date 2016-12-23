@@ -15,6 +15,10 @@
 #' @import data.table
 NULL
 
+#' @useDynLib scanstatistics
+#' @importFrom Rcpp sourceCpp
+NULL
+
 
 
 # To avoid problems with devtools::test()
