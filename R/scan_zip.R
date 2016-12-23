@@ -188,7 +188,12 @@ simulate_zip_scanstatistic <- function(table, zones, ...) {
 #' @keywords internal
 zip_mcsim <- function(table, zones, n_mcsim = 0, ...) {
   if (n_mcsim > 0) {
-    return(replicate(n_mcsim, simulate_zip_scanstatistic(table, zones, ...)))
+    md <- table[, max(duration)]
+    return(replicate(n_mcsim, 
+                     simulate_zip_scanstatistic(table, 
+                                                zones, 
+                                                maxdur = md, 
+                                                ...)))
   } else {
     return(numeric(0))
   }
@@ -212,28 +217,28 @@ estimate_d_dagger <- function(table) {
   table[, ddagger := estimate_d(p, mu, count)][]
 }
 
-#' Calculate the ZIP window statistic over all durations, for a given zone.
-#' 
-#' This function calculates the zero-inflated Poisson statistic for a given 
-#' spatial zone, for all durations considered.
-#' @param table A \code{data.table} with columns \code{duration, location, p, 
-#'    mu, count}.
-#' @param maxdur An integer; the maximum duration considered.
-#' @param ... Arguments passed to \code{\link{window_zip_statistic}}.
-#' @return A list with two elements:
-#' \describe{
-#'   \item{duration}{Vector of integers from 1 to \code{maxdur}.}
-#'   \item{statistic}{Numeric vector containing the ZIP statistics corresponding
-#'   to each duration, for the given spatial zone.}
-#' }
-#' @keywords internal
-calc_zipstat_over_duration <- function(table, maxdur, ...) {
-  stat <- rep(0, maxdur)
-  for (t in seq(maxdur)) {
-    stat[t] <- table[duration <= t, window_zip_statistic(p, mu, count, ...)]
-  }
-  list(duration = seq(maxdur), statistic = stat)
-}
+# #' Calculate the ZIP window statistic over all durations, for a given zone.
+# #' 
+# #' This function calculates the zero-inflated Poisson statistic for a given 
+# #' spatial zone, for all durations considered.
+# #' @param table A \code{data.table} with columns \code{duration, location, p, 
+# #'    mu, count}.
+# #' @param maxdur An integer; the maximum duration considered.
+# #' @param ... Arguments passed to \code{\link{window_zip_statistic}}.
+# #' @return A list with two elements:
+# #' \describe{
+# #'   \item{duration}{Vector of integers from 1 to \code{maxdur}.}
+# #'   \item{statistic}{Numeric vector containing the ZIP statistics corresponding
+# #'   to each duration, for the given spatial zone.}
+# #' }
+# #' @keywords internal
+# calc_zipstat_over_duration <- function(table, maxdur, ...) {
+#   stat <- rep(0, maxdur)
+#   for (t in seq(maxdur)) {
+#     stat[t] <- table[duration <= t, window_zip_statistic(p, mu, count, ...)]
+#   }
+#   list(duration = seq(maxdur), statistic = stat)
+# }
 
 #' Calculates the ZIP statistic for each space-time window.
 #' 
@@ -250,7 +255,7 @@ calc_zipstat_over_duration <- function(table, maxdur, ...) {
 #' @return A \code{data.table} with columns \code{zone, duration, statistic}.
 #' @keywords internal
 zip_statistic <- function(table, ...) {
-  table[, calc_zipstat_over_duration(.SD, ...), by = .(zone)]
+  table[, calc_zipstat_over_duration(duration, p, mu, count, ...), by = .(zone)]
 }
 
 #' Calculate the (logarithm of the) ZIP statistic for each space-time window.

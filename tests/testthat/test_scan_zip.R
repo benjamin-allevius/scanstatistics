@@ -77,7 +77,12 @@ test_that("calc_zipstat_over_duration: works", {
   table[, p := 1:6 / 20]
   # Counts should correspond to outbreak with duration 2 at location 1
   table[, count := c(5, 10, 1, 4, 5, 0)]
-  actual <- calc_zipstat_over_duration(table, 3)
+  actual <- calc_zipstat_over_duration(table[, duration], 
+                                       table[, p],
+                                       table[, mu],
+                                       table[, count],
+                                       3, 
+                                       0.01)
   expected <- c(
     table[duration <= 1L, window_zip_statistic(p, mu, count)],
     table[duration <= 2L, window_zip_statistic(p, mu, count)],
@@ -125,7 +130,10 @@ test_that("zip_mcsim", {
                        sets::as.set(1:2))
   nsims <- 10
   # set.seed(25)
-  actual <- zip_mcsim(table, zones, nsims, maxdur = 3)
+  actual <- zip_mcsim(table = table, 
+                      zones = zones, 
+                      n_mcsim = nsims, 
+                      maxdur = 3)
   expect_true(length(actual) == nsims)
   # expect_true(!any(actual < 0))
 })

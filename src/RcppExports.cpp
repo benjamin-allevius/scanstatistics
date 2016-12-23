@@ -102,3 +102,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// calc_zipstat_over_duration
+List calc_zipstat_over_duration(IntegerVector duration, NumericVector p, NumericVector mu, NumericVector y, int maxdur, double tol);
+RcppExport SEXP scanstatistics_calc_zipstat_over_duration(SEXP durationSEXP, SEXP pSEXP, SEXP muSEXP, SEXP ySEXP, SEXP maxdurSEXP, SEXP tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type duration(durationSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type p(pSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int >::type maxdur(maxdurSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(calc_zipstat_over_duration(duration, p, mu, y, maxdur, tol));
+    return rcpp_result_gen;
+END_RCPP
+}

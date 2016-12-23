@@ -120,3 +120,20 @@ window_zip_statistic <- function(p, mu, y, tol = 0.01) {
     .Call('scanstatistics_window_zip_statistic', PACKAGE = 'scanstatistics', p, mu, y, tol)
 }
 
+#' Calculate the ZIP window statistic over all durations, for a given zone.
+#' 
+#' This function calculates the zero-inflated Poisson statistic for a given 
+#' spatial zone, for all durations considered.
+#' @param duration An integer vector.
+#' @inheritParams zip_em_estimates
+#' @return A list with two elements:
+#' \describe{
+#'   \item{duration}{Vector of integers from 1 to \code{maxdur}.}
+#'   \item{statistic}{Numeric vector containing the ZIP statistics corresponding
+#'   to each duration, for the given spatial zone.}
+#' }
+#' @keywords internal
+calc_zipstat_over_duration <- function(duration, p, mu, y, maxdur, tol = 0.01) {
+    .Call('scanstatistics_calc_zipstat_over_duration', PACKAGE = 'scanstatistics', duration, p, mu, y, maxdur, tol)
+}
+

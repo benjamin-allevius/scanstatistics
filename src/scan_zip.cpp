@@ -36,7 +36,7 @@ NumericVector zip_statistic_logfactor(NumericVector p,
                                       double tol = 1e-08) {
   int n = y.size();
   NumericVector res(n);
-  for (int i=0; i<n; ++i) {
+  for (int i = 0; i < n; ++i) {
     if (p[i] < tol) {
       res[i] = poisson_lpmf(y[i], mu[i]);
     } else {
@@ -67,7 +67,7 @@ double estimate_zip_relrisk(NumericVector d,
   double numerator = 0.0;
   double denominator = 0.0;
   
-  for (int i=0; i<n; ++i) {
+  for (int i = 0; i < n; ++i) {
     numerator += y[i] * (1 - d[i]);
     denominator += mu[i] * (1 - d[i]);
   }
@@ -94,7 +94,7 @@ NumericVector estimate_d(NumericVector p,
                          NumericVector y) {
   int n = y.size();
   NumericVector d(n);
-  for (int i=0; i<n; ++i) {
+  for (int i = 0; i < n; ++i) {
     if (y[i] > 0.0) {
       d[i] = 0.0;
     } else {
@@ -194,4 +194,38 @@ double window_zip_statistic(NumericVector p,
                                 estimate_d(p, mu, y),
                                 mu, 
                                 y));
+}
+
+
+//' Calculate the ZIP window statistic over all durations, for a given zone.
+//' 
+//' This function calculates the zero-inflated Poisson statistic for a given 
+//' spatial zone, for all durations considered.
+//' @param duration An integer vector.
+//' @inheritParams zip_em_estimates
+//' @return A list with two elements:
+//' \describe{
+//'   \item{duration}{Vector of integers from 1 to \code{maxdur}.}
+//'   \item{statistic}{Numeric vector containing the ZIP statistics corresponding
+//'   to each duration, for the given spatial zone.}
+//' }
+//' @keywords internal
+// [[Rcpp::export]]
+List calc_zipstat_over_duration(IntegerVector duration,
+                                NumericVector p,
+                                NumericVector mu,
+                                NumericVector y,
+                                int maxdur,
+                                double tol = 0.01) {
+  IntegerVector dur(maxdur);
+  NumericVector stat(maxdur);
+  for (int i = 0; i < maxdur; ++i) {
+    stat[i] = i + 1;
+    stat[i] = window_zip_statistic(p[duration < i + 2], 
+                                   mu[duration < i + 2], 
+                                   y[duration < i + 2], 
+                                   tol);
+  }
+  return List::create(Rcpp::Named("duration") = dur,
+                      Rcpp::Named("statistic") = stat);
 }
