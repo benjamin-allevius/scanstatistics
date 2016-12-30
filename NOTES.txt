@@ -9,4 +9,7 @@ places:
 A fourth one is automatically copied by pkgdown (when running 
 pkgdown::build_site()) to ./docs/articles/references.bib.
 
+# TODO before pushing to GitHub:
+* Remove --no-build-vignettes from project options, because Travis build fails
+  otherwise.
 
