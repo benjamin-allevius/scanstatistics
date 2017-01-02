@@ -13,4 +13,3 @@ vignettes/articles/*
 cran-comments\.md
 ^docs/*
 NOTES.txt
-inst/doc
