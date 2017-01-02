@@ -18,100 +18,100 @@ BEGIN_RCPP
 END_RCPP
 }
 // zip_statistic_logfactor
-NumericVector zip_statistic_logfactor(NumericVector p, NumericVector d, NumericVector mu, NumericVector y, double tol);
+NumericVector zip_statistic_logfactor(const NumericVector& p, const NumericVector& d, const NumericVector& mu, const NumericVector& y, double tol);
 RcppExport SEXP scanstatistics_zip_statistic_logfactor(SEXP pSEXP, SEXP dSEXP, SEXP muSEXP, SEXP ySEXP, SEXP tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type p(pSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type d(dSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type p(pSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type d(dSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type y(ySEXP);
     Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
     rcpp_result_gen = Rcpp::wrap(zip_statistic_logfactor(p, d, mu, y, tol));
     return rcpp_result_gen;
 END_RCPP
 }
 // estimate_zip_relrisk
-double estimate_zip_relrisk(NumericVector d, NumericVector mu, NumericVector y);
+double estimate_zip_relrisk(const NumericVector& d, const NumericVector& mu, const NumericVector& y);
 RcppExport SEXP scanstatistics_estimate_zip_relrisk(SEXP dSEXP, SEXP muSEXP, SEXP ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type d(dSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type d(dSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type y(ySEXP);
     rcpp_result_gen = Rcpp::wrap(estimate_zip_relrisk(d, mu, y));
     return rcpp_result_gen;
 END_RCPP
 }
 // estimate_d
-NumericVector estimate_d(NumericVector p, NumericVector mu, NumericVector y);
+NumericVector estimate_d(const NumericVector& p, const NumericVector& mu, const NumericVector& y);
 RcppExport SEXP scanstatistics_estimate_d(SEXP pSEXP, SEXP muSEXP, SEXP ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type p(pSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type p(pSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type y(ySEXP);
     rcpp_result_gen = Rcpp::wrap(estimate_d(p, mu, y));
     return rcpp_result_gen;
 END_RCPP
 }
 // zip_em_estimates
-List zip_em_estimates(NumericVector p, NumericVector mu, NumericVector y, double tol);
+List zip_em_estimates(const NumericVector& p, const NumericVector& mu, const NumericVector& y, double tol);
 RcppExport SEXP scanstatistics_zip_em_estimates(SEXP pSEXP, SEXP muSEXP, SEXP ySEXP, SEXP tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type p(pSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type p(pSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type y(ySEXP);
     Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
     rcpp_result_gen = Rcpp::wrap(zip_em_estimates(p, mu, y, tol));
     return rcpp_result_gen;
 END_RCPP
 }
 // zip_statistic_term
-NumericVector zip_statistic_term(double q, NumericVector p, NumericVector dstar, NumericVector ddagger, NumericVector mu, NumericVector y);
+NumericVector zip_statistic_term(double q, const NumericVector& p, const NumericVector& dstar, const NumericVector& ddagger, const NumericVector& mu, const NumericVector& y);
 RcppExport SEXP scanstatistics_zip_statistic_term(SEXP qSEXP, SEXP pSEXP, SEXP dstarSEXP, SEXP ddaggerSEXP, SEXP muSEXP, SEXP ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< double >::type q(qSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type p(pSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type dstar(dstarSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type ddagger(ddaggerSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type p(pSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type dstar(dstarSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type ddagger(ddaggerSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type y(ySEXP);
     rcpp_result_gen = Rcpp::wrap(zip_statistic_term(q, p, dstar, ddagger, mu, y));
     return rcpp_result_gen;
 END_RCPP
 }
 // window_zip_statistic
-double window_zip_statistic(NumericVector p, NumericVector mu, NumericVector y, double tol);
+double window_zip_statistic(const NumericVector& p, const NumericVector& mu, const NumericVector& y, double tol);
 RcppExport SEXP scanstatistics_window_zip_statistic(SEXP pSEXP, SEXP muSEXP, SEXP ySEXP, SEXP tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type p(pSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type p(pSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type y(ySEXP);
     Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
     rcpp_result_gen = Rcpp::wrap(window_zip_statistic(p, mu, y, tol));
     return rcpp_result_gen;
 END_RCPP
 }
 // calc_zipstat_over_duration
-List calc_zipstat_over_duration(IntegerVector duration, NumericVector p, NumericVector mu, NumericVector y, int maxdur, double tol);
+List calc_zipstat_over_duration(const IntegerVector& duration, const NumericVector& p, const NumericVector& mu, const NumericVector& y, int maxdur, double tol);
 RcppExport SEXP scanstatistics_calc_zipstat_over_duration(SEXP durationSEXP, SEXP pSEXP, SEXP muSEXP, SEXP ySEXP, SEXP maxdurSEXP, SEXP tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerVector >::type duration(durationSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type p(pSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type duration(durationSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type p(pSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type y(ySEXP);
     Rcpp::traits::input_parameter< int >::type maxdur(maxdurSEXP);
     Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
     rcpp_result_gen = Rcpp::wrap(calc_zipstat_over_duration(duration, p, mu, y, maxdur, tol));

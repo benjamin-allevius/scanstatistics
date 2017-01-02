@@ -29,10 +29,10 @@ double poisson_lpmf(const double x, const double lambda) {
 //' @return A numeric vector of same length as input vector \code{p}.
 //' @keywords internal
 // [[Rcpp::export]]
-NumericVector zip_statistic_logfactor(NumericVector p, 
-                                      NumericVector d,
-                                      NumericVector mu,
-                                      NumericVector y,
+NumericVector zip_statistic_logfactor(const NumericVector& p, 
+                                      const NumericVector& d,
+                                      const NumericVector& mu,
+                                      const NumericVector& y,
                                       double tol = 1e-08) {
   int n = y.size();
   NumericVector res(n);
@@ -59,9 +59,9 @@ NumericVector zip_statistic_logfactor(NumericVector p,
 //' @return A scalar, the estimated relative risk.
 //' @keywords internal
 // [[Rcpp::export]]
-double estimate_zip_relrisk(NumericVector d,
-                            NumericVector mu,
-                            NumericVector y) {
+double estimate_zip_relrisk(const NumericVector& d,
+                            const NumericVector& mu,
+                            const NumericVector& y) {
   int n = y.size();
   double q;
   double numerator = 0.0;
@@ -89,9 +89,9 @@ double estimate_zip_relrisk(NumericVector d,
 //' @return A numeric vector, of same length as the input vector \code{p}.
 //' @keywords internal
 // [[Rcpp::export]]
-NumericVector estimate_d(NumericVector p, 
-                         NumericVector mu, 
-                         NumericVector y) {
+NumericVector estimate_d(const NumericVector& p, 
+                         const NumericVector& mu, 
+                         const NumericVector& y) {
   int n = y.size();
   NumericVector d(n);
   for (int i = 0; i < n; ++i) {
@@ -126,9 +126,9 @@ NumericVector estimate_d(NumericVector p,
 //' }
 //' @keywords internal
 // [[Rcpp::export]]
-List zip_em_estimates(NumericVector p,
-                      NumericVector mu,
-                      NumericVector y,
+List zip_em_estimates(const NumericVector& p,
+                      const NumericVector& mu,
+                      const NumericVector& y,
                       double tol = 0.01) {
   int n = y.size();
   NumericVector d(n);
@@ -164,11 +164,11 @@ List zip_em_estimates(NumericVector p,
 //' @keywords internal
 // [[Rcpp::export]]
 NumericVector zip_statistic_term(double q,
-                                 NumericVector p,
-                                 NumericVector dstar,
-                                 NumericVector ddagger,
-                                 NumericVector mu,
-                                 NumericVector y) {
+                                 const NumericVector& p,
+                                 const NumericVector& dstar,
+                                 const NumericVector& ddagger,
+                                 const NumericVector& mu,
+                                 const NumericVector& y) {
   return zip_statistic_logfactor(p, dstar, q * mu, y) - 
     zip_statistic_logfactor(p, ddagger, mu, y);
 }
@@ -182,9 +182,9 @@ NumericVector zip_statistic_term(double q,
 //' @return A scalar, the (logarithm of the) ZIP statistic.
 //' @keywords internal
 // [[Rcpp::export]]
-double window_zip_statistic(NumericVector p,
-                            NumericVector mu,
-                            NumericVector y,
+double window_zip_statistic(const NumericVector& p,
+                            const NumericVector& mu,
+                            const NumericVector& y,
                             double tol = 0.01) {
   
   List em = zip_em_estimates(p, mu, y, tol);
@@ -211,10 +211,10 @@ double window_zip_statistic(NumericVector p,
 //' }
 //' @keywords internal
 // [[Rcpp::export]]
-List calc_zipstat_over_duration(IntegerVector duration,
-                                NumericVector p,
-                                NumericVector mu,
-                                NumericVector y,
+List calc_zipstat_over_duration(const IntegerVector& duration,
+                                const NumericVector& p,
+                                const NumericVector& mu,
+                                const NumericVector& y,
                                 int maxdur,
                                 double tol = 0.01) {
   IntegerVector dur(maxdur);
