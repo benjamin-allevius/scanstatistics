@@ -1,29 +1,43 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
+# Header
 language: r
 cache: packages
 sudo: required
 warnings_are_errors: false
-r_packages:
-  - roxygen2
-r_github_packages:
-  - jimhester/covr
 
-after_success:
-  - Rscript -e 'covr::codecov()'
-  
-after_script:
-  - ./travis-tool.sh dump_sysinfo
-  
-after_failure:
-  - ./travis-tool.sh dump_logs
-  
+# env
 env:
   global:
     - R_BUILD_ARGS="--no-build-vignettes --no-manual"
     - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran"
-    
+  
+# notifications
 notifications:
   email:
     on_success: change
     on_failure: change
+    
+# before script
+
+# after script
+after_script:
+  - ./travis-tool.sh dump_sysinfo
+
+# after success
+after_success:
+  - Rscript -e 'covr::codecov()'
+  
+after_failure:
+  - ./travis-tool.sh dump_logs
+
+
+# Custom
+
+# R packages
+r_packages:
+  - roxygen2
+  
+# R GitHub packages
+r_github_packages:
+  - jimhester/covr
