@@ -96,7 +96,7 @@
 #'    \href{http://goo.gl/6Q89ML}{Link to PDF}.
 #' @examples 
 #' # Simple example
-#' set.seed(1)
+#' set.seed(2)
 #' table <- scanstatistics:::create_table(list(location = 1:4, duration = 1:4),
 #'                                         keys = c("location", "duration"))
 #' table[, mu := 3 * location]
@@ -105,7 +105,7 @@
 #' table[location %in% c(1, 4) & duration < 3, 
 #'       count := gamlss.dist::rZIP(.N, mu = 2 * mu, sigma = p)]
 #' zones <- scanstatistics:::powerset_zones(4)
-#' result <- scan_poisson(table, zones, 100)
+#' result <- scan_zip(table, zones, 100)
 #' result
 scan_zip <- function(table, zones, n_mcsim = 0, ...) {
   validate_scan(table, zones, c("count", "mu", "duration", "location", "p"))
