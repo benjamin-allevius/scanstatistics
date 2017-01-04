@@ -214,6 +214,7 @@ List calc_zipstat_over_duration(const IntegerVector& duration,
                                    mu[duration < i + 2], 
                                    y[duration < i + 2], 
                                    tol);
+    dur[i] = i + 1;
   }
   return List::create(Rcpp::Named("duration") = dur,
                       Rcpp::Named("statistic") = stat);
