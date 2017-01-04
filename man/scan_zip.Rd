@@ -95,7 +95,7 @@ For the expectation-based zero-inflated Poisson scan statistic
 }
 \examples{
 # Simple example
-set.seed(1)
+set.seed(2)
 table <- scanstatistics:::create_table(list(location = 1:4, duration = 1:4),
                                         keys = c("location", "duration"))
 table[, mu := 3 * location]
@@ -104,7 +104,7 @@ table[, count := gamlss.dist::rZIP(.N, mu = mu, sigma = p)]
 table[location \%in\% c(1, 4) & duration < 3, 
       count := gamlss.dist::rZIP(.N, mu = 2 * mu, sigma = p)]
 zones <- scanstatistics:::powerset_zones(4)
-result <- scan_poisson(table, zones, 100)
+result <- scan_zip(table, zones, 100)
 result
 }
 \references{
