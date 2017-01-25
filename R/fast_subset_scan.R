@@ -68,13 +68,15 @@ reorder_locations <- function(A, priod_locations) {
 }
 
 #' Order locations accorder to priority, then apply function.
+#' @param .f A function taking a vector as first argument.
 #' @param A A matrix, e.g. containing counts or baselines. Rows represent time 
 #'    (ordered from most recent to most distant), columns represent locations 
 #'    (numbered from 1 and up).
+#' @param ... Further arguments passed to \code{.f}.
 #' @return A matrix of the same dimension as \code{A}.
 #' @keywords internal
-prioritize_and_execute <- function(.f, A, prioritized_locations) {
-  apply_rowwise(reorder_locations(A, prioritized_locations), .f)
+prioritize_and_execute <- function(.f, A, prioritized_locations, ...) {
+  apply_rowwise(reorder_locations(A, prioritized_locations), .f, ...)
 }
 
 
