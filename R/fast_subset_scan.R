@@ -47,8 +47,10 @@ apply_rowwise <- function(A, .f, ...) {
 #' @keywords internal
 prioritize_locations <- function(priority_mat) {
   
-  # For each row (time), rank each value from smallest (rank 1) to largest
-  ranked_prios <- apply_rowwise(priority_mat, order)
+  # For each row (time), rank each value from smallest (rank 1) to largest.
+  # When priority values are tied, locations with lower number go first.
+  ranked_prios <- apply_rowwise(priority_mat, 
+                                function(x) order(x, rev(seq_along(x))))
   
   # For each row, replace the rank with the number of the corresponding location
   t(apply(ranked_prios, 1, function(x) rev(seq_len(ncol(ranked_prios))[x])))
