@@ -63,8 +63,8 @@ prioritize_locations <- function(priority_mat) {
 #' @param priod_locations An integer matrix.
 #' @return An integer matrix of the same dimension as \code{A}.
 #' @keywords internal
-reorder_locations <- function(A, priod_locations) {
-  t(sapply(seq_len(nrow(A)), function(t) A[t, priod_locations[t, ]]))
+reorder_locations <- function(A, prioritized_locations) {
+  t(sapply(seq_len(nrow(A)), function(t) A[t, prioritized_locations[t, ]]))
 }
 
 #' Order locations accorder to priority, then apply function.
@@ -80,19 +80,18 @@ prioritize_and_execute <- function(.f, A, prioritized_locations, ...) {
 }
 
 
-#' @param counts A matrix of counts, possibly aggregated. Rows indicate time,
-#'    ordered from most recent to most distant. Columns indicate locations,
-#'    enumerated from 1 and up.
-#' @param baselines A matrix of expected counts, possibly aggregated. Dimensions
-#'    are as for \code{counts}.
-#' @param score_fun A function taking matrix or vector arguments \code{counts},
-#'    \code{baselines}, and possibly others (given in \code{...}), all of the
-#'    same dimension, and returning a matrix or vector of that dimension.
-#' @param prio_fun A function taking matrix or vector arguments \code{counts},
-#'    \code{baselines}, and possibly others (given in \code{...}), all of the
-#'    same dimension, and returning a matrix or vector of that dimension.
-#' @param ... Arguments passed to \code{score_fun} and/or \code{prio_fun}. 
-#'    Must be of the same dimension as \code{counts} and \code{baselines}.
+#' @param counts A matrix of counts. Rows indicate time, ordered from most 
+#'    recent to most distant. Columns indicate locations, enumerated from 1 and 
+#'    up.
+#' @param baselines A matrix of expected counts. Dimensions are as for 
+#'    \code{counts}.
+#' @param score_fun A function taking matrix arguments, all of the
+#'    same dimension, and returning a matrix or vector of that dimension. 
+#' @param priority_fun A function taking matrix arguments, all of the
+#'    same dimension, and returning a matrix or vector of that dimension. 
+#' @param ... Arguments passed to \code{score_fun} and/or \code{priority_fun}. 
+#'    Must be matrices of the same dimension as \code{counts} and 
+#'    \code{baselines}.
 #' @return A list containing three elements:
 #'    \describe{
 #'      \item{score}{The highest score of all clusters.}
@@ -104,40 +103,31 @@ prioritize_and_execute <- function(.f, A, prioritized_locations, ...) {
 algo1 <- function(counts, 
                   baselines, 
                   score_fun,
-                  prio_fun,
+                  priority_fun,
                   ...) {
   
+  args <- list(x = counts, b = baselines, ...)
+  
   # Compute location priorities and sort them thereafter
-  prios <- prio_fun(counts, baselines, ...)
+  prios <- do.call(priority_fun, args)
   priod_locations <- prioritize_locations(prios)
   
-  # Reorder aggregates by priority and take cumulative sums
-  counts <- apply_rowwise(reorder_locations(counts, 
-                                            priod_locations), 
-                          cumsum)
-  baselines <- apply_rowwise(reorder_locations(baselines, 
-                                               priod_locations), 
-                             cumsum)
-  
-  # Reorder by priority and take cumulative sums
-  args <- lapply(list(x = counts, b = baselines, ...),
-                 prioritize_and_execute, 
-                 .f = cumsum,
+  # Reorder locations by priority for each time point
+  args <- lapply(args,
+                 reorder_locations, 
                  prioritized_locations = priod_locations)
-                 
+  
+  # For each duration (row), calculate the score for increasing subsets of 
+  # locations from left to right (order of priority)
   scores <- do.call(score_fun, args)
   
-#   # # Score each prioritized subset of locations
-#   # scores <- matrix(NA, nrow(prios), ncol(prios))
-#   # for (t in seq_len(nrow(prios))) {
-#   #   for (i in seq_len(ncol(prios))) {
-#   #     scores[t, i] <- score_fun(agg_c[t, i], agg_b[t, i])
-#   #   }
-#   # }
+  # Get the index of the row (duration) and column (location subset) that 
+  # maximizes the score.
   max_score <- max(scores)
   maxer <- which(scores == max_score, arr.ind = TRUE)
   duration <- unname(maxer[1, 1])
   locations <- priod_locations[duration, seq_len(maxer[1, 2])]
+  
   list(duration = duration,
        locations = locations,
        score = max_score)
