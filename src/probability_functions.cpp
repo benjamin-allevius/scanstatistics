@@ -1,5 +1,4 @@
 #include <Rcpp.h>
-#include <cmath>
 using namespace Rcpp;
 
 //' The log probability mass function of the Poisson distribution.

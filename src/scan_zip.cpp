@@ -1,5 +1,4 @@
 #include <Rcpp.h>
-#include <cmath>
 #include "probability_functions.h"
 using namespace Rcpp;
 
