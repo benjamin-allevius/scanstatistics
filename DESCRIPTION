@@ -22,6 +22,7 @@ Imports:
     gamlss.dist, 
     magrittr,
     plyr,
+    purrr,
     sets,
     Rcpp
 Suggests:
@@ -31,7 +32,6 @@ Suggests:
     knitr,
     MASS,
     pscl,
-    purrr,
     reshape2,
     rmarkdown,
     sp,
