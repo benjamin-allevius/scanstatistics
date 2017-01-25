@@ -63,3 +63,22 @@ test_that("reorder_locations: works", {
   actual <- reorder_locations(A, prios)
   expect_equal(actual, expected)
 })
+
+test_that("prioritize_and_execute", {
+  A <- matrix(1:9, 3, 3, byrow = TRUE)
+  prios <- matrix(c(2, 3, 1,
+                    1, 3, 2,
+                    3, 2, 1), 
+                  3, 3, byrow = TRUE)
+  f <- function(x, s = 2) (x + 1) * s
+  B <- matrix(c(2, 3, 1,
+                 4, 6, 5,
+                 9, 8, 7),
+              3, 3, byrow = TRUE)
+  expected1 <- (B + 1) * 2
+  expected2 <- (B + 1) * 5
+  actual1 <- prioritize_and_execute(f, A, prios)
+  actual2 <- prioritize_and_execute(f, A, prios, s = 5)
+  expect_equal(actual1, expected1)
+  expect_equal(actual2, expected2)
+})
