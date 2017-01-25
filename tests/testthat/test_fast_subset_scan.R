@@ -49,3 +49,17 @@ test_that("prioritize_locations: ties", {
   actual <- prioritize_locations(A)
   expect_equal(actual, expected)
 })
+
+test_that("reorder_locations: works", {
+  A <- matrix(1:9, 3, 3, byrow = TRUE)
+  prios <- matrix(c(2, 3, 1,
+                    1, 3, 2,
+                    3, 2, 1), 
+                  3, 3, byrow = TRUE)
+  expected <- matrix(c(2, 3, 1,
+                       4, 6, 5,
+                       9, 8, 7),
+                     3, 3, byrow = TRUE)
+  actual <- reorder_locations(A, prios)
+  expect_equal(actual, expected)
+})
