@@ -24,3 +24,28 @@ test_that("apply_rowwise: works + dimensions correct", {
   expect_true(is.vector(actual2))
 })
 
+test_that("prioritize_locations: no ties", {
+  A <- matrix(c(-1, 0, 1,
+                0, -1, 1,
+                1, 0, -1), 
+              3, 3, byrow = TRUE)
+  expected <- matrix(c(3, 2, 1,
+                       3, 1, 2,
+                       1, 2, 3),
+                     3, 3, byrow = TRUE)
+  actual <- prioritize_locations(A)
+  expect_equal(actual, expected)
+})
+
+test_that("prioritize_locations: ties", {
+  A <- matrix(c(1, 1, 0,
+                1, 0, 1,
+                0, 1, 1), 
+              3, 3, byrow = TRUE)
+  expected <- matrix(c(1, 2, 3,
+                       1, 3, 2,
+                       2, 3, 1),
+                     3, 3, byrow = TRUE)
+  actual <- prioritize_locations(A)
+  expect_equal(actual, expected)
+})
