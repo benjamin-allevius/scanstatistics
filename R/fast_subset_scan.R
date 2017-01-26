@@ -106,13 +106,14 @@ algo1 <- function(counts,
                   priority_fun,
                   ...) {
   
+  # List of matrices with rows=time and columns=locations
   args <- list(x = counts, b = baselines, ...)
   
   # Compute location priorities and sort them thereafter
   prios <- do.call(priority_fun, args)
   priod_locations <- prioritize_locations(prios)
   
-  # Reorder locations by priority for each time point
+  # Reorder locations by priority for each time point (row), for all matrices
   args <- lapply(args,
                  reorder_locations, 
                  prioritized_locations = priod_locations)
@@ -122,7 +123,7 @@ algo1 <- function(counts,
   scores <- do.call(score_fun, args)
   
   # Get the index of the row (duration) and column (location subset) that 
-  # maximizes the score.
+  # maximizes the score
   max_score <- max(scores)
   maxer <- which(scores == max_score, arr.ind = TRUE)
   duration <- unname(maxer[1, 1])
@@ -136,11 +137,20 @@ algo1 <- function(counts,
 FN_SA <- function(counts, 
                   baselines, 
                   score_fun = function(c, b) ifelse(c > b, c * log(c/b) + b - c, 0)) {
+  # With n_streams data streams labelled 1,...,n_streams, form a list of the 
+  # 2^(n_streams)-1 non-empty subsets of the integers {1,...,n_streams}
   stream_subsets <- lapply(sets::set_power(seq_len(dim(counts)[3])), unlist)[-1]
+  
+  # For each stream subset, extract the corresponding columns in the 
+  # data/parameter arrays, and perform algorithm 1
   res <- lapply(stream_subsets, 
                 function(x) algo1(counts[ , , x], baselines[ , , x], score_fun))
+  
+  # Extract scores and locate the top-scoring location-duration subset (MLC)
   scores <- vapply(res, function(lst) lst[["score"]], numeric(1))
   maximizer <- which.max(scores)
+  
+  # Add the stream subset to the MLC and return
   top_scoring <- res[[maximizer]]
   top_scoring$streams <- stream_subsets[[maximizer]]
   top_scoring
