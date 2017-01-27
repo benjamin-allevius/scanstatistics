@@ -14,7 +14,12 @@ poisson_qmax <- function(c, b) {
          1)
 }
 
+#' Compute Poisson priority function values cumulatively over time.
 #' 
+#' Given a matrices with observed and expected counts (baselines) for each 
+#' timepoint (row) and location/data stream (column), sum counts and baselines 
+#' cumulatively backwards in time, and compute the Poisson priority function
+#' value for each column and subset of time.
 #' @param counts A matrix of observed counts. Rows represent timepoints, ordered
 #'    from most recent to most distant. Columns represent e.g. locations or
 #'    data streams.
