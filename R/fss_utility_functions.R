@@ -99,15 +99,7 @@ prioritize_and_execute <- function(.f, A, prioritized_locations, ...) {
   apply_rowwise(reorder_rows(A, prioritized_locations), .f, ...)
 }
 
-
-#' For each array in a list, sum over dimension \code{d}.
-#' @param lst List containing 3-dimensional arrays. The second dimension should
-#'    represent locations, and the third dimension should represent data 
-#'    streams.
-#' @param subset An integer vector holding a subset of indices.
-#' @return A list containing matrices. This list has the same names as the input
-#'    list.
-sum_over_subset <- function(lst, subset, d = 3) {
+get_subset <- function(lst, subset, d = 3) {
   dims <- dim(lst[[1]])
   loc_subset <- seq_len(dims[2])
   stream_subset <- seq_len(dims[3])
@@ -118,8 +110,19 @@ sum_over_subset <- function(lst, subset, d = 3) {
   } else {
     stop("d must be either 2 or 3")
   }
-  lapply(lst, function(x) apply(x[ , loc_subset, stream_subset, drop = FALSE], 
-                                (1:3)[-d], sum))
+  lapply(lst, function(x) x[ , loc_subset, stream_subset, drop = FALSE])
+}
+
+
+#' For each array in a list, sum over dimension \code{d}.
+#' @param lst List containing 3-dimensional arrays. The second dimension should
+#'    represent locations, and the third dimension should represent data 
+#'    streams.
+#' @param subset An integer vector holding a subset of indices.
+#' @return A list containing matrices. This list has the same names as the input
+#'    list.
+sum_over_subset <- function(lst, subset, d = 3) {
+  lapply(get_subset(lst, subset, d), function(x) apply(x, (1:3)[-d], sum))
 }
 
 
