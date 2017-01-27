@@ -100,6 +100,29 @@ prioritize_and_execute <- function(.f, A, prioritized_locations, ...) {
 }
 
 
+#' For each array in a list, sum over dimension \code{d}.
+#' @param lst List containing 3-dimensional arrays. The second dimension should
+#'    represent locations, and the third dimension should represent data 
+#'    streams.
+#' @param subset An integer vector holding a subset of indices.
+#' @return A list containing matrices. This list has the same names as the input
+#'    list.
+sum_over_subset <- function(lst, subset, d = 3) {
+  dims <- dim(lst[[1]])
+  loc_subset <- seq_len(dims[2])
+  stream_subset <- seq_len(dims[3])
+  if (d == 2) {
+    loc_subset <- subset
+  } else if (d == 3) {
+    stream_subset <- subset
+  } else {
+    stop("d must be either 2 or 3")
+  }
+  lapply(lst, function(x) apply(x[ , loc_subset, stream_subset, drop = FALSE], 
+                                (1:3)[-d], sum))
+}
+
+
 # Used for priority functions --------------------------------------------------
 
 #' Cumulatively sum, order by priority, then sum again.

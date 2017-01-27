@@ -92,3 +92,33 @@ test_that("prioritize_and_execute", {
   expect_equal(actual1, expected1)
   expect_equal(actual2, expected2)
 })
+
+test_that("sum_over_subset: streams", {
+  A <- matrix(1:6, 3, 2)
+  B <- matrix(-(1:6), 3, 2)
+  arr1 <- array(c(A, B), dim = c(3, 2, 2))
+  arr2 <- 2 * arr1
+  lst <- list(x = arr1, y = arr2)
+  expected1 <- list(x = A + B, y = 2*(A + B))
+  expected2 <- list(x = A, y = 2 * A)
+  actual1 <- sum_over_subset(lst, 1:2, 3)
+  actual2 <- sum_over_subset(lst, 1, 3)
+  expect_equal(actual1, expected1)
+  expect_equal(actual2, expected2)
+})
+
+test_that("sum_over_subset: locations", {
+  A <- matrix(1:6, 3, 2)
+  B <- matrix(-(1:6), 3, 2)
+  arr1 <- array(c(A, B), dim = c(3, 2, 2))
+  arr2 <- 2 * arr1
+  lst <- list(x = arr1, y = arr2)
+  expected1 <- list(x = cbind(A[, 1] + A[, 2], B[, 1] + B[, 2]), 
+                    y = 2*cbind(A[, 1] + A[, 2], B[, 1] + B[, 2]))
+  expected2 <- list(x = cbind(A[, 1], B[, 1]), 
+                    y = 2 * cbind(A[, 1], B[, 1]))
+  actual1 <- sum_over_subset(lst, 1:2, 2)
+  actual2 <- sum_over_subset(lst, 1, 2)
+  expect_equal(actual1, expected1)
+  expect_equal(actual2, expected2)
+})
