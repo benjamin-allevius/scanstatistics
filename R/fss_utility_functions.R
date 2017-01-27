@@ -12,6 +12,19 @@ aggregate_per_location <- function(A) {
   apply(apply(A, 1:2, sum), 2, cumsum)
 }
 
+#' Aggregate (sum) values over all locations, and cumulatively over time.
+#' @param A An array with three dimensions. Dimensions are: 
+#'    \describe{
+#'      \item{Dimension 1}{Time, ordered from most recent to most distant.}
+#'      \item{Dimension 2}{Location, enumerated from 1 and up.}
+#'      \item{Dimension 3}{Data stream, enumerated from 1 and up.}
+#'    }  
+#' @return A matrix with \code{dim(A)[1]} rows and \code{dim(A)[3]} columns.
+#' @keywords internal
+aggregate_per_stream <- function(A) {
+  apply(apply(A, c(1, 3), sum), 2, cumsum)
+}
+
 #' Apply a function to each row of a matrix.
 #' 
 #' Apply a function to each row of a matrix. If the function returns a scalar,

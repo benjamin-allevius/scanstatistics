@@ -66,6 +66,6 @@ poisson_score <- function(counts, baselines, priority_indices) {
   # Compute scores for corresponding element pairs in the count and baseline
   # matrices
   matrix(map2_dbl(counts, baselines, poisson_lambda), 
-                   nrow(priority_indices), 
-                   ncol(priority_indices))
+         nrow(priority_indices), 
+         ncol(priority_indices))
 }
