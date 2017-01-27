@@ -35,36 +35,43 @@ apply_rowwise <- function(A, .f, ...) {
   }
 }
 
-#' Order locations by priority for each timepoint.
+#' Order row contents by priority for each timepoint.
 #' 
-#' Given a matrix of priority function values, order the locations by priority
-#' for each time point.
-#' @param priority_mat A numeric matrix. Rows represent time (ordered from most
-#'    recent to most distant), columns represent locations (numbered from 1 and 
-#'    up).
-#' @return A matrix of the same size as the input. On each row, the location
-#'    numbers are ordered by priority.
+#' Given a matrix of priority function values, return a matrix in which each 
+#' row gives the column indices of the corresponding row in the priority matrix,
+#' when that row has been sorted from highest to lowest priority value.
+#' @param priority_matrix A numeric or integer matrix. Rows represent time (ordered from 
+#'    most recent to most distant), columns represent e.g. locations or data
+#'    streams (numbered from 1 and up). The element in row \eqn{i} and column
+#'     \eqn{j} holds the priority of the \eqn{j}th location/data stream for 
+#'     times \eqn{1,\ldots,i}.
+#' @return A matrix of the same size as the input. On each row, column indices
+#'    are given in order of priority.
 #' @keywords internal
-prioritize_locations <- function(priority_mat) {
+prioritize_cols <- function(priority_matrix) {
   
   # For each row (time), rank each value from smallest (rank 1) to largest.
-  # When priority values are tied, locations with lower number go first.
-  ranked_prios <- apply_rowwise(priority_mat, 
+  # When priority values are tied, columns indices with lower number go first.
+  ranked_prios <- apply_rowwise(priority_matrix, 
                                 function(x) order(x, rev(seq_along(x))))
   
-  # For each row, replace the rank with the number of the corresponding location
+  # For each row, replace the rank with the index of the corresponding column
   t(apply(ranked_prios, 1, function(x) rev(seq_len(ncol(ranked_prios))[x])))
 }
 
-#' Reorder locations (rows) by priority.
-#' @param A matrix, e.g. containing counts or baselines. Rows represent time 
-#'    (ordered from most recent to most distant), columns represent locations 
-#'    (numbered from 1 and up).
-#' @param priod_locations An integer matrix.
+#' Reorder rows by priority.
+#' 
+#' Reorder each row in the input matrix \code{A} by the column indices found
+#' in the corresponding row of the matrix \code{priority_indices}.
+#' @param A A matrix, containing e.g. counts or baselines. Rows represent time 
+#'    (ordered from most recent to most distant), columns represent e.g. 
+#'    locations or data streams (numbered from 1 and up).
+#' @param priority_indices An integer matrix as output by 
+#'    \code{\link{prioritize_cols}}.
 #' @return An integer matrix of the same dimension as \code{A}.
 #' @keywords internal
-reorder_locations <- function(A, prioritized_locations) {
-  t(sapply(seq_len(nrow(A)), function(t) A[t, prioritized_locations[t, ]]))
+reorder_rows <- function(A, priority_indices) {
+  t(sapply(seq_len(nrow(A)), function(t) A[t, priority_indices[t, ]]))
 }
 
 #' Order locations accorder to priority, then apply function.
@@ -76,14 +83,16 @@ reorder_locations <- function(A, prioritized_locations) {
 #' @return A matrix of the same dimension as \code{A}.
 #' @keywords internal
 prioritize_and_execute <- function(.f, A, prioritized_locations, ...) {
-  apply_rowwise(reorder_locations(A, prioritized_locations), .f, ...)
+  apply_rowwise(reorder_rows(A, prioritized_locations), .f, ...)
 }
 
 
 #' @param counts A matrix of counts. Rows indicate time, ordered from most 
-#'    recent to most distant. Columns indicate locations, enumerated from 1 and 
-#'    up.
+#'    recent to most distant. Columns indicate e.g. locations or data streams, 
+#'    enumerated from 1 and up.
 #' @param baselines A matrix of expected counts. Dimensions are as for 
+#'    \code{counts}.
+#' @param penalties A matrix of penalty terms. Dimensions are as for 
 #'    \code{counts}.
 #' @param score_fun A function taking matrix arguments, all of the
 #'    same dimension, and returning a matrix or vector of that dimension. 
@@ -96,41 +105,42 @@ prioritize_and_execute <- function(.f, A, prioritized_locations, ...) {
 #'    \describe{
 #'      \item{score}{The highest score of all clusters.}
 #'      \item{duration}{The duration of the score-maximizing cluster.}
-#'      \item{locations}{An integer vector of the locations in the 
-#'                       score-maximizing cluster.}
+#'      \item{subset}{An integer vector of the subset of e.g. locations or data
+#'                    streams in the score-maximizing cluster.}
 #' }
 #' @keywords internal
 algo1 <- function(counts, 
                   baselines, 
-                  score_fun,
-                  priority_fun,
+                  penalties = NULL,
+                  score_fun = poisson_score,
+                  priority_fun = poisson_priority,
                   ...) {
   
-  # List of matrices with rows=time and columns=locations
-  args <- list(x = counts, b = baselines, ...)
+  # List of matrices with rows=time and columns=locations/data streams
+  args <- list(counts = counts, baselines = baselines, ...)
   
-  # Compute location priorities and sort them thereafter
+  # Compute location/data stream priorities and sort them thereafter
   prios <- do.call(priority_fun, args)
-  priod_locations <- prioritize_locations(prios)
+  prio_indices <- prioritize_cols(prios)
   
-  # Reorder locations by priority for each time point (row), for all matrices
-  args <- lapply(args,
-                 reorder_locations, 
-                 prioritized_locations = priod_locations)
+  args$priority_indices <- prio_indices
   
-  # For each duration (row), calculate the score for increasing subsets of 
-  # locations from left to right (order of priority)
+  #
   scores <- do.call(score_fun, args)
+  
+  if (!is.null(penalties)) {
+    scores <- scores + reorder_rows(apply(penalties, 2, cumsum), prio_indices)
+  }
   
   # Get the index of the row (duration) and column (location subset) that 
   # maximizes the score
   max_score <- max(scores)
   maxer <- which(scores == max_score, arr.ind = TRUE)
   duration <- unname(maxer[1, 1])
-  locations <- priod_locations[duration, seq_len(maxer[1, 2])]
+  subset <- prio_indices[duration, seq_len(maxer[1, 2])]
   
   list(duration = duration,
-       locations = locations,
+       subset = subset,
        score = max_score)
 }
 
