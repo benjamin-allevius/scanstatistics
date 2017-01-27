@@ -73,7 +73,7 @@ score_priority_subset <- function(args,
 #' locations and naive optimization over subsets of streams (FN), or through
 #' naive optimization over subsets of locations and fast optimization over 
 #' subsets of streams (NF).
-#' @inheritParams subset_aggregation
+#' @inheritParams score_priority_subset
 #' @param d An integer: \code{d=2} means sums are taken over locations (the 
 #'    second dimension) and \code{d=3} means sums are taken over data streams.
 #'    Other values of \code{d} should not be used.
@@ -82,10 +82,10 @@ score_priority_subset <- function(args,
 #'    subset scan for multivariate event detection}. Statistics in Medicine 
 #'    32 (13), pp. 2185-2208.
 #' @keywords internal
-subset_aggregation <- function(args,
-                               score_fun = poisson_score,
-                               priority_fun = poisson_priority,
-                               algorithm = "FN") {
+subset_aggregation_FN_NF <- function(args,
+                                     score_fun = poisson_score,
+                                     priority_fun = poisson_priority,
+                                     algorithm = "FN") {
   if (algorithm == "FN") {
     d <- 3
     fast_name <- "locations"
@@ -119,3 +119,100 @@ subset_aggregation <- function(args,
   names(top_scoring)[which(names(top_scoring) == "subset")] <- fast_name
   top_scoring
 }
+
+#' Fast Subset Aggregation over both locations and data streams.
+#' 
+#' Compute the most likely cluster (MLC) with the Subset Aggregation method by
+#' Neill et al. (2013) through fast optimization over subsets of locations and 
+#' subsets of streams.
+#' @inheritParams score_priority_subset
+#' @param R The number of random restarts.
+#' @param rel_tol The relative tolerance criterion. If the current score divided
+#'    by the previous score, minus one, is less than this number then the 
+#'    algorithm is deemed to have converged.
+#' @return A list containing the most likely cluster (MLC), having the following 
+#'    elements:
+#'    \describe{
+#'      \item{score}{The score of the MLC.}
+#'      \item{duration}{The duration of the MLC, i.e. how many time periods from
+#'                      the present into the past the MLC stretches.}
+#'      \item{locations}{The locations contained in the MLC.}
+#'      \item{streams}{The data streams contained in the MLC.}
+#'      \item{random_restarts}{The number of random restarts performed.}
+#'      \item{avg_iter_to_conv}{The average number of iterations it took to
+#'                              reach convergence.}
+#'    }
+#' @details Note: algorithm not quite as in Neill et al. (2013) since the 
+#'    randomly chosen subset of streams is the same for all time windows.
+#' @references 
+#'    Neill, Daniel B., Edward McFowland, and Huanian Zheng (2013). \emph{Fast 
+#'    subset scan for multivariate event detection}. Statistics in Medicine 
+#'    32 (13), pp. 2185-2208.
+#' @keywords internal
+subset_aggregation_FF <- function(args,
+                                  score_fun = poisson_score,
+                                  priority_fun = poisson_priority,
+                                  R = 50,
+                                  rel_tol = 1e-2) {
+  dims <- dim(args[[1]])
+  n_streams <- dims[3]
+  
+  all_scores <- numeric(R)
+  results <- vector("list", R) 
+  
+  n_iterations <- numeric(R)
+  
+  i <- 1
+  while (i <= R) {
+    
+    # Pick a random subset of locations
+    stream_subset <- seq_len(n_streams)[rbinom(n_streams, 1, runif(1)) == 1]
+    if (length(stream_subset) == 0) {
+      next
+    }
+    score_prev <- 1
+    score <- (1 + 2 * rel_tol) * score_prev
+    
+    iterations <- 1
+    
+    while (abs((score - score_prev) / score_prev) > rel_tol) {
+      
+      score_prev <- score
+      
+      # Perform the algorithm at the core of the FN method and get the highest
+      # scoring subset of locations, conditional on the set of streams
+      FN_score <- score_priority_subset(sum_over_subset(args, stream_subset, 3),
+                                        score_fun,
+                                        priority_fun)
+      loc_subset <- FN_score$subset
+      
+      # Given the conditionally optimal subset of locations, perform the 
+      # algorithm at the core of the NF method and get the highest
+      # scoring subset of streams
+      NF_score <- score_priority_subset(sum_over_subset(args, loc_subset, 2),
+                                        score_fun,
+                                        priority_fun)
+      stream_subset <- NF_score$subset
+      
+      score <- NF_score$score
+      
+      iterations <- iterations + 1
+      
+    }
+    
+    all_scores[i] <- score
+    results[[i]] <- list(score = score,
+                         duration = NF_score$duration,
+                         locations = loc_subset,
+                         streams = stream_subset,
+                         random_restarts = R)
+    n_iterations[i] <- iterations
+    
+    i <- i + 1
+  }
+  
+  res <- results[[which.max(all_scores)]]
+  res$avg_iter_to_conv <- mean(n_iterations)
+  res
+}
+
