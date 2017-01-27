@@ -19,6 +19,7 @@ Depends:
     R (>= 2.10)
 Imports:
     digest,
+    emdbook,
     gamlss.dist, 
     magrittr,
     plyr,
