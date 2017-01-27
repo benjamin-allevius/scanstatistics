@@ -112,5 +112,5 @@ prioritize_and_execute <- function(.f, A, prioritized_locations, ...) {
 #' @param priority_indices An integer matrix as output by 
 #'    \code{\link{prioritize_cols}}.
 sum_reorder_sum <- function(A, priority_indices) {
-  t(apply(reorder_locations(apply(A, 2, cumsum), priority_indices), 1, cumsum))
+  t(apply(reorder_rows(apply(A, 2, cumsum), priority_indices), 1, cumsum))
 }
