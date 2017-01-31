@@ -119,6 +119,7 @@ get_subset <- function(lst, subset, d = 3) {
 #'    represent locations, and the third dimension should represent data 
 #'    streams.
 #' @param subset An integer vector holding a subset of indices.
+#' @param d An integer; the array dimension to sum over.
 #' @return A list containing matrices. This list has the same names as the input
 #'    list.
 sum_over_subset <- function(lst, subset, d = 3) {

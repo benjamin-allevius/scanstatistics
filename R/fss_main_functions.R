@@ -148,6 +148,7 @@ subset_aggregation_FN_NF <- function(args,
 #'    Neill, Daniel B., Edward McFowland, and Huanian Zheng (2013). \emph{Fast 
 #'    subset scan for multivariate event detection}. Statistics in Medicine 
 #'    32 (13), pp. 2185-2208.
+#' @importFrom stats rbinom runif
 #' @keywords internal
 subset_aggregation_FF <- function(args,
                                   score_fun = poisson_score,

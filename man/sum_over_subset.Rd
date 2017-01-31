@@ -12,6 +12,8 @@ represent locations, and the third dimension should represent data
 streams.}
 
 \item{subset}{An integer vector holding a subset of indices.}
+
+\item{d}{An integer; the array dimension to sum over.}
 }
 \value{
 A list containing matrices. This list has the same names as the input
