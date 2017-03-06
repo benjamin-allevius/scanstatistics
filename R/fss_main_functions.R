@@ -1,3 +1,4 @@
+# Fast Subset Score
 
 #' Compute the highest scoring subset for aggregated data.
 #' 
@@ -16,7 +17,7 @@
 #'                       as for \code{counts}.}
 #'      \item{penalties}{Optional. A matrix of penalty terms. Dimensions are as
 #'                       for \code{counts}.}
-#'      \item{...}{Optional. Futher matrices with parameters}
+#'      \item{...}{Optional. More matrices with parameters}
 #' }
 #' @param score_fun A function taking matrix arguments, all of the
 #'    same dimension, and returning a matrix or vector of that dimension. 
@@ -99,7 +100,7 @@ subset_aggregation_FN_NF <- function(args,
   }
   
   # Naive optimization: iterate over power set (with empty set removed)
-  subsets <- lapply(sets::set_power(seq_len(dim(counts)[d])), unlist)[-1]
+  subsets <- lapply(sets::set_power(seq_len(dim(args$counts)[d])), unlist)[-1]
   
   
   # Extract and sum over each data stream subset for each array in the list 
