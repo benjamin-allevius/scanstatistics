@@ -17,7 +17,7 @@ score_priority_subset(args, score_fun = poisson_score,
                       as for \code{counts}.}
      \item{penalties}{Optional. A matrix of penalty terms. Dimensions are as
                       for \code{counts}.}
-     \item{...}{Optional. Futher matrices with parameters}
+     \item{...}{Optional. More matrices with parameters}
 }}
 
 \item{score_fun}{A function taking matrix arguments, all of the

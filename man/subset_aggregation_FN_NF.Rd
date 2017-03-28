@@ -8,16 +8,19 @@ subset_aggregation_FN_NF(args, score_fun = poisson_score,
   priority_fun = poisson_priority, algorithm = "FN")
 }
 \arguments{
-\item{args}{A list of matrices:
+\item{args}{A list of arrays:
    \describe{
-     \item{counts}{Required. A matrix of counts. Rows indicate time, ordered 
-                   from most recent to most distant. Columns indicate e.g. 
-                   locations or data streams, enumerated from 1 and up.}
+     \item{counts}{Required. An array of counts (integer or numeric). First
+                   dimension is time, ordered from most recent to most 
+                   distant. Second dimension indicates locations, which will 
+                   be enumerated from 1 and up. Third dimension indicates 
+                   data streams, which will be enumerated from 1 and up.}
      \item{baselines}{Required. A matrix of expected counts. Dimensions are 
                       as for \code{counts}.}
      \item{penalties}{Optional. A matrix of penalty terms. Dimensions are as
                       for \code{counts}.}
-     \item{...}{Optional. Futher matrices with parameters}
+     \item{...}{Optional. More matrices with distribution parameters.
+                Dimensions are as for \code{counts}.}
 }}
 
 \item{score_fun}{A function taking matrix arguments, all of the
@@ -26,9 +29,27 @@ same dimension, and returning a matrix or vector of that dimension.}
 \item{priority_fun}{A function taking matrix arguments, all of the
 same dimension, and returning a matrix or vector of that dimension.}
 
-\item{d}{An integer: \code{d=2} means sums are taken over locations (the 
-second dimension) and \code{d=3} means sums are taken over data streams.
-Other values of \code{d} should not be used.}
+\item{algorithm}{Either "FN" or "NF":
+\describe{
+  \item{FN}{Fast optimization over subsets of locations and naive 
+            optimization over subsets of streams. Can be used if the 
+            number of data streams is small.}
+  \item{NF}{Fast optimization over subsets of streams and naive 
+            optimization over subsets of locations. Can be used if the 
+            number of locations is small.}
+}}
+}
+\value{
+A list with 4 elements:
+   \describe{
+     \item{score}{A scalar; the score of the MLC.}
+     \item{duration}{An integer; the duration of the MLC, i.e. how many time 
+                     periods from the present into the past the MLC 
+                     stretches.}
+     \item{locations}{An integer vector; the locations contained in the MLC.}
+     \item{streams}{An integer vector; the data streams contained in the 
+                    MLC.}
+  }
 }
 \description{
 Compute the most likely cluster (MLC) with the Subset Aggregation method by
@@ -36,6 +57,41 @@ Neill et al. (2013), either through fast optimization over subsets of
 locations and naive optimization over subsets of streams (FN), or through
 naive optimization over subsets of locations and fast optimization over 
 subsets of streams (NF).
+}
+\examples{
+\dontrun{
+# Set simulation parameters (small values for this example)
+set.seed(1)
+n_loc <- 20
+n_dur <- 10
+n_streams <- 2
+n_tot <- n_loc * n_dur * n_streams
+
+# Generate baselines and possibly other distribution parameters
+baselines <- rexp(n_tot, 1/5) + rexp(n_tot, 1/5)
+sigma2s <- rexp(n_tot)
+
+# Generate counts
+counts <- rpois(n_tot, baselines)
+
+# Reshape into arrays
+counts <- array(counts, c(n_dur, n_loc, n_streams))
+baselines <- array(baselines, c(n_dur, n_loc, n_streams))
+sigma2s <- array(sigma2s, c(n_dur, n_loc, n_streams))
+
+# Inject an outbreak/event
+ob_loc <- 1:floor(n_loc / 4)
+ob_dur <- 1:floor(n_dur / 4)
+ob_streams <- 1:floor(n_streams / 2)
+counts[ob_dur, ob_loc, ob_streams] <- 4 * counts[ob_dur, ob_loc, ob_streams]
+
+# Run the FN algorithm
+FN_res <- subset_aggregation_FN_NF(
+  list(counts = counts, baselines = baselines),
+  score_fun = poisson_score,
+  priority_fun = poisson_priority,
+  algorithm = "FN")
+}
 }
 \references{
 Neill, Daniel B., Edward McFowland, and Huanian Zheng (2013). \emph{Fast 
