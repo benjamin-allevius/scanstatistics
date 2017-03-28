@@ -32,7 +32,7 @@ poisson_qmax <- function(c, b) {
 #'    the window of time (duration) stretching from 1 to \eqn{i}, for that
 #'    column.
 #' @importFrom purrr map2_dbl
-#' @keywords internal
+#' @export
 poisson_priority <- function(counts, 
                              baselines, 
                              scalar_priority_fun = poisson_qmax) {
@@ -58,7 +58,7 @@ poisson_lambda <- function(c, b) {
 #'    (duration), column numbers are given in order of priority.
 #' @return A matrix of the same dimension as the input matrices.
 #' @importFrom purrr map2_dbl
-#' @keywords internal
+#' @export
 poisson_score <- function(counts, baselines, priority_indices) {
   # Since the sum of Poisson random variables is Poisson with parameter equal
   # to the sum of the individual parameters, compute cumulative sums over 
@@ -104,7 +104,7 @@ gaussian_qmax <- function(c, b) {
 #'    the window of time (duration) stretching from 1 to \eqn{i}, for that
 #'    column.
 #' @importFrom purrr map2_dbl
-#' @keywords internal
+#' @export
 gaussian_priority <- function(counts, 
                               baselines, 
                               scalar_priority_fun = gaussian_qmax) {
@@ -130,7 +130,7 @@ gaussian_lambda <- function(c, b, s2) {
 #'    (duration), column numbers are given in order of priority.
 #' @return A matrix of the same dimension as the input matrices.
 #' @importFrom purrr pmap_dbl
-#' @keywords internal
+#' @export
 gaussian_score <- function(counts, baselines, variances, priority_indices) {
   # Since the sum of Gaussian random variables is Gaussian with parameters 
   # (expected value and variance) equal to the sum of the individual parameters, 
