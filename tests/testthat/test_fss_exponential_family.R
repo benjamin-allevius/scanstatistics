@@ -14,7 +14,7 @@ test_that("poisson_priority", {
   C <- matrix(c(2, 3,
                 1, 5), 2, 2, byrow = TRUE)
   expected <- matrix(c(poisson_qmax(2, 1), 1,
-                       1,                  poisson_qmax(8, 7)),
+                       1, poisson_qmax(8, 7)),
                      2, 2, byrow = TRUE)
   actual <- poisson_priority(C, B, poisson_qmax)
   expect_equal(actual, expected)
@@ -44,7 +44,7 @@ test_that("gaussian_priority", {
   C <- matrix(c(2, 3,
                 1, 5), 2, 2, byrow = TRUE)
   expected <- matrix(c(gaussian_qmax(2, 1), 1,
-                       1,                  gaussian_qmax(8, 7)),
+                       1, gaussian_qmax(8, 7)),
                      2, 2, byrow = TRUE)
   actual <- gaussian_priority(C, B, gaussian_qmax)
   expect_equal(actual, expected)
@@ -69,3 +69,5 @@ test_that("gaussian_score", {
   actual <- gaussian_score(C, B, S2, pri_mat)
   expect_equal(actual, expected)
 })
+
+# Exponential ------------------------------------------------------------------
