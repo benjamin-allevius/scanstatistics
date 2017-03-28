@@ -134,14 +134,16 @@ subset_aggregation_FN_NF <- function(args,
 #' @return A list containing the most likely cluster (MLC), having the following 
 #'    elements:
 #'    \describe{
-#'      \item{score}{The score of the MLC.}
-#'      \item{duration}{The duration of the MLC, i.e. how many time periods from
-#'                      the present into the past the MLC stretches.}
-#'      \item{locations}{The locations contained in the MLC.}
-#'      \item{streams}{The data streams contained in the MLC.}
+#'      \item{score}{A scalar; the score of the MLC.}
+#'      \item{duration}{An integer; the duration of the MLC, i.e. how many time 
+#'                      periods from the present into the past the MLC 
+#'                      stretches.}
+#'      \item{locations}{An integer vector; the locations contained in the MLC.}
+#'      \item{streams}{An integer vector; the data streams contained in the 
+#'                     MLC.}
 #'      \item{random_restarts}{The number of random restarts performed.}
-#'      \item{avg_iter_to_conv}{The average number of iterations it took to
-#'                              reach convergence.}
+#'      \item{iter_to_conv}{The number of iterations it took to reach 
+#'                          convergence for each random restart.}
 #'    }
 #' @details Note: algorithm not quite as in Neill et al. (2013) since the 
 #'    randomly chosen subset of streams is the same for all time windows.
@@ -214,7 +216,7 @@ subset_aggregation_FF <- function(args,
   }
   
   res <- results[[which.max(all_scores)]]
-  res$avg_iter_to_conv <- mean(n_iterations)
+  res$iter_to_conv <- n_iterations
   res
 }
 
