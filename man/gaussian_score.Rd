@@ -14,6 +14,9 @@ data streams.}
 \item{baselines}{A matrix of expected counts with the same dimensions as
 \code{counts}.}
 
+\item{variances}{A matrix of variances with the same dimensions as 
+\code{counts}.}
+
 \item{priority_indices}{A matrix of the same size as the input. On each row
 (duration), column numbers are given in order of priority.}
 }

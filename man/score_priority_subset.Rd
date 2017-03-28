@@ -21,10 +21,14 @@ score_priority_subset(args, score_fun = poisson_score,
 }}
 
 \item{score_fun}{A function taking matrix arguments, all of the
-same dimension, and returning a matrix or vector of that dimension.}
+same dimension, and returning a matrix or vector of that dimension. 
+Suitable alternatives are \code{\link{poisson_score}}, 
+\code{\link{gaussian_score}}.}
 
 \item{priority_fun}{A function taking matrix arguments, all of the
-same dimension, and returning a matrix or vector of that dimension.}
+same dimension, and returning a matrix or vector of that dimension. 
+Suitable alternatives are \code{\link{poisson_priority}}, 
+\code{\link{gaussian_priority}}.}
 }
 \value{
 A list containing three elements:

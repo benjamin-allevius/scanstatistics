@@ -10,6 +10,8 @@ gaussian_lambda(c, b, s2)
 \item{c}{A scalar; the observed value.}
 
 \item{b}{A scalar; the expected value.}
+
+\item{s2}{A scalar; the variance.}
 }
 \value{
 A scalar; the score.

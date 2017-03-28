@@ -19,7 +19,7 @@ and \code{b} (baseline) and returning a scalar.}
 }
 \value{
 A matrix with the same dimensions as \code{counts}. The \eqn{i}th 
-   element in each column contains the Poisson priority function value for 
+   element in each column contains the Gaussian priority function value for 
    the window of time (duration) stretching from 1 to \eqn{i}, for that
    column.
 }
