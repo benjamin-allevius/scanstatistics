@@ -21,8 +21,12 @@
 #' }
 #' @param score_fun A function taking matrix arguments, all of the
 #'    same dimension, and returning a matrix or vector of that dimension. 
+#'    Suitable alternatives are \code{\link{poisson_score}}, 
+#'    \code{\link{gaussian_score}}, \code{\link{exponential_score}}.
 #' @param priority_fun A function taking matrix arguments, all of the
 #'    same dimension, and returning a matrix or vector of that dimension. 
+#'    Suitable alternatives are \code{\link{poisson_priority}}, 
+#'    \code{\link{gaussian_priority}}, \code{\link{exponential_priority}}.
 #' @return A list containing three elements:
 #'    \describe{
 #'      \item{score}{The highest score of all clusters.}
@@ -74,15 +78,79 @@ score_priority_subset <- function(args,
 #' locations and naive optimization over subsets of streams (FN), or through
 #' naive optimization over subsets of locations and fast optimization over 
 #' subsets of streams (NF).
+#' @param args A list of arrays:
+#'    \describe{
+#'      \item{counts}{Required. An array of counts (integer or numeric). First
+#'                    dimension is time, ordered from most recent to most 
+#'                    distant. Second dimension indicates locations, which will 
+#'                    be enumerated from 1 and up. Third dimension indicates 
+#'                    data streams, which will be enumerated from 1 and up.}
+#'      \item{baselines}{Required. A matrix of expected counts. Dimensions are 
+#'                       as for \code{counts}.}
+#'      \item{penalties}{Optional. A matrix of penalty terms. Dimensions are as
+#'                       for \code{counts}.}
+#'      \item{...}{Optional. More matrices with distribution parameters.
+#'                 Dimensions are as for \code{counts}.}
+#' }
 #' @inheritParams score_priority_subset
-#' @param d An integer: \code{d=2} means sums are taken over locations (the 
-#'    second dimension) and \code{d=3} means sums are taken over data streams.
-#'    Other values of \code{d} should not be used.
+#' @param algorithm Either "FN" or "NF":
+#'    \describe{
+#'      \item{FN}{Fast optimization over subsets of locations and naive 
+#'                optimization over subsets of streams. Can be used if the 
+#'                number of data streams is small.}
+#'      \item{NF}{Fast optimization over subsets of streams and naive 
+#'                optimization over subsets of locations. Can be used if the 
+#'                number of locations is small.}
+#'    }
+#' @return A list with 4 elements:
+#'    \describe{
+#'      \item{score}{A scalar; the score of the MLC.}
+#'      \item{duration}{An integer; the duration of the MLC, i.e. how many time 
+#'                      periods from the present into the past the MLC 
+#'                      stretches.}
+#'      \item{locations}{An integer vector; the locations contained in the MLC.}
+#'      \item{streams}{An integer vector; the data streams contained in the 
+#'                     MLC.}
+#'   }
 #' @references 
 #'    Neill, Daniel B., Edward McFowland, and Huanian Zheng (2013). \emph{Fast 
 #'    subset scan for multivariate event detection}. Statistics in Medicine 
 #'    32 (13), pp. 2185-2208.
 #' @keywords internal
+#' @examples 
+#' \dontrun{
+#' # Set simulation parameters (small values for this example)
+#' set.seed(1)
+#' n_loc <- 20
+#' n_dur <- 10
+#' n_streams <- 2
+#' n_tot <- n_loc * n_dur * n_streams
+#' 
+#' # Generate baselines and possibly other distribution parameters
+#' baselines <- rexp(n_tot, 1/5) + rexp(n_tot, 1/5)
+#' sigma2s <- rexp(n_tot)
+#' 
+#' # Generate counts
+#' counts <- rpois(n_tot, baselines)
+#' 
+#' # Reshape into arrays
+#' counts <- array(counts, c(n_dur, n_loc, n_streams))
+#' baselines <- array(baselines, c(n_dur, n_loc, n_streams))
+#' sigma2s <- array(sigma2s, c(n_dur, n_loc, n_streams))
+#' 
+#' # Inject an outbreak/event
+#' ob_loc <- 1:floor(n_loc / 4)
+#' ob_dur <- 1:floor(n_dur / 4)
+#' ob_streams <- 1:floor(n_streams / 2)
+#' counts[ob_dur, ob_loc, ob_streams] <- 4 * counts[ob_dur, ob_loc, ob_streams]
+#' 
+#' # Run the FN algorithm
+#' FN_res <- subset_aggregation_FN_NF(
+#'   list(counts = counts, baselines = baselines),
+#'   score_fun = poisson_score,
+#'   priority_fun = poisson_priority,
+#'   algorithm = "FN")
+#' }
 subset_aggregation_FN_NF <- function(args,
                                      score_fun = poisson_score,
                                      priority_fun = poisson_priority,
@@ -102,9 +170,8 @@ subset_aggregation_FN_NF <- function(args,
   # Naive optimization: iterate over power set (with empty set removed)
   subsets <- lapply(sets::set_power(seq_len(dim(args$counts)[d])), unlist)[-1]
   
-  
-  # Extract and sum over each data stream subset for each array in the list 
-  # args. Then do Subset Aggregation with these sums.
+  # Extract and sum over each data stream/location subset for each array in the 
+  # list args. Then do Subset Aggregation with these sums.
   res <- lapply(subsets, 
                 function(x) score_priority_subset(sum_over_subset(args, x, d),
                                                   score_fun,
@@ -118,7 +185,7 @@ subset_aggregation_FN_NF <- function(args,
   top_scoring <- res[[maximizer]]
   top_scoring[[naive_name]] <- subsets[[maximizer]]
   names(top_scoring)[which(names(top_scoring) == "subset")] <- fast_name
-  top_scoring
+  top_scoring[c(3, 1, 2, 4)] # Return in same order as subset_aggregation_FF
 }
 
 #' Fast Subset Aggregation over both locations and data streams.
@@ -153,6 +220,40 @@ subset_aggregation_FN_NF <- function(args,
 #'    32 (13), pp. 2185-2208.
 #' @importFrom stats rbinom runif
 #' @keywords internal
+#' @examples 
+#' \dontrun{
+#' # Set simulation parameters (small)
+#' set.seed(1)
+#' n_loc <- 20
+#' n_dur <- 10
+#' n_streams <- 2
+#' n_tot <- n_loc * n_dur * n_streams
+#' 
+#' # Generate baselines and possibly other distribution parameters
+#' baselines <- rexp(n_tot, 1/5) + rexp(n_tot, 1/5)
+#' sigma2s <- rexp(n_tot)
+#' 
+#' # Generate counts
+#' counts <- rpois(n_tot, baselines)
+#' 
+#' # Reshape into arrays
+#' counts <- array(counts, c(n_dur, n_loc, n_streams))
+#' baselines <- array(baselines, c(n_dur, n_loc, n_streams))
+#' sigma2s <- array(sigma2s, c(n_dur, n_loc, n_streams))
+#' 
+#' # Inject an outbreak/event
+#' ob_loc <- 1:floor(n_loc / 4)
+#' ob_dur <- 1:floor(n_dur / 4)
+#' ob_streams <- 1:floor(n_streams / 2)
+#' counts[ob_dur, ob_loc, ob_streams] <- 4 * counts[ob_dur, ob_loc, ob_streams]
+#' 
+#' # Run the FN algorithm
+#' FF_res <- subset_aggregation_FF(
+#'   list(counts = counts, baselines = baselines),
+#'   score_fun = poisson_score,
+#'   priority_fun = poisson_priority,
+#'   algorithm = "FN")
+#' }
 subset_aggregation_FF <- function(args,
                                   score_fun = poisson_score,
                                   priority_fun = poisson_priority,
@@ -220,3 +321,106 @@ subset_aggregation_FF <- function(args,
   res
 }
 
+#' Subset Aggregation over locations and data streams, naive or fast.
+#' 
+#' Compute the most likely cluster (MLC) using either of three versions of the
+#' Subset Aggregation method by Neill et al. (2013). The methods are:
+#' \describe{
+#'   \item{FF}{Fast optimization over both subsets of locations and subsets 
+#'             of data streams.}
+#'   \item{FN}{Fast optimization over subsets of locations and naive 
+#'             optimization over subsets of streams. Can be used if the 
+#'             number of data streams is small.}
+#'   \item{NF}{Fast optimization over subsets of streams and naive 
+#'             optimization over subsets of locations. Can be used if the 
+#'             number of locations is small.}
+#' }
+#' @inheritParams subset_aggregation_FN_NF
+#' @param R The number of random restarts.
+#' @param rel_tol The relative tolerance criterion. If the current score divided
+#'    by the previous score, minus one, is less than this number then the 
+#'    algorithm is deemed to have converged.
+#' @return A list containing the most likely cluster (MLC), having the following 
+#'    elements:
+#'    \describe{
+#'      \item{score}{A scalar; the score of the MLC.}
+#'      \item{duration}{An integer; the duration of the MLC, i.e. how many time 
+#'                      periods from the present into the past the MLC 
+#'                      stretches.}
+#'      \item{locations}{An integer vector; the locations contained in the MLC.}
+#'      \item{streams}{An integer vector; the data streams contained in the 
+#'                     MLC.}
+#'      \item{random_restarts}{FF only. The number of random restarts 
+#'                             performed.}
+#'      \item{iter_to_conv}{FF only. The number of iterations it took to reach 
+#'                          convergence for each random restart.}
+#'    }
+#' @details Note: algorithm not quite as in Neill et al. (2013) since the 
+#'    randomly chosen subset of streams is the same for all time windows.
+#' @references 
+#'    Neill, Daniel B., Edward McFowland, and Huanian Zheng (2013). \emph{Fast 
+#'    subset scan for multivariate event detection}. Statistics in Medicine 
+#'    32 (13), pp. 2185-2208.
+#' @importFrom stats rbinom runif
+#' @export
+#' @examples 
+#' # Set simulation parameters (small)
+#' set.seed(1)
+#' n_loc <- 20
+#' n_dur <- 10
+#' n_streams <- 2
+#' n_tot <- n_loc * n_dur * n_streams
+#' 
+#' # Generate baselines and possibly other distribution parameters
+#' baselines <- rexp(n_tot, 1/5) + rexp(n_tot, 1/5)
+#' sigma2s <- rexp(n_tot)
+#' 
+#' # Generate counts
+#' counts <- rpois(n_tot, baselines)
+#' 
+#' # Reshape into arrays
+#' counts <- array(counts, c(n_dur, n_loc, n_streams))
+#' baselines <- array(baselines, c(n_dur, n_loc, n_streams))
+#' sigma2s <- array(sigma2s, c(n_dur, n_loc, n_streams))
+#' 
+#' # Inject an outbreak/event
+#' ob_loc <- 1:floor(n_loc / 4)
+#' ob_dur <- 1:floor(n_dur / 4)
+#' ob_streams <- 1:floor(n_streams / 2)
+#' counts[ob_dur, ob_loc, ob_streams] <- 4 * counts[ob_dur, ob_loc, ob_streams]
+#' 
+#' # Run the FN algorithm
+#' FN_res <- subset_aggregation(
+#'   list(counts = counts, baselines = baselines),
+#'   score_fun = poisson_score,
+#'   priority_fun = poisson_priority,
+#'   algorithm = "FN")
+#'   
+#' # Run the FF algorithm (few random restarts)
+#' FN_res <- subset_aggregation(
+#'   list(counts = counts, baselines = baselines),
+#'   score_fun = poisson_score,
+#'   priority_fun = poisson_priority,
+#'   algorithm = "FN",
+#'   R = 10)
+subset_aggregation <- function(args,
+                               score_fun = poisson_score,
+                               priority_fun = poisson_priority,
+                               algorithm = "FF",
+                               R = 50,
+                               rel_tol = 1e-2) {
+  if (algorithm == "FF") {
+    return(subset_aggregation_FF(args,
+                                 score_fun,
+                                 priority_fun,
+                                 R,
+                                 rel_tol))
+  } else if (!(algorithm %in% c("FN", "NF"))) {
+    stop('algorithm must be one of "FF", "FN", "NF".')
+  } else {
+    return(subset_aggregation(args,
+                              score_fun,
+                              priority_fun,
+                              algorithm))
+  }
+}
