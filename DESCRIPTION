@@ -24,8 +24,8 @@ Imports:
     magrittr,
     plyr,
     purrr,
-    sets,
-    Rcpp
+    Rcpp,
+    sets
 Suggests:
     doParallel,
     foreach,
