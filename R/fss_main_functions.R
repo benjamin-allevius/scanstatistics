@@ -22,11 +22,11 @@
 #' @param score_fun A function taking matrix arguments, all of the
 #'    same dimension, and returning a matrix or vector of that dimension. 
 #'    Suitable alternatives are \code{\link{poisson_score}}, 
-#'    \code{\link{gaussian_score}}, \code{\link{exponential_score}}.
+#'    \code{\link{gaussian_score}}.
 #' @param priority_fun A function taking matrix arguments, all of the
 #'    same dimension, and returning a matrix or vector of that dimension. 
 #'    Suitable alternatives are \code{\link{poisson_priority}}, 
-#'    \code{\link{gaussian_priority}}, \code{\link{exponential_priority}}.
+#'    \code{\link{gaussian_priority}}.
 #' @return A list containing three elements:
 #'    \describe{
 #'      \item{score}{The highest score of all clusters.}
@@ -418,9 +418,9 @@ subset_aggregation <- function(args,
   } else if (!(algorithm %in% c("FN", "NF"))) {
     stop('algorithm must be one of "FF", "FN", "NF".')
   } else {
-    return(subset_aggregation(args,
-                              score_fun,
-                              priority_fun,
-                              algorithm))
+    return(subset_aggregation_FN_NF(args,
+                                    score_fun,
+                                    priority_fun,
+                                    algorithm))
   }
 }
