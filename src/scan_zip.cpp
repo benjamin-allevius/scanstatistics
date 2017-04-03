@@ -208,7 +208,6 @@ List calc_zipstat_over_duration(const IntegerVector& duration,
   IntegerVector dur(maxdur);
   NumericVector stat(maxdur);
   for (int i = 0; i < maxdur; ++i) {
-    stat[i] = i + 1;
     stat[i] = window_zip_statistic(p[duration < i + 2], 
                                    mu[duration < i + 2], 
                                    y[duration < i + 2], 
