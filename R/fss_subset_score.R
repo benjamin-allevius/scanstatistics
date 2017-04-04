@@ -117,40 +117,6 @@ score_priority_subset <- function(args,
 #'    subset scan for multivariate event detection}. Statistics in Medicine 
 #'    32 (13), pp. 2185-2208.
 #' @keywords internal
-#' @examples 
-#' \dontrun{
-#' # Set simulation parameters (small values for this example)
-#' set.seed(1)
-#' n_loc <- 20
-#' n_dur <- 10
-#' n_streams <- 2
-#' n_tot <- n_loc * n_dur * n_streams
-#' 
-#' # Generate baselines and possibly other distribution parameters
-#' baselines <- rexp(n_tot, 1/5) + rexp(n_tot, 1/5)
-#' sigma2s <- rexp(n_tot)
-#' 
-#' # Generate counts
-#' counts <- rpois(n_tot, baselines)
-#' 
-#' # Reshape into arrays
-#' counts <- array(counts, c(n_dur, n_loc, n_streams))
-#' baselines <- array(baselines, c(n_dur, n_loc, n_streams))
-#' sigma2s <- array(sigma2s, c(n_dur, n_loc, n_streams))
-#' 
-#' # Inject an outbreak/event
-#' ob_loc <- 1:floor(n_loc / 4)
-#' ob_dur <- 1:floor(n_dur / 4)
-#' ob_streams <- 1:floor(n_streams / 2)
-#' counts[ob_dur, ob_loc, ob_streams] <- 4 * counts[ob_dur, ob_loc, ob_streams]
-#' 
-#' # Run the FN algorithm
-#' FN_res <- subset_aggregation_FN_NF(
-#'   list(counts = counts, baselines = baselines),
-#'   score_fun = poisson_score,
-#'   priority_fun = poisson_priority,
-#'   algorithm = "FN")
-#' }
 subset_aggregation_FN_NF <- function(args,
                                      score_fun = poisson_score,
                                      priority_fun = poisson_priority,
