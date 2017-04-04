@@ -29,4 +29,5 @@ timepoint (row) and location/data stream (column), sum counts and baselines
 cumulatively backwards in time, and compute the Gaussian priority function
 value for each column and subset of time.
 }
+\keyword{internal}
 
