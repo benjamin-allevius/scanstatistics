@@ -1,4 +1,72 @@
 
+#' Estimate baselines based on observed counts.
+#' 
+#' Estimate the baselines (expected values) for the supplied counts.
+#' @param counts A matrix of observed counts. Rows indicate time (ordered from 
+#'    most recent) and columns indicate locations.
+#' @param population A matrix or vector of populations for each location 
+#'    (optional). If a matrix, should be of the same dimensions as 
+#'    \code{counts}. If a vector, should be of the same length as the number of
+#'    columns in \code{counts}.
+#' @return A matrix of baselines of the same dimensions as \code{counts}.
+#' @keywords internal
+estimate_baselines <- function(counts, population = NULL) {
+  total_count <- sum(counts)
+  
+  if (is.null(population)) {
+    if (is.vector(counts)) {
+      counts <- matrix(counts, nrow = 1)
+    }
+    return(tcrossprod(rowSums(counts), colSums(counts)) / total_count)
+  }
+  
+  # If analysis is purely spatial:
+  if (is.vector(counts)) {
+    if (!is.vector(population)) {
+      stop("If counts is a vector, population should be too.")
+    }
+    return(population * total_count / sum(population))
+  }
+
+  # If population is a vector, re-format to a matrix
+  if (is.vector(population)) {
+    population <- matrix(population,
+                         nrow = nrow(counts),
+                         ncol = length(population),
+                         byrow = TRUE)
+  }
+  # Check that the same number of locations is implied by both arguments
+  if (ncol(counts) != ncol(population)) {
+    stop("The number of locations implied must be the same in the counts and ",
+         "the population arguments.")
+  }
+  # Else return baselines as fractions of the total count
+  timewise_pop <- rowSums(population)
+  baselines <- matrix(0, nrow(counts), ncol(counts))
+  for (i in seq_len(nrow(counts))) {
+    baselines[i, ] <-
+      population[i, ] * (total_count / (timewise_pop[i] * nrow(counts)))
+  }
+  return(baselines)
+}
+
+#' Estimate variances based on observed counts.
+#' 
+#' Estimate the variances for the supplied counts. It is assumed that variances
+#' are constant over time for each location.
+#' @param counts A matrix of observed counts. Rows indicate time (ordered from 
+#'    most recent) and columns indicate locations.
+#' @param population A matrix or vector of populations for each location 
+#'    (optional). If a matrix, should be of the same dimensions as 
+#'    \code{counts}. If a vector, should be of the same length as the number of
+#'    columns in \code{counts}.
+#' @return A matrix of variances of the same dimensions as \code{counts}.
+#' @keywords internal
+estimate_variances <- function(counts, pop = NULL) {
+  
+}
+
+
 #' Estimate the \emph{baselines} (expected counts) by the Kulldorff method.
 #' 
 #' Estimates the baselines, which are the expected counts, by setting the 
