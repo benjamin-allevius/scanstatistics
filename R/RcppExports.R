@@ -137,3 +137,73 @@ calc_zipstat_over_duration <- function(duration, p, mu, y, maxdur, tol = 0.01) {
     .Call('scanstatistics_calc_zipstat_over_duration', PACKAGE = 'scanstatistics', duration, p, mu, y, maxdur, tol)
 }
 
+#' Calculate a term of the incomplete information loglihood.
+#' 
+#' Calculate a term of the incomplete information loglihood for the 
+#' zero-inflated Poisson distribution.
+#' @param y A non-negative integer; the observed count.
+#' @param mu A positive scalar; the expected value of the count.
+#' @param p A scalar between 0 and 1; the structural zero probability.
+#' @param q A scalar greater than or equal to 1; the relative risk.
+#' @return A non-positive scalar; the loglihood contribution of the 
+#'    observation.
+#' @keywords internal
+incomplete_loglihood_term <- function(y, mu, p, q) {
+    .Call('scanstatistics_incomplete_loglihood_term', PACKAGE = 'scanstatistics', y, mu, p, q)
+}
+
+#' Calculate the incomplete information loglihood.
+#'
+#' Calculate the incomplete information loglihood for the zero-inflated Poisson 
+#' distribution.
+#' @param y A non-negative integer vector; the observed counts.
+#' @param mu A vector of positive scalars; the expected values of the counts.
+#' @param p A vector of scalars between 0 and 1; the structural zero
+#'    probabilities.
+#' @param q A scalar greater than or equal to 1; the relative risk.
+#' @return A non-positive scalar; the incomplete information ZIP loglihood.
+#' @keywords internal
+incomplete_loglihood <- function(y, mu, p, q) {
+    .Call('scanstatistics_incomplete_loglihood', PACKAGE = 'scanstatistics', y, mu, p, q)
+}
+
+#' Calculate the conditional expectation of the structural zero indicator.
+#' @param mu The expected values of the count (which is zero).
+#' @param p The structural zero probability.
+#' @param q A scalar greater than or equal to 1; the relative risk.
+#' @return A scalar between 0 and 1.
+#' @keywords internal
+estimate_struc_zero <- function(mu, p, q) {
+    .Call('scanstatistics_estimate_struc_zero', PACKAGE = 'scanstatistics', mu, p, q)
+}
+
+#' Estimate the relative risk.
+#' @param y_sum A non-negative integer; the sum of the observed counts.
+#' @param mu A vector of positive scalars; the expected values of the counts.
+#' @param p A vector of scalars between 0 and 1; the structural zero
+#'    probabilities.
+#' @param d_hat A vector of estimates of the structural zero indicators.
+#' @return A scalar; the relative risk.
+#' @keywords internal
+estimate_q <- function(y_sum, mu, p, d_hat) {
+    .Call('scanstatistics_estimate_q', PACKAGE = 'scanstatistics', y_sum, mu, p, d_hat)
+}
+
+#' Calculate the loglihood ratio statistic and the relative risk.
+#' @param y A non-negative integer vector; the observed counts.
+#' @param mu A vector of positive scalars; the expected values of the counts.
+#' @param p A vector of scalars between 0 and 1; the structural zero
+#'    probabilities.
+#' @param d_hat A vector of estimates of the structural zero indicators.
+#' @param rel_tol The absolute convergence criterion.
+#' @return A list with three elements:
+#'    \enumerate{
+#'      \item The loglihood ratio statistic.
+#'      \item The estimated relative risk.
+#'      \item The number of iterations of the EM algorithm performed.
+#'    } 
+#' @keywords internal
+zip_em_algo <- function(y, mu, p, rel_tol = 1e-2) {
+    .Call('scanstatistics_zip_em_algo', PACKAGE = 'scanstatistics', y, mu, p, rel_tol)
+}
+

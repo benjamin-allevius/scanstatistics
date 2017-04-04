@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{incomplete_loglihood_term}
 \alias{incomplete_loglihood_term}
-\title{Calculate a term of the incomplete information log likelihood.}
+\title{Calculate a term of the incomplete information loglihood.}
 \usage{
 incomplete_loglihood_term(y, mu, p, q)
 }
@@ -16,11 +16,11 @@ incomplete_loglihood_term(y, mu, p, q)
 \item{q}{A scalar greater than or equal to 1; the relative risk.}
 }
 \value{
-A non-positive scalar; the log-likelihood contribution of the 
+A non-positive scalar; the loglihood contribution of the 
    observation.
 }
 \description{
-Calculate a term of the incomplete information log likelihood for the 
+Calculate a term of the incomplete information loglihood for the 
 zero-inflated Poisson distribution.
 }
 \keyword{internal}

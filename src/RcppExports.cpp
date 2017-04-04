@@ -133,3 +133,58 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// incomplete_loglihood
+double incomplete_loglihood(const arma::uvec& y, const arma::vec& mu, const arma::vec& p, double q);
+RcppExport SEXP scanstatistics_incomplete_loglihood(SEXP ySEXP, SEXP muSEXP, SEXP pSEXP, SEXP qSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::uvec& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type p(pSEXP);
+    Rcpp::traits::input_parameter< double >::type q(qSEXP);
+    rcpp_result_gen = Rcpp::wrap(incomplete_loglihood(y, mu, p, q));
+    return rcpp_result_gen;
+END_RCPP
+}
+// estimate_struc_zero
+double estimate_struc_zero(double mu, double p, double q);
+RcppExport SEXP scanstatistics_estimate_struc_zero(SEXP muSEXP, SEXP pSEXP, SEXP qSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< double >::type p(pSEXP);
+    Rcpp::traits::input_parameter< double >::type q(qSEXP);
+    rcpp_result_gen = Rcpp::wrap(estimate_struc_zero(mu, p, q));
+    return rcpp_result_gen;
+END_RCPP
+}
+// estimate_q
+double estimate_q(const int y_sum, const arma::vec& mu, const arma::vec& p, const arma::vec& d_hat);
+RcppExport SEXP scanstatistics_estimate_q(SEXP y_sumSEXP, SEXP muSEXP, SEXP pSEXP, SEXP d_hatSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const int >::type y_sum(y_sumSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type p(pSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type d_hat(d_hatSEXP);
+    rcpp_result_gen = Rcpp::wrap(estimate_q(y_sum, mu, p, d_hat));
+    return rcpp_result_gen;
+END_RCPP
+}
+// zip_em_algo
+Rcpp::List zip_em_algo(const arma::uvec y, const arma::vec& mu, const arma::vec& p, double rel_tol);
+RcppExport SEXP scanstatistics_zip_em_algo(SEXP ySEXP, SEXP muSEXP, SEXP pSEXP, SEXP rel_tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::uvec >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type p(pSEXP);
+    Rcpp::traits::input_parameter< double >::type rel_tol(rel_tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(zip_em_algo(y, mu, p, rel_tol));
+    return rcpp_result_gen;
+END_RCPP
+}
