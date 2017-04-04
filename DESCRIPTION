@@ -40,4 +40,5 @@ Suggests:
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1
 ByteCompile: true
-LinkingTo: Rcpp
+SystemRequirements: C++11
+LinkingTo: Rcpp, RcppArmadillo
