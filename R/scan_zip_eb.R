@@ -71,6 +71,10 @@
 #'    Statistic Based on the Zero-Inflated Poisson Distribution}, (Master 
 #'    Thesis, Stockholm University),
 #'    \href{http://goo.gl/6Q89ML}{Link to PDF}.
+#' @importFrom gamlss.dist rZIP
+#' @importFrom ismev gum.fit
+#' @importFrom reliaR pgumbel
+#' @keywords internal
 #' @examples 
 #' \dontrun{
 #' set.seed(1)
@@ -133,7 +137,7 @@ scan_zip_eb <- function(counts,
   repl_stat <- numeric(n_mcsim)
   for (i in seq_len(n_mcsim)) {
     repl_stat[i] <- calc_one_zip_eb(
-      gamlss.dist::rZIP(nrow(counts) * ncol(counts), baselines, probs), 
+      rZIP(nrow(counts) * ncol(counts), baselines, probs), 
       baselines, 
       probs, 
       zones_flat, zone_lengths,
@@ -144,7 +148,7 @@ scan_zip_eb <- function(counts,
   gumbel_mu <- NA
   gumbel_sigma <- NA
   if (n_mcsim > 0 && gumbel) {
-    gum_fit <- ismev::gum.fit(repl_stat, show = FALSE)
+    gum_fit <- gum.fit(repl_stat, show = FALSE)
     gumbel_mu <- gum_fit$mle[1]
     gumbel_sigma <- gum_fit$mle[2]
   }
@@ -153,8 +157,7 @@ scan_zip_eb <- function(counts,
   pvalue <- NA
   if (n_mcsim > 0) {
     if (gumbel) {
-      pvalue <- reliaR::pgumbel(MLC$score, gumbel_mu, gumbel_sigma, 
-                                lower.tail = FALSE)
+      pvalue <- pgumbel(MLC$score, gumbel_mu, gumbel_sigma, lower.tail = FALSE)
     } else {
       pvalue <- mc_pvalue(MLC$score, repl_stat)
     }

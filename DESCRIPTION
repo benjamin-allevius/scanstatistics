@@ -4,9 +4,9 @@ Title: Space-Time Anomaly Detection using Scan Statistics
 Description: Detection of anomalous space-time clusters using the scan 
     statistics methodology. Focuses on prospective surveillance of data streams, 
     scanning for clusters with ongoing anomalies. Hypothesis testing is made 
-    possible by the generation of Monte Carlo p-values.
+    possible by Monte Carlo simulation.
 Version: 0.1.0.9000
-Date: 2016-09-28
+Date: 2017-04-05
 Authors@R: person("Benjamin", "Kjellson", email = "benjak@math.su.se",
   role = c("aut", "cre"))
 Maintainer: Benjamin Kjellson <benjak@math.su.se>
@@ -21,11 +21,13 @@ Imports:
     digest,
     emdbook,
     gamlss.dist, 
+    ismev,
     magrittr,
     methods,
     plyr,
     purrr,
     Rcpp,
+    reliaR,
     sets
 Suggests:
     doParallel,
