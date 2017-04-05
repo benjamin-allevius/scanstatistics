@@ -1,9 +1,7 @@
 #include <cmath>
 #include "probability_functions.h"
 #include "RcppArmadillo.h"
-// [[Rcpp::depends(RcppArmadillo)]]
-using namespace Rcpp;
-using namespace arma;
+// [[depends(RcppArmadillo)]]
 
 // ZIP log-likelihood (incomplete information) ---------------------------------
 
@@ -98,10 +96,10 @@ double estimate_q(const int y_sum,
 //'    } 
 //' @keywords internal
 // [[Rcpp::export]]
-Rcpp::List zip_em_algo(const arma::uvec y,
-                       const arma::vec& mu,
-                       const arma::vec& p,
-                       double rel_tol = 1e-2) {
+Rcpp::List score_zip(const arma::uvec y,
+                     const arma::vec& mu,
+                     const arma::vec& p,
+                     const double rel_tol = 1e-2) {
   Rcpp::List score_q_niter (3);
   
   arma::vec d_hat = arma::zeros(y.n_elem); // Structural zero estimates
@@ -124,6 +122,8 @@ Rcpp::List zip_em_algo(const arma::uvec y,
   double diff = 2.0 * rel_tol;
   int n_iterations = 0;
   while (diff > rel_tol) {
+    n_iterations += 1;
+    
     // Expectation-step
     for (const int& i : zero_idx) {
       d_hat[i] = estimate_struc_zero(mu[i], p[i], q_hat);
@@ -135,7 +135,6 @@ Rcpp::List zip_em_algo(const arma::uvec y,
     loglik_new = incomplete_loglihood(y, mu, p, q_hat);
     diff = abs(exp(loglik_new - loglik_old) - 1);
     loglik_old = loglik_new;
-    n_iterations += 1;
   }
   
   score_q_niter[0] = loglik_new - loglik_null;
@@ -147,35 +146,92 @@ Rcpp::List zip_em_algo(const arma::uvec y,
 
 // EB ZIP scan statistic -------------------------------------------------------
 
-// 
-// // [[Rcpp::export]]
-// double score_zip_eb(const arma::umat counts,
-//                     const arma::vec& baselines,
-//                     const arma::vec& probs,
-//                     bool complete_info = false) {
-//   int n_obs = counts.n_elem;
-// 
-// 
-//   double score;
-//   return score;
-// }
-// 
-// // [[Rcpp::export]]
-// arma::mat calc_all_zip_eb(const arma::umat& counts,
-//                           const arma::mat& baselines,
-//                           const arma::mat& probs,
-//                           const std::vector<IntegerVector>& zones) {
-//   int max_duration = counts.n_rows;
-//   int n_zones = zones.size();
-//   arma::mat scores (n_zones, max_duration);
-// 
-//   for (int d = 0; d < max_duration; ++d) {
-//     for (int i = 0; i < n_zones; ++i) {
-//       scores[i, d] = score_zip(
-//         arma::vectorise(counts.submat(arma::span(0, d), zones[i])),
-//         arma::vectorise(baselines.submat(arma::span(0, d), zones[i])),
-//         arma::vectorise(probs.submat(arma::span(0, d), zones[i])));
-//     }
-//   }
-//   return scores;
-// }
+//' Calculate the loglihood ratio statistic for each zone and duration.
+//' 
+//' Calculate the loglihood ratio statistic for each zone and duration. The
+//' estimate of the relative risk is also calculated, along with the number of
+//' iterations the EM algorithm performed for each zone and duration.
+//' @param counts A matrix of non-negative integers; the observed counts. Rows
+//'    indicate time, ordered from most recent (row 1) to least recent. Columns
+//'    indicate locations; the locations are numbered from 1 and up.
+//' @param baselines A matrix of positive scalars; the expected values of the 
+//'    counts. Of the same dimensions as \code{counts}.
+//' @param probs A matrix of scalars between 0 and 1; the structural zero
+//'    probabilities. Of the same dimensions as \code{counts}.
+//' @param zones An integer vector containing the zones, stored one after 
+//'    another. Each zone is found using the elements of the parameter 
+//'    \code{zone_lengths}. For example, if the first element of 
+//'    \code{zone_lengths} is 5, then the first 5 elements of \code{zones}
+//'    make up the first zone. If the second element of \code{zone_lengths} is
+//'    2, then elements 6 and 7 of \code{zones} make up the second zone, and so
+//'    on.
+//' @param zone_lengths An integer vector holding the number of locations in 
+//'    each zone.
+//' @param rel_tol A positive scalar. If the relative change in the incomplete
+//'    information likelihood is less than this value, then the EM algorithm is
+//'    deemed to have converged.
+//' @return A data frame with five columns:
+//'    \describe{
+//'      \item{zone}{The (number of the) zone.}
+//'      \item{duration}{The duration.}
+//'      \item{score}{The value of the loglihood ratio statistic.}
+//'      \item{relrisk}{The estimated relative risk.}
+//'      \item{n_iter}{The number of iterations performed by the EM algorithm.}
+//'    } 
+//' @keywords internal
+// [[Rcpp::export]]
+Rcpp::DataFrame calc_all_zip_eb(const arma::umat& counts,
+                                const arma::mat& baselines,
+                                const arma::mat& probs,
+                                const arma::uvec zones,
+                                const arma::uvec zone_lengths,
+                                const double rel_tol = 1e-2) {
+  int max_duration = counts.n_rows;
+  int n_zones = zone_lengths.n_elem;
+  
+  // Components of returned list
+  arma::uvec zone_numbers (n_zones * max_duration);
+  arma::uvec durations    (n_zones * max_duration);
+  arma::vec  scores       (n_zones * max_duration);
+  arma::vec  relrisks     (n_zones * max_duration);
+  arma::uvec iterations   (n_zones * max_duration);
+
+  int i = 0;
+  int zone_start = 0;
+  int zone_end = 0;
+  Rcpp::List score_q_niter (3);
+  
+  for (int d = 0; d < max_duration; ++d) {
+    
+    // Vector for extracting d latest time periods
+    arma::uvec row_idx (d + 1);
+    for (int k = 0; k <= d; ++k) row_idx[k] = k;
+    
+    for (int z = 0; z < n_zones; ++z) {
+      zone_numbers[i] = z + 1;
+      durations[i] = d + 1;
+      
+      // Extract zone
+      zone_end = zone_start + zone_lengths[z] - 1;
+      arma::uvec current_zone = zones.subvec(zone_start, zone_end);
+
+      score_q_niter = score_zip(
+        arma::vectorise(counts.submat(row_idx, current_zone)),
+        arma::vectorise(baselines.submat(row_idx, current_zone)),
+        arma::vectorise(probs.submat(row_idx, current_zone)),
+        rel_tol);
+      
+      scores[i]     = score_q_niter[0];
+      relrisks[i]   = score_q_niter[1];
+      iterations[i] = score_q_niter[2];
+      
+      zone_start = zone_end + 1;
+      ++i;
+    }
+  }
+  return Rcpp::DataFrame::create(Rcpp::Named("zone")     = zone_numbers,
+                                 Rcpp::Named("duration") = durations,
+                                 Rcpp::Named("score")    = scores,
+                                 Rcpp::Named("relrisk")  = relrisks,
+                                 Rcpp::Named("n_iter")   = iterations);
+}

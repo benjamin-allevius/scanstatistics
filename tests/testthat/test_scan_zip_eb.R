@@ -23,11 +23,11 @@ test_that("estimate_q", {
   expect_equal(estimate_q(sum(y2), mu2, p2, d2), 2)
 })
 
-test_that("zip_em_algo", {
+test_that("score_zip", {
   # This input should give q_hat = 1 immediately
   in1 <- list(y = c(1,0), mu = c(0.5, 2), p = c(0.1, 0.2))
   out1_expected <- list(0, 1) # loglihood score and relative risk estimate
-  out1_actual <- zip_em_algo(in1$y, in1$mu, in1$p)
+  out1_actual <- score_zip(in1$y, in1$mu, in1$p)
   expect_equal(out1_actual[[1]], out1_expected[[1]])
   expect_equal(out1_actual[[2]], out1_expected[[2]])
   
@@ -35,8 +35,27 @@ test_that("zip_em_algo", {
   in2 <- list(y = c(2,2), mu = c(1, 1), p = c(0.1, 0.2))
   out2_expected <- list(2 * (incomplete_loglihood_term(2, 1, 0.1, 2) - 
                                incomplete_loglihood_term(2, 1, 0.1, 1)), 2) 
-  out2_actual <- zip_em_algo(in2$y, in2$mu, in2$p, 1e-3)
+  out2_actual <- score_zip(in2$y, in2$mu, in2$p, 1e-3)
   expect_equal(out2_actual[[1]], out2_expected[[1]])
   expect_equal(out2_actual[[2]], out2_expected[[2]])
+  
+})
+
+test_that("calc_all_zip_eb", {
+  in1 <- list(
+    counts = matrix(c(1, 0), nrow = 1),
+    baselines = matrix(c(0.5, 2), nrow = 1),
+    probs = matrix(c(0.1, 0.2), nrow = 1),
+    zones = list(1L, 2L, 1:2))
+  in1$zones_flat =  unlist(in1$zones)
+  in1$zone_lengths = unlist(lapply(in1$zones, length))
+  
+  actual1 <- calc_all_zip_eb(in1$counts, in1$baselines, in1$probs, 
+                             in1$zones_flat - 1, in1$zone_lengths)
+  expected1_score <- c(incomplete_loglihood_term(1, 0.5, 0.1, 2) - 
+                         incomplete_loglihood_term(1, 0.5, 0.1, 1),
+                       0, 0)
+  expect_equal(actual1$score, expected1_score)
+  expect_equal(actual1$relrisk, c(2, 1, 1))
   
 })
