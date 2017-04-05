@@ -4,16 +4,24 @@
 \alias{estimate_variances}
 \title{Estimate variances based on observed counts.}
 \usage{
-estimate_variances(counts, pop = NULL)
+estimate_variances(counts, baselines = NULL, population = NULL,
+  constant_dim = 1)
 }
 \arguments{
 \item{counts}{A matrix of observed counts. Rows indicate time (ordered from 
 most recent) and columns indicate locations.}
 
+\item{baselines}{A matrix of the same dimensions as \code{counts} (optional).}
+
 \item{population}{A matrix or vector of populations for each location 
 (optional). If a matrix, should be of the same dimensions as 
 \code{counts}. If a vector, should be of the same length as the number of
 columns in \code{counts}.}
+
+\item{constant_dim}{An integer. If equal to 1, variances are assumed to be
+constant over time but different between locations. If equal to 2, 
+variances are assumed to vary over time but at each time point be equal 
+for all locations.}
 }
 \value{
 A matrix of variances of the same dimensions as \code{counts}.

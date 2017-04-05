@@ -56,14 +56,53 @@ estimate_baselines <- function(counts, population = NULL) {
 #' are constant over time for each location.
 #' @param counts A matrix of observed counts. Rows indicate time (ordered from 
 #'    most recent) and columns indicate locations.
+#' @param baselines A matrix of the same dimensions as \code{counts} (optional).
 #' @param population A matrix or vector of populations for each location 
 #'    (optional). If a matrix, should be of the same dimensions as 
 #'    \code{counts}. If a vector, should be of the same length as the number of
 #'    columns in \code{counts}.
+#' @param constant_dim An integer. If equal to 1, variances are assumed to be
+#'    constant over time but different between locations. If equal to 2, 
+#'    variances are assumed to vary over time but at each time point be equal 
+#'    for all locations.
 #' @return A matrix of variances of the same dimensions as \code{counts}.
 #' @keywords internal
-estimate_variances <- function(counts, pop = NULL) {
+estimate_variances <- function(counts, 
+                               baselines = NULL, 
+                               population = NULL,
+                               constant_dim = 1) {
+  if (is.null(baselines)) {
+    baselines <- estimate_baselines(counts, population)
+  }
   
+}
+
+#' Estimate the parameters of a ZIP distribution.
+#' 
+#' Estimate the ZIP distribution Poisson mean parameters and the structural zero 
+#' probabilities for each location and time point.
+#' @param counts A matrix of observed counts. Rows indicate time (ordered from 
+#'    most recent) and columns indicate locations.
+#' @param population A matrix or vector of populations for each location 
+#'    (optional). If a matrix, should be of the same dimensions as 
+#'    \code{counts}. If a vector, should be of the same length as the number of
+#'    columns in \code{counts}.
+#' @param constant_dim An integer. If equal to 1, probabilities are assumed to 
+#'    be constant over time but different between locations. If equal to 2, 
+#'    probabilities are assumed to vary over time but at each time point be 
+#'    equal for all locations.
+#' @return A list with two elements:
+#'    \describe{
+#'      \item{baselines}{A matrix of the same dimensions as \code{counts}.}
+#'      \item{probs}{A matrix of the same dimensions as \code{counts}.}
+#'    }
+#' @keywords internal
+estimate_zip_params <- function(counts, population = NULL) {
+  baselines <- estimate_baselines(counts, population)
+  # Correct baselines somehow...
+  probs <- baselines # fix
+  
+  list(baselines = baselines, probs = probs)
 }
 
 
