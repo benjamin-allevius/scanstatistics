@@ -42,6 +42,7 @@ test_that("score_zip", {
 })
 
 test_that("calc_all_zip_eb", {
+  # Single timepoint
   in1 <- list(
     counts = matrix(c(1, 0), nrow = 1),
     baselines = matrix(c(0.5, 2), nrow = 1),
@@ -58,4 +59,109 @@ test_that("calc_all_zip_eb", {
   expect_equal(actual1$score, expected1_score)
   expect_equal(actual1$relrisk, c(2, 1, 1))
   
+  # 3 timepoints
+  in2 <- list(
+    counts = matrix(c(1, 0,
+                      2, 1,
+                      0, 20), nrow = 3, byrow = TRUE),
+    baselines = matrix(c(0.5, 2,
+                         0.5, 2,
+                         0.5, 2), nrow = 3, byrow = TRUE),
+    probs = matrix(c(0.1, 0.2,
+                     0.1, 0.2,
+                     0.1, 0.2), nrow = 3, byrow = TRUE),
+    zones = list(1L, 2L, 1:2))
+  in2$zones_flat =  unlist(in2$zones)
+  in2$zone_lengths = unlist(lapply(in2$zones, length))
+  
+  actual2 <- calc_all_zip_eb(in2$counts, in2$baselines, in2$probs, 
+                             in2$zones_flat - 1, in2$zone_lengths)
+  
+  expected2_relrisk <- c(
+    2, 
+    1, 
+    1, 
+    3, 
+    1,  
+    4 / (3 + 2 * (1 - estimate_struc_zero(2, 0.2, 1))),
+    3 / (1 + 0.5 * (1 - estimate_struc_zero(0.5, 0.1, 1))),
+    21 / (4 + 2 * (1 - estimate_struc_zero(
+      2, 0.2, 21 / (4 + 2 * (1 - estimate_struc_zero(2, 0.2, 1)))))))
+  
+  expected2_score <- c(
+    # Duration = 1
+    incomplete_loglihood_term(1, 0.5, 0.1, expected2_relrisk[1]) - 
+      incomplete_loglihood_term(1, 0.5, 0.1, 1),
+     0, 0,
+    # Duration = 2
+     incomplete_loglihood_term(3, 1, 0.1, expected2_relrisk[4]) - 
+       incomplete_loglihood_term(3, 1, 0.1, 1),
+     0,
+     incomplete_loglihood(c(1, 2, 0, 1),
+                          c(0.5, 0.5, 2, 2),
+                          c(0.1, 0.1, 0.2, 0.2),
+                          expected2_relrisk[6]) - 
+       incomplete_loglihood(c(1, 2, 0, 1),
+                            c(0.5, 0.5, 2, 2),
+                            c(0.1, 0.1, 0.2, 0.2),
+                            1),
+    # Duration = 3
+    # zone = 1
+     incomplete_loglihood(
+       c(1, 2, 0), rep(0.5, 3), rep(0.1, 3), expected2_relrisk[7]) - 
+       incomplete_loglihood(c(1, 2, 0), rep(0.5, 3), rep(0.1, 3), 1),
+    # zone = 2
+     incomplete_loglihood(c(0, 1, 20), rep(2, 3), rep(0.2, 3),
+                          expected2_relrisk[8]) - 
+       incomplete_loglihood(c(0, 1, 20), rep(2, 3), rep(0.2, 3), 1))
+  
+  expect_equal(actual2$score[-9], expected2_score)
+  expect_equal(actual2$relrisk[-9], expected2_relrisk)
+})
+
+test_that("calc_one_zip_eb", {
+  # 1 timepoint
+  in1 <- list(
+    counts = matrix(c(1, 0), nrow = 1),
+    baselines = matrix(c(0.5, 2), nrow = 1),
+    probs = matrix(c(0.1, 0.2), nrow = 1),
+    zones = list(1L, 2L, 1:2))
+  in1$zones_flat =  unlist(in1$zones)
+  in1$zone_lengths = unlist(lapply(in1$zones, length))
+  
+  actual1 <- calc_one_zip_eb(in1$counts, in1$baselines, in1$probs, 
+                             in1$zones_flat - 1, in1$zone_lengths)
+  expected1_score <- incomplete_loglihood_term(1, 0.5, 0.1, 2) - 
+                       incomplete_loglihood_term(1, 0.5, 0.1, 1)
+  expect_equal(actual1$score, expected1_score)
+  expect_equal(actual1$relrisk, 2)
+  expect_equal(actual1$zone, 1)
+  
+  # 3 timepoints
+  in2 <- list(
+    counts = matrix(c(1, 0,
+                      2, 1,
+                      0, 20), nrow = 3, byrow = TRUE),
+    baselines = matrix(c(0.5, 2,
+                         0.5, 2,
+                         0.5, 2), nrow = 3, byrow = TRUE),
+    probs = matrix(c(0.1, 0.2,
+                     0.1, 0.2,
+                     0.1, 0.2), nrow = 3, byrow = TRUE),
+    zones = list(1L, 2L, 1:2))
+  in2$zones_flat =  unlist(in2$zones)
+  in2$zone_lengths = unlist(lapply(in2$zones, length))
+  
+  actual2 <- calc_one_zip_eb(in2$counts, in2$baselines, in2$probs, 
+                             in2$zones_flat - 1, in2$zone_lengths)
+  
+  expected2_relrisk <- 21 / (4 + 2 * (1 - estimate_struc_zero(
+    2, 0.2, 21 / (4 + 2 * (1 - estimate_struc_zero(2, 0.2, 1))))))
+  expected2_score <- 
+    incomplete_loglihood(c(0, 1, 20), rep(2, 3), rep(0.2, 3), 
+                         expected2_relrisk) - 
+    incomplete_loglihood(c(0, 1, 20), rep(2, 3), rep(0.2, 3), 1)
+  expect_equal(actual2$score, expected2_score)
+  expect_equal(actual2$relrisk, expected2_relrisk)
+  expect_equal(actual2$zone, 2)
 })

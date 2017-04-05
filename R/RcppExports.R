@@ -225,7 +225,8 @@ score_zip <- function(y, mu, p, rel_tol = 1e-2) {
 #'    \code{zone_lengths} is 5, then the first 5 elements of \code{zones}
 #'    make up the first zone. If the second element of \code{zone_lengths} is
 #'    2, then elements 6 and 7 of \code{zones} make up the second zone, and so
-#'    on.
+#'    on. Note that the zones are numbered from 0 and up in the input, but
+#'    from 1 and up in the output.
 #' @param zone_lengths An integer vector holding the number of locations in 
 #'    each zone.
 #' @param rel_tol A positive scalar. If the relative change in the incomplete
@@ -242,5 +243,26 @@ score_zip <- function(y, mu, p, rel_tol = 1e-2) {
 #' @keywords internal
 calc_all_zip_eb <- function(counts, baselines, probs, zones, zone_lengths, rel_tol = 1e-2) {
     .Call('scanstatistics_calc_all_zip_eb', PACKAGE = 'scanstatistics', counts, baselines, probs, zones, zone_lengths, rel_tol)
+}
+
+#' Calculate the highest-value loglihood ratio statistic..
+#' 
+#' Calculate the loglihood ratio statistic for each zone and duration, but only
+#' keep the zone and duration with the highest value (the MLC). The estimate of 
+#' the relative risk is also calculated, along with the number of iterations 
+#' the EM algorithm performed.
+#' @inheritParams calc_all_zip_eb
+#' @return A data frame with five columns:
+#'    \describe{
+#'      \item{zone}{The top-scoring zone (spatial component of MLC).}
+#'      \item{duration}{The corresponding duration (time-length of MLC).}
+#'      \item{score}{The value of the loglihood ratio statistic (the scan
+#'                   statistic).}
+#'      \item{relrisk}{The estimated relative risk.}
+#'      \item{n_iter}{The number of iterations performed by the EM algorithm.}
+#'    } 
+#' @keywords internal
+calc_one_zip_eb <- function(counts, baselines, probs, zones, zone_lengths, rel_tol = 1e-2) {
+    .Call('scanstatistics_calc_one_zip_eb', PACKAGE = 'scanstatistics', counts, baselines, probs, zones, zone_lengths, rel_tol)
 }
 
