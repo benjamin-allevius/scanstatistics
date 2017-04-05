@@ -330,6 +330,7 @@ subset_aggregation_FF <- function(args,
 #' @importFrom stats rbinom runif
 #' @export
 #' @examples 
+#' \dontrun{
 #' # Set simulation parameters (small)
 #' set.seed(1)
 #' n_loc <- 20
@@ -369,6 +370,7 @@ subset_aggregation_FF <- function(args,
 #'   priority_fun = poisson_priority,
 #'   algorithm = "FN",
 #'   R = 10)
+#' }
 subset_aggregation <- function(args,
                                score_fun = poisson_score,
                                priority_fun = poisson_priority,

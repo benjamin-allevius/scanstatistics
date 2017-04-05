@@ -16,12 +16,13 @@ URL: https://github.com/BenjaK/scanstatistics
 BugReports: https://github.com/BenjaK/scanstatistics/issues
 Depends:
     data.table,
-    R (>= 2.10)
+    R (>= 3.3)
 Imports:
     digest,
     emdbook,
     gamlss.dist, 
     magrittr,
+    methods,
     plyr,
     purrr,
     Rcpp,

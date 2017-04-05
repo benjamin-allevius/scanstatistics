@@ -86,6 +86,7 @@ Note: algorithm not quite as in Neill et al. (2013) since the
    randomly chosen subset of streams is the same for all time windows.
 }
 \examples{
+\dontrun{
 # Set simulation parameters (small)
 set.seed(1)
 n_loc <- 20
@@ -125,6 +126,7 @@ FN_res <- subset_aggregation(
   priority_fun = poisson_priority,
   algorithm = "FN",
   R = 10)
+}
 }
 \references{
 Neill, Daniel B., Edward McFowland, and Huanian Zheng (2013). \emph{Fast 

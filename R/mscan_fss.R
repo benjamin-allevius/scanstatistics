@@ -179,17 +179,18 @@ mscan_fss <- function(counts,
   } else if (distribution[1] == "exponential") {
     priority_fun <- exponential_priority
     score_fun <- exponential_score
-  } else if ( !hasArg("score_fun") || !hasArg("priority_fun") ) {
+  } else if ( !methods::hasArg("score_fun") || 
+              !methods::hasArg("priority_fun") ) {
     stop("Either supply your own score and priority functions, or make sure",
          "that the argument distribution is one of 'poisson', 'gaussian'", 
          "'exponential'.")
   }
   
   # Define score and priority functions if they were supplied
-  if (hasArg("score_fun")) {
+  if (methods::hasArg("score_fun")) {
     score_fun <- args$score_fun
   }
-  if (hasArg("priority_fun")) {
+  if (methods::hasArg("priority_fun")) {
     priority_fun <- args$priority_fun
   }
   
@@ -198,7 +199,7 @@ mscan_fss <- function(counts,
     args$baselines <- estimate_baselines(counts)
     
     if (distribution == "gaussian") {
-      args$variances <- estimate_variances(counts, baselines)
+      args$variances <- estimate_variances(counts)
     }
   }
   
