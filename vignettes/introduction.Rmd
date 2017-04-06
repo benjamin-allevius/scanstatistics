@@ -10,7 +10,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, echo=FALSE}
+```{r, eval=FALSE, echo=FALSE}
 knitr::opts_chunk$set(fig.width=7.15, fig.height=5)
 ```
 
@@ -75,7 +75,7 @@ the _scanstatistics_ package.
 
 To get familiar with the counties of New Mexico, we begin by plotting them on a 
 map using the data table `NM_map` which comes with the _scanstatistics_ package:
-```{r}
+```{r, eval=FALSE}
 library(scanstatistics)
 library(ggplot2)
 
@@ -121,7 +121,7 @@ distance between the seats of the counties, taking into account the curvature
 of the earth. A distance matrix is calculated using the `spDists` function from 
 the _sp_ package, which is then passed to `dist_to_knn` (with $k=15$ neighbors) 
 and on to `knn_zones`:
-```{r}
+```{r, eval=FALSE}
 library(sp)
 library(magrittr)
 
@@ -190,7 +190,7 @@ population and the number of brain cancer cases for each year between
 1973-1991 and each county of New Mexico. Note that the population numbers are
 (perhaps poorly) interpolated from the censuses conducted in 1973, 1982, and 
 1991.
-```{r}
+```{r, eval=FALSE}
 data(NM_popcas)
 
 tab <- NM_popcas[year >= 1986 & year < 1990, ]
@@ -207,7 +207,7 @@ in the years following. A simple generalized linear model (GLM) with a linear
 time trend and an offset for county population size will suffice to demonstrate 
 the scan statistic. We fit such a model and create the needed column as follows:
 
-```{r}
+```{r, eval=FALSE}
 mod_poisson <- glm(count ~ offset(log(population)) + 1 + I(year - 1985), 
                    data = NM_popcas[year < 1986, ], 
                    family = poisson(link = "log"))
@@ -224,7 +224,7 @@ the proportion of times the replicated scan statistics exceeded the observed
 one. The output of `scan_poisson` is an object of class "scanstatistic", which
 comes with the print method seen below.
 
-```{r}
+```{r, eval=FALSE}
 set.seed(1)
 poisson_result <- scan_poisson(tab, zones, n_mcsim = 99)
 print(poisson_result)
@@ -232,7 +232,7 @@ print(poisson_result)
 
 As we can see, the most likely cluster for an anomaly stretches from 1986-1989
 and involves the locations numbered 15 and 26, which correspond to the counties
-```{r, comment=NA}
+```{r, eval=FALSE, comment=NA}
 counties <- as.character(NM_geo$county)
 counties[c(15, 26)]
 ```
@@ -246,7 +246,7 @@ the same cluster.
 We can score each county according to how likely it is to be part of a cluster
 in a heuristic fashion using the function `score_locations`, and visualize the
 results on a heatmap as follows:
-```{r}
+```{r, eval=FALSE}
 # Calculate scores and add column with county names
 county_scores <- score_locations(poisson_result)
 county_scores[, county := counties]
@@ -277,7 +277,7 @@ Finally, if we want to know not just the most likely cluster, but say the five
 top-scoring space-time clusters, we can use the function `top_clusters`.
 The clusters returned can either be overlapping or non-overlapping in the 
 spatial dimension, according to our liking.
-```{r}
+```{r, eval=FALSE}
 top5 <- top_clusters(poisson_result, k = 5, overlapping = FALSE)
 
 # Find the counties corresponding to the spatial zones of the 5 clusters.
@@ -294,7 +294,7 @@ statistics in the table above can be compared to the replicate scan statistics
 calculated earlier. These $p$-values will be conservative, since secondary 
 clusters from the original data are compared to the most likely clusters from
 the replicate data sets.
-```{r}
+```{r, eval=FALSE}
 top5[, pvalue := mc_pvalue(statistic, poisson_result$replicated)]
 
 top5
@@ -336,7 +336,7 @@ GLM to the data. It should be noted that this is purely for demonstrational
 purposes: the negative binomial distribution does not fit this data well at all.
 So if you happen to know of a dataset more suitable, please let me know!
 
-```{r}
+```{r, eval=FALSE}
 suppressWarnings(
 mod_negbin <- MASS::glm.nb(count ~ offset(log(population)) + 1 + I(year - 1985), 
                          data = NM_popcas[year < 1986, ],
@@ -352,7 +352,7 @@ We can now use `scan_negbin` to find the most likely cluster using the ordinary
 version of the scan statistic, again making 99 Monte Carlo replications to 
 obtain a $p$-value:
 
-```{r}
+```{r, eval=FALSE}
 set.seed(1)
 negbin_result1 <- scan_negbin(tab, zones, n_mcsim = 99, version = "ordinary")
 print(negbin_result1)
@@ -361,7 +361,7 @@ print(negbin_result1)
 The ordinary version of the negative binomial scan statistic evidently finds the
 same cluster as the Poisson scan statistic. The increasing version does not,
 however:
-```{r}
+```{r, eval=FALSE}
 set.seed(1)
 negbin_result2 <- scan_negbin(tab, zones, n_mcsim = 99, version = "increasing")
 print(negbin_result2)
@@ -402,7 +402,7 @@ noted that this is purely for demonstrational purposes: there are probably more
 suitable datasets out there, and if you happen to know of one, please let me 
 know!
 
-```{r}
+```{r, eval=FALSE}
 library(pscl, quietly = TRUE)
 mod_zip <- zeroinfl(count ~ offset(log(population)) + 1 + I(year - 1985),
                     data = NM_popcas[year < 1986, ],
@@ -416,7 +416,7 @@ tab[, p := predict(mod_zip, tab, type = "zero")]
 We can now use `scan_zip` to find the most likely cluster, again making 99 Monte 
 Carlo replications to obtain a $p$-value:
 
-```{r}
+```{r, eval=FALSE}
 set.seed(1)
 zip_result <- scan_zip(tab, zones, n_mcsim = 99)
 print(zip_result)
