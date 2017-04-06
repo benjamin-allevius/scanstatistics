@@ -19,9 +19,7 @@ test_that("score_zip", {
   
   # This input holds no zeros and should give q_hat = 2
   in2 <- list(y = c(2, 2), mu = c(1, 1), p = c(0.1, 0.2))
-  out2_expected <- list(2 * (zip_lpmf(2, 2, 0.1) - 
-                               zip_lpmf(2, 1, 0.1)), 
-                        2)
+  out2_expected <- list(2 * (zip_lpmf(2, 2, 0.1) - zip_lpmf(2, 1, 0.1)), 2)
   out2_actual <- score_zip(in2$y, in2$mu, in2$p, 1e-3)
   expect_equal(as.numeric(out2_actual[[1]]), as.numeric(out2_expected[[1]]))
   expect_equal(out2_actual[[2]], out2_expected[[2]])
@@ -40,9 +38,7 @@ test_that("calc_all_zip_eb", {
   
   actual1 <- calc_all_zip_eb(in1$counts, in1$baselines, in1$probs, 
                              in1$zones_flat - 1, in1$zone_lengths)
-  expected1_score <- c(zip_lpmf(1, 1, 0.1) - 
-                         zip_lpmf(1, 0.5, 0.1),
-                       0, 0)
+  expected1_score <- c(zip_lpmf(1, 1, 0.1) - zip_lpmf(1, 0.5, 0.1), 0, 0)
   expect_equal(actual1$score, expected1_score)
   expect_equal(actual1$relrisk, c(2, 1, 1))
   
