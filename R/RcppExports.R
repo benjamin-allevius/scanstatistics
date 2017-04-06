@@ -55,6 +55,40 @@ zip_loglihood <- function(y, mu, p, q) {
     .Call('scanstatistics_zip_loglihood', PACKAGE = 'scanstatistics', y, mu, p, q)
 }
 
+#' Calculate the Poisson loglihood ratio statistic for each zone and duration.
+#'
+#' Calculate the Poisson loglihood ratio statistic for each zone and duration. 
+#' The estimate of the relative risk is also calculated and returned.
+#' @param counts A matrix of non-negative integers; the observed counts. Rows
+#'    indicate time, ordered from most recent (row 1) to least recent. Columns
+#'    indicate locations; the locations are numbered from 1 and up.
+#' @param baselines A matrix of positive scalars; the expected values of the
+#'    counts. Of the same dimensions as \code{counts}.
+#' @param zones An integer vector containing the zones, stored one after
+#'    another. Each zone is found using the elements of the parameter
+#'    \code{zone_lengths}. For example, if the first element of
+#'    \code{zone_lengths} is 5, then the first 5 elements of \code{zones}
+#'    make up the first zone. If the second element of \code{zone_lengths} is
+#'    2, then elements 6 and 7 of \code{zones} make up the second zone, and so
+#'    on. Note that the zones are numbered from 0 and up in the input, but
+#'    from 1 and up in the output.
+#' @param zone_lengths An integer vector holding the number of locations in
+#'    each zone.
+#' @param rel_tol A positive scalar. If the relative change in the incomplete
+#'    information likelihood is less than this value, then the EM algorithm is
+#'    deemed to have converged.
+#' @return A data frame with five columns:
+#'    \describe{
+#'      \item{zone}{The (number of the) zone.}
+#'      \item{duration}{The duration.}
+#'      \item{score}{The value of the loglihood ratio statistic.}
+#'      \item{relrisk}{The estimated relative risk.}
+#'    }
+#' @keywords internal
+calc_all_poisson_eb <- function(counts, agg_baselines, zones, zone_lengths) {
+    .Call('scanstatistics_calc_all_poisson_eb', PACKAGE = 'scanstatistics', counts, agg_baselines, zones, zone_lengths)
+}
+
 #' Calculate the conditional expectation of the structural zero indicator.
 #' 
 #' Calculate the conditional expectation of the structural zero indicator for 
@@ -82,7 +116,7 @@ est_zip_relrisk <- function(y_sum, mu, p, d_hat) {
     .Call('scanstatistics_est_zip_relrisk', PACKAGE = 'scanstatistics', y_sum, mu, p, d_hat)
 }
 
-#' Calculate the loglihood ratio statistic and the relative risk.
+#' Calculate the ZIP loglihood ratio statistic and the relative risk.
 #' @param y A non-negative integer vector; the observed counts.
 #' @param mu A vector of positive scalars; the expected values of the counts.
 #' @param p A vector of scalars between 0 and 1; the structural zero
@@ -100,9 +134,9 @@ score_zip <- function(y, mu, p, rel_tol = 1e-2) {
     .Call('scanstatistics_score_zip', PACKAGE = 'scanstatistics', y, mu, p, rel_tol)
 }
 
-#' Calculate the loglihood ratio statistic for each zone and duration.
+#' Calculate the ZIP loglihood ratio statistic for each zone and duration.
 #' 
-#' Calculate the loglihood ratio statistic for each zone and duration. The
+#' Calculate the ZIP loglihood ratio statistic for each zone and duration. The
 #' estimate of the relative risk is also calculated, along with the number of
 #' iterations the EM algorithm performed for each zone and duration.
 #' @param counts A matrix of non-negative integers; the observed counts. Rows
@@ -138,12 +172,12 @@ calc_all_zip_eb <- function(counts, baselines, probs, zones, zone_lengths, rel_t
     .Call('scanstatistics_calc_all_zip_eb', PACKAGE = 'scanstatistics', counts, baselines, probs, zones, zone_lengths, rel_tol)
 }
 
-#' Calculate the highest-value loglihood ratio statistic.
+#' Calculate the highest-value ZIP loglihood ratio statistic.
 #' 
-#' Calculate the loglihood ratio statistic for each zone and duration, but only
-#' keep the zone and duration with the highest value (the MLC). The estimate of 
-#' the relative risk is also calculated, along with the number of iterations 
-#' the EM algorithm performed.
+#' Calculate the ZIP loglihood ratio statistic for each zone and duration, but 
+#' only keep the zone and duration with the highest value (the MLC). The 
+#' estimate of the relative risk is also calculated, along with the number of 
+#' iterations the EM algorithm performed.
 #' @inheritParams calc_all_zip_eb
 #' @return A data frame with five columns:
 #'    \describe{
