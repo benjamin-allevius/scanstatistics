@@ -54,7 +54,7 @@ double est_zip_relrisk(const int y_sum,
 //'    } 
 //' @keywords internal
 // [[Rcpp::export]]
-Rcpp::List score_zip(const arma::uvec y,
+Rcpp::List score_zip(const arma::uvec& y,
                      const arma::vec& mu,
                      const arma::vec& p,
                      const double rel_tol = 1e-2) {
@@ -142,8 +142,8 @@ Rcpp::List score_zip(const arma::uvec y,
 Rcpp::DataFrame calc_all_zip_eb(const arma::umat& counts,
                                 const arma::mat& baselines,
                                 const arma::mat& probs,
-                                const arma::uvec zones,
-                                const arma::uvec zone_lengths,
+                                const arma::uvec& zones,
+                                const arma::uvec& zone_lengths,
                                 const double rel_tol = 1e-2) {
   int max_duration = counts.n_rows;
   int n_zones = zone_lengths.n_elem;
@@ -219,8 +219,8 @@ Rcpp::DataFrame calc_all_zip_eb(const arma::umat& counts,
 Rcpp::DataFrame calc_one_zip_eb(const arma::umat& counts,
                                 const arma::mat& baselines,
                                 const arma::mat& probs,
-                                const arma::uvec zones,
-                                const arma::uvec zone_lengths,
+                                const arma::uvec& zones,
+                                const arma::uvec& zone_lengths,
                                 const double rel_tol = 1e-2) {
   int max_duration = counts.n_rows;
   int n_zones = zone_lengths.n_elem;
