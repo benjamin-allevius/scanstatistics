@@ -4,32 +4,40 @@
 \alias{estimate_zip_params}
 \title{Estimate the parameters of a ZIP distribution.}
 \usage{
-estimate_zip_params(counts, population = NULL)
+estimate_zip_params(counts, population = NULL, min_p = 0.001,
+  min_mu = 0.3)
 }
 \arguments{
-\item{counts}{A matrix of observed counts. Rows indicate time (ordered from 
-most recent) and columns indicate locations.}
+\item{counts}{A matrix or vector of observed counts. Rows indicate time 
+(ordered from most recent) and columns indicate locations. If a vector,
+the elements are assumed to be the counts for each location.}
 
 \item{population}{A matrix or vector of populations for each location 
 (optional). If a matrix, should be of the same dimensions as 
 \code{counts}. If a vector, should be of the same length as the number of
 columns in \code{counts}.}
 
-\item{constant_dim}{An integer. If equal to 1, probabilities are assumed to 
-be constant over time but different between locations. If equal to 2, 
-probabilities are assumed to vary over time but at each time point be 
-equal for all locations.}
+\item{min_p}{The minimum value you think possible for the structural zero
+probability.}
+
+\item{min_mu}{The mimum value you think possible for the Poisson mean 
+parameter of the ZIP distribution (before adjusting for population size).}
 }
 \value{
 A list with two elements:
    \describe{
-     \item{baselines}{A matrix of the same dimensions as \code{counts}.}
-     \item{probs}{A matrix of the same dimensions as \code{counts}.}
+     \item{baselines}{A matrix of the same dimensions as \code{counts}.
+                      If \code{counts} was a vector, a matrix with 1 row will
+                      be returned.}
+     \item{probs}{A matrix of the same dimensions as \code{counts}. If 
+                  \code{counts} was a vector, a matrix with 1 row will be
+                  returned.}
    }
 }
 \description{
-Estimate the ZIP distribution Poisson mean parameters and the structural zero 
-probabilities for each location and time point.
+Heuristically estimate the ZIP distribution Poisson mean parameters and the 
+structural zero probabilities for each location and time point. Assumes the 
+structural zero probability is constant over time for each location.
 }
 \keyword{internal}
 
