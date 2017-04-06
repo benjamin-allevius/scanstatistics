@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{calc_one_zip_eb}
 \alias{calc_one_zip_eb}
-\title{Calculate the highest-value loglihood ratio statistic..}
+\title{Calculate the highest-value loglihood ratio statistic.}
 \usage{
 calc_one_zip_eb(counts, baselines, probs, zones, zone_lengths, rel_tol = 0.01)
 }

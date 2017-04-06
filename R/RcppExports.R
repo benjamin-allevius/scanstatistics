@@ -3,181 +3,74 @@
 
 #' The log probability mass function of the Poisson distribution.
 #' 
-#' @param x An integer.
-#' @param lambda A positive scalar.
+#' The log probability mass function of the Poisson distribution, evaluated at
+#' \code{y}.
+#' @param y An integer.
+#' @param mu A positive scalar.
 #' @return A log-probability.
 #' @export
 #' @keywords internal
-poisson_lpmf <- function(x, lambda) {
-    .Call('scanstatistics_poisson_lpmf', PACKAGE = 'scanstatistics', x, lambda)
+poisson_lpmf <- function(y, mu) {
+    .Call('scanstatistics_poisson_lpmf', PACKAGE = 'scanstatistics', y, mu)
 }
 
-#' Terms in the log-product (sum) of the EB-ZIP window statistic.
-#' 
-#' Computes one or more terms in the log-product (sum) of the numerator or 
-#' denominator of the EB-ZIP window statistic (i.e. the one calculated for a 
-#' given space-time window W).
-#' @param p Numeric vector of structural zero probabilities.
-#' @param d Numeric vector of estimates of the structural zero indicators. Of 
-#'    same length as \code{p}.
-#' @param mu Numeric vector of given/estimated Poisson expected value 
-#' parameters. Of same length as \code{p}.
-#' @param y Integer vector of observed counts. Of same length as \code{p}.
-#' @param tol Scalar; probability p below this is considered equal to zero.
-#' @return A numeric vector of same length as input vector \code{p}.
+#' Calculate the Poisson log-likelihood.
+#'
+#' Calculate the log-likelihood for the Poisson distribution.
+#' @param y A non-negative integer vector; the observed counts.
+#' @param mu A vector of positive scalars; the expected values of the counts.
+#' @param q A scalar greater than or equal to 1; the relative risk.
+#' @return A non-positive scalar; the log-likelihood.
 #' @keywords internal
-zip_statistic_logfactor <- function(p, d, mu, y, tol = 1e-08) {
-    .Call('scanstatistics_zip_statistic_logfactor', PACKAGE = 'scanstatistics', p, d, mu, y, tol)
+poisson_loglihood <- function(y, mu, q) {
+    .Call('scanstatistics_poisson_loglihood', PACKAGE = 'scanstatistics', y, mu, q)
 }
 
-#' Estimate the relative risk for an outbreak using a ZIP distribution.
+#' The log probability mass function of the ZIP distribution.
 #' 
-#' Scalar estimate of the relative risk \eqn{q} for zero-inflated Poisson data.
-#' @param d A vector of indicator variables for whether the corresponding count
-#'    in the argument \code{y} is an excess zero or not. Can also be estimates 
-#'    of these indicators.
-#' @param mu A vector of given/estimated Poisson expected value parameters, of 
-#'    same length as \code{d}.
-#' @param y An integer vector of the observed counts, of same length as 
-#'    \code{d}.
-#' @return A scalar, the estimated relative risk.
-#' @keywords internal
-estimate_zip_relrisk <- function(d, mu, y) {
-    .Call('scanstatistics_estimate_zip_relrisk', PACKAGE = 'scanstatistics', d, mu, y)
-}
-
-#' Estimate the indicators of excess zeros for a ZIP distribution.
-#' 
-#' Given counts and (estimated) Poisson expected value parameters and excess 
-#' zero probabilities, this function estimates the indicator variable for an 
-#' excess zero, for each count.
-#' @param p A numeric vector, each element being the given/estimated 
-#'    probability of an excess zero for the corresponding count in \code{y}.
-#' @param mu A numeric vector, each element being the given/estimated Poisson 
-#'    expected value parameter for the corresponding count in \code{y}. Of same 
-#'    length as \code{p}.
-#' @param y An integer vector containing the observed counts. Of same length as 
-#'    \code{p}.
-#' @return A numeric vector, of same length as the input vector \code{p}.
-#' @keywords internal
-estimate_d <- function(p, mu, y) {
-    .Call('scanstatistics_estimate_d', PACKAGE = 'scanstatistics', p, mu, y)
-}
-
-#' Estimates the ZIP relative risk and excess zero indicators for a window.
-#' 
-#' For a single spatial or space-time window, this function uses the EM 
-#' algorithm to estimate the relative risk and the excess zero indicators for 
-#' counts assumed to be generated from a zero-inflated Poisson distribution.
-#' @param p A numeric vector of the given/estimated excess zero probabilities 
-#'    corresponding to each count.
-#' @param mu A numeric vector of the given/estimated Poisson expected value
-#'    parameters corresponding to each count. Of same length as \code{p}.
-#' @param y An integer vector of the observed counts, of same length as 
-#'    \code{p}.
-#' @param tol A scalar between 0 and 1. It is the absolute tolerance criterion
-#'    for the estimate of the excess zero indicator; convergence is reached when
-#'    two successive elements in the sequence of estimates have an absolute 
-#'    difference less than \code{tol}.
-#' @return A list with two elements:
-#' \describe{
-#'   \item{q}{Scalar estimate of the relative risk.}
-#'   \item{dstar}{Estimates of the excess zero indicator variables.}
-#' }
-#' @keywords internal
-zip_em_estimates <- function(p, mu, y, tol = 0.01) {
-    .Call('scanstatistics_zip_em_estimates', PACKAGE = 'scanstatistics', p, mu, y, tol)
-}
-
-#' Calculate a term in the sum of the logarithm of the ZIP window statistic.
-#' 
-#' This function calculates a term which appears in the sum of the logarithm of
-#' the zero-inflated Poisson statistic for a given space-time window.
-#' @param q Scalar; the relative risk.
-#' @param p Numeric vector of excess zero probabilities.
-#' @param dstar Numeric vector of estimates of the excess zero indicators, under 
-#'    the alternative hypothesis of an outbreak. Of same length as \code{p}.
-#' @param ddagger Numeric vector of estimates of the excess zero indicators, 
-#'    under the null hypothesis of no outbreak. Of same length as \code{p}.
-#' @param mu Numeric vector of given/estimated Poisson expected value 
-#'    parameters. Of same length as \code{p}.
-#' @param y Integer vector of observed counts. Of same length as \code{p}.
-#' @return A numeric vector of same length as input vector \code{p}.
-#' @keywords internal
-zip_statistic_term <- function(q, p, dstar, ddagger, mu, y) {
-    .Call('scanstatistics_zip_statistic_term', PACKAGE = 'scanstatistics', q, p, dstar, ddagger, mu, y)
-}
-
-#' Calculate the ZIP statistic for a single space-time window.
-#' 
-#' Calculate the single-window statistic for the zero-inflated Poisson 
-#' distribution using the EM algorithm.
-#' @inheritParams zip_em_estimates
-#' @param ... Named parameters passed to \code{\link{zip_em_estimates}}.
-#' @return A scalar, the (logarithm of the) ZIP statistic.
-#' @keywords internal
-window_zip_statistic <- function(p, mu, y, tol = 0.01) {
-    .Call('scanstatistics_window_zip_statistic', PACKAGE = 'scanstatistics', p, mu, y, tol)
-}
-
-#' Calculate the ZIP window statistic over all durations, for a given zone.
-#' 
-#' This function calculates the zero-inflated Poisson statistic for a given 
-#' spatial zone, for all durations considered.
-#' @param duration An integer vector.
-#' @inheritParams zip_em_estimates
-#' @return A list with two elements:
-#' \describe{
-#'   \item{duration}{Vector of integers from 1 to \code{maxdur}.}
-#'   \item{statistic}{Numeric vector containing the ZIP statistics corresponding
-#'   to each duration, for the given spatial zone.}
-#' }
-#' @keywords internal
-calc_zipstat_over_duration <- function(duration, p, mu, y, maxdur, tol = 0.01) {
-    .Call('scanstatistics_calc_zipstat_over_duration', PACKAGE = 'scanstatistics', duration, p, mu, y, maxdur, tol)
-}
-
-#' Calculate a term of the incomplete information loglihood.
-#' 
-#' Calculate a term of the incomplete information loglihood for the 
-#' zero-inflated Poisson distribution.
+#' The log probability mass function of the Poisson distribution, evaluated at
+#' \code{x}.
 #' @param y A non-negative integer; the observed count.
 #' @param mu A positive scalar; the expected value of the count.
 #' @param p A scalar between 0 and 1; the structural zero probability.
-#' @param q A scalar greater than or equal to 1; the relative risk.
 #' @return A non-positive scalar; the loglihood contribution of the 
 #'    observation.
 #' @keywords internal
-incompl_zip_loglihood_term <- function(y, mu, p, q) {
-    .Call('scanstatistics_incompl_zip_loglihood_term', PACKAGE = 'scanstatistics', y, mu, p, q)
+zip_lpmf <- function(y, mu, p) {
+    .Call('scanstatistics_zip_lpmf', PACKAGE = 'scanstatistics', y, mu, p)
 }
 
-#' Calculate the incomplete information loglihood.
+#' Calculate the ZIP log-likelihood.
 #'
-#' Calculate the incomplete information loglihood for the zero-inflated Poisson 
-#' distribution.
-#' @param y A non-negative integer vector; the observed counts.
+#' Calculate the (incomplete information) log-likelihood for the zero-inflated 
+#' Poisson distribution.
+#' @param y A vector of non-negative integers; the observed counts.
 #' @param mu A vector of positive scalars; the expected values of the counts.
 #' @param p A vector of scalars between 0 and 1; the structural zero
 #'    probabilities.
 #' @param q A scalar greater than or equal to 1; the relative risk.
 #' @return A non-positive scalar; the incomplete information ZIP loglihood.
 #' @keywords internal
-incomplete_zip_loglihood <- function(y, mu, p, q) {
-    .Call('scanstatistics_incomplete_zip_loglihood', PACKAGE = 'scanstatistics', y, mu, p, q)
+zip_loglihood <- function(y, mu, p, q) {
+    .Call('scanstatistics_zip_loglihood', PACKAGE = 'scanstatistics', y, mu, p, q)
 }
 
 #' Calculate the conditional expectation of the structural zero indicator.
+#' 
+#' Calculate the conditional expectation of the structural zero indicator for 
+#' the zero-inflated Poisson distribution.
 #' @param mu The expected values of the count (which is zero).
 #' @param p The structural zero probability.
 #' @param q A scalar greater than or equal to 1; the relative risk.
 #' @return A scalar between 0 and 1.
 #' @keywords internal
-estimate_struc_zero <- function(mu, p, q) {
-    .Call('scanstatistics_estimate_struc_zero', PACKAGE = 'scanstatistics', mu, p, q)
+est_zip_zero_indicator <- function(mu, p, q) {
+    .Call('scanstatistics_est_zip_zero_indicator', PACKAGE = 'scanstatistics', mu, p, q)
 }
 
-#' Estimate the relative risk.
+#' Estimate the relative risk for the ZIP distribution.
+#' 
+#' Estimate the relative risk for the ZIP distribution.
 #' @param y_sum A non-negative integer; the sum of the observed counts.
 #' @param mu A vector of positive scalars; the expected values of the counts.
 #' @param p A vector of scalars between 0 and 1; the structural zero
@@ -185,8 +78,8 @@ estimate_struc_zero <- function(mu, p, q) {
 #' @param d_hat A vector of estimates of the structural zero indicators.
 #' @return A scalar; the relative risk.
 #' @keywords internal
-estimate_q <- function(y_sum, mu, p, d_hat) {
-    .Call('scanstatistics_estimate_q', PACKAGE = 'scanstatistics', y_sum, mu, p, d_hat)
+est_zip_relrisk <- function(y_sum, mu, p, d_hat) {
+    .Call('scanstatistics_est_zip_relrisk', PACKAGE = 'scanstatistics', y_sum, mu, p, d_hat)
 }
 
 #' Calculate the loglihood ratio statistic and the relative risk.
@@ -245,7 +138,7 @@ calc_all_zip_eb <- function(counts, baselines, probs, zones, zone_lengths, rel_t
     .Call('scanstatistics_calc_all_zip_eb', PACKAGE = 'scanstatistics', counts, baselines, probs, zones, zone_lengths, rel_tol)
 }
 
-#' Calculate the highest-value loglihood ratio statistic..
+#' Calculate the highest-value loglihood ratio statistic.
 #' 
 #' Calculate the loglihood ratio statistic for each zone and duration, but only
 #' keep the zone and duration with the highest value (the MLC). The estimate of 

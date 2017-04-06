@@ -4,18 +4,19 @@
 \alias{poisson_lpmf}
 \title{The log probability mass function of the Poisson distribution.}
 \usage{
-poisson_lpmf(x, lambda)
+poisson_lpmf(y, mu)
 }
 \arguments{
-\item{x}{An integer.}
+\item{y}{An integer.}
 
-\item{lambda}{A positive scalar.}
+\item{mu}{A positive scalar.}
 }
 \value{
 A log-probability.
 }
 \description{
-The log probability mass function of the Poisson distribution.
+The log probability mass function of the Poisson distribution, evaluated at
+\code{y}.
 }
 \keyword{internal}
 

@@ -7,162 +7,73 @@
 using namespace Rcpp;
 
 // poisson_lpmf
-double poisson_lpmf(const double x, const double lambda);
-RcppExport SEXP scanstatistics_poisson_lpmf(SEXP xSEXP, SEXP lambdaSEXP) {
+double poisson_lpmf(const double y, const double mu);
+RcppExport SEXP scanstatistics_poisson_lpmf(SEXP ySEXP, SEXP muSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const double >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const double >::type lambda(lambdaSEXP);
-    rcpp_result_gen = Rcpp::wrap(poisson_lpmf(x, lambda));
+    Rcpp::traits::input_parameter< const double >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    rcpp_result_gen = Rcpp::wrap(poisson_lpmf(y, mu));
     return rcpp_result_gen;
 END_RCPP
 }
-// zip_statistic_logfactor
-NumericVector zip_statistic_logfactor(const NumericVector& p, const NumericVector& d, const NumericVector& mu, const NumericVector& y, double tol);
-RcppExport SEXP scanstatistics_zip_statistic_logfactor(SEXP pSEXP, SEXP dSEXP, SEXP muSEXP, SEXP ySEXP, SEXP tolSEXP) {
+// poisson_loglihood
+double poisson_loglihood(const arma::uvec& y, const arma::vec& mu, const double q);
+RcppExport SEXP scanstatistics_poisson_loglihood(SEXP ySEXP, SEXP muSEXP, SEXP qSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericVector& >::type p(pSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type d(dSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type y(ySEXP);
-    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(zip_statistic_logfactor(p, d, mu, y, tol));
+    Rcpp::traits::input_parameter< const arma::uvec& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const double >::type q(qSEXP);
+    rcpp_result_gen = Rcpp::wrap(poisson_loglihood(y, mu, q));
     return rcpp_result_gen;
 END_RCPP
 }
-// estimate_zip_relrisk
-double estimate_zip_relrisk(const NumericVector& d, const NumericVector& mu, const NumericVector& y);
-RcppExport SEXP scanstatistics_estimate_zip_relrisk(SEXP dSEXP, SEXP muSEXP, SEXP ySEXP) {
+// zip_lpmf
+double zip_lpmf(const int y, const double mu, const double p);
+RcppExport SEXP scanstatistics_zip_lpmf(SEXP ySEXP, SEXP muSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericVector& >::type d(dSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type y(ySEXP);
-    rcpp_result_gen = Rcpp::wrap(estimate_zip_relrisk(d, mu, y));
+    Rcpp::traits::input_parameter< const int >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const double >::type p(pSEXP);
+    rcpp_result_gen = Rcpp::wrap(zip_lpmf(y, mu, p));
     return rcpp_result_gen;
 END_RCPP
 }
-// estimate_d
-NumericVector estimate_d(const NumericVector& p, const NumericVector& mu, const NumericVector& y);
-RcppExport SEXP scanstatistics_estimate_d(SEXP pSEXP, SEXP muSEXP, SEXP ySEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericVector& >::type p(pSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type y(ySEXP);
-    rcpp_result_gen = Rcpp::wrap(estimate_d(p, mu, y));
-    return rcpp_result_gen;
-END_RCPP
-}
-// zip_em_estimates
-List zip_em_estimates(const NumericVector& p, const NumericVector& mu, const NumericVector& y, double tol);
-RcppExport SEXP scanstatistics_zip_em_estimates(SEXP pSEXP, SEXP muSEXP, SEXP ySEXP, SEXP tolSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericVector& >::type p(pSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type y(ySEXP);
-    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(zip_em_estimates(p, mu, y, tol));
-    return rcpp_result_gen;
-END_RCPP
-}
-// zip_statistic_term
-NumericVector zip_statistic_term(double q, const NumericVector& p, const NumericVector& dstar, const NumericVector& ddagger, const NumericVector& mu, const NumericVector& y);
-RcppExport SEXP scanstatistics_zip_statistic_term(SEXP qSEXP, SEXP pSEXP, SEXP dstarSEXP, SEXP ddaggerSEXP, SEXP muSEXP, SEXP ySEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type q(qSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type p(pSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type dstar(dstarSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type ddagger(ddaggerSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type y(ySEXP);
-    rcpp_result_gen = Rcpp::wrap(zip_statistic_term(q, p, dstar, ddagger, mu, y));
-    return rcpp_result_gen;
-END_RCPP
-}
-// window_zip_statistic
-double window_zip_statistic(const NumericVector& p, const NumericVector& mu, const NumericVector& y, double tol);
-RcppExport SEXP scanstatistics_window_zip_statistic(SEXP pSEXP, SEXP muSEXP, SEXP ySEXP, SEXP tolSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericVector& >::type p(pSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type y(ySEXP);
-    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(window_zip_statistic(p, mu, y, tol));
-    return rcpp_result_gen;
-END_RCPP
-}
-// calc_zipstat_over_duration
-List calc_zipstat_over_duration(const IntegerVector& duration, const NumericVector& p, const NumericVector& mu, const NumericVector& y, int maxdur, double tol);
-RcppExport SEXP scanstatistics_calc_zipstat_over_duration(SEXP durationSEXP, SEXP pSEXP, SEXP muSEXP, SEXP ySEXP, SEXP maxdurSEXP, SEXP tolSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const IntegerVector& >::type duration(durationSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type p(pSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type y(ySEXP);
-    Rcpp::traits::input_parameter< int >::type maxdur(maxdurSEXP);
-    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(calc_zipstat_over_duration(duration, p, mu, y, maxdur, tol));
-    return rcpp_result_gen;
-END_RCPP
-}
-// incompl_zip_loglihood_term
-double incompl_zip_loglihood_term(int y, double mu, double p, double q);
-RcppExport SEXP scanstatistics_incompl_zip_loglihood_term(SEXP ySEXP, SEXP muSEXP, SEXP pSEXP, SEXP qSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type y(ySEXP);
-    Rcpp::traits::input_parameter< double >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< double >::type p(pSEXP);
-    Rcpp::traits::input_parameter< double >::type q(qSEXP);
-    rcpp_result_gen = Rcpp::wrap(incompl_zip_loglihood_term(y, mu, p, q));
-    return rcpp_result_gen;
-END_RCPP
-}
-// incomplete_zip_loglihood
-double incomplete_zip_loglihood(const arma::uvec& y, const arma::vec& mu, const arma::vec& p, double q);
-RcppExport SEXP scanstatistics_incomplete_zip_loglihood(SEXP ySEXP, SEXP muSEXP, SEXP pSEXP, SEXP qSEXP) {
+// zip_loglihood
+double zip_loglihood(const arma::uvec& y, const arma::vec& mu, const arma::vec& p, const double q);
+RcppExport SEXP scanstatistics_zip_loglihood(SEXP ySEXP, SEXP muSEXP, SEXP pSEXP, SEXP qSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::uvec& >::type y(ySEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type mu(muSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type p(pSEXP);
-    Rcpp::traits::input_parameter< double >::type q(qSEXP);
-    rcpp_result_gen = Rcpp::wrap(incomplete_zip_loglihood(y, mu, p, q));
+    Rcpp::traits::input_parameter< const double >::type q(qSEXP);
+    rcpp_result_gen = Rcpp::wrap(zip_loglihood(y, mu, p, q));
     return rcpp_result_gen;
 END_RCPP
 }
-// estimate_struc_zero
-double estimate_struc_zero(double mu, double p, double q);
-RcppExport SEXP scanstatistics_estimate_struc_zero(SEXP muSEXP, SEXP pSEXP, SEXP qSEXP) {
+// est_zip_zero_indicator
+double est_zip_zero_indicator(const double mu, const double p, const double q);
+RcppExport SEXP scanstatistics_est_zip_zero_indicator(SEXP muSEXP, SEXP pSEXP, SEXP qSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< double >::type p(pSEXP);
-    Rcpp::traits::input_parameter< double >::type q(qSEXP);
-    rcpp_result_gen = Rcpp::wrap(estimate_struc_zero(mu, p, q));
+    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const double >::type p(pSEXP);
+    Rcpp::traits::input_parameter< const double >::type q(qSEXP);
+    rcpp_result_gen = Rcpp::wrap(est_zip_zero_indicator(mu, p, q));
     return rcpp_result_gen;
 END_RCPP
 }
-// estimate_q
-double estimate_q(const int y_sum, const arma::vec& mu, const arma::vec& p, const arma::vec& d_hat);
-RcppExport SEXP scanstatistics_estimate_q(SEXP y_sumSEXP, SEXP muSEXP, SEXP pSEXP, SEXP d_hatSEXP) {
+// est_zip_relrisk
+double est_zip_relrisk(const int y_sum, const arma::vec& mu, const arma::vec& p, const arma::vec& d_hat);
+RcppExport SEXP scanstatistics_est_zip_relrisk(SEXP y_sumSEXP, SEXP muSEXP, SEXP pSEXP, SEXP d_hatSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -170,7 +81,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type mu(muSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type p(pSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type d_hat(d_hatSEXP);
-    rcpp_result_gen = Rcpp::wrap(estimate_q(y_sum, mu, p, d_hat));
+    rcpp_result_gen = Rcpp::wrap(est_zip_relrisk(y_sum, mu, p, d_hat));
     return rcpp_result_gen;
 END_RCPP
 }
