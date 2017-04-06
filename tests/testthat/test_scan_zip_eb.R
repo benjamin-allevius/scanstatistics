@@ -1,26 +1,26 @@
 context("EB ZIP statistic tests")
 
 
-test_that("est_zip_relrisk", {
+test_that("est_eb_zip_relrisk", {
   y1 <- c(1, 0); mu1 <- c(0.5, 2); p1 <- c(0.1, 0.2); d1 <- c(0, 0.65)
-  expect_equal(est_zip_relrisk(sum(y1), mu1, p1, d1), 1)
+  expect_equal(est_eb_zip_relrisk(sum(y1), mu1, p1, d1), 1)
   
   y2 <- c(2, 2); mu2 <- c(1, 1); p2 <- c(0.1, 0.2); d2 <- c(0, 0)
-  expect_equal(est_zip_relrisk(sum(y2), mu2, p2, d2), 2)
+  expect_equal(est_eb_zip_relrisk(sum(y2), mu2, p2, d2), 2)
 })
 
-test_that("score_zip", {
+test_that("score_zip_eb", {
   # This input should give q_hat = 1 immediately
   in1 <- list(y = c(1,0), mu = c(0.5, 2), p = c(0.1, 0.2))
   out1_expected <- list(0, 1) # loglihood score and relative risk estimate
-  out1_actual <- score_zip(in1$y, in1$mu, in1$p)
+  out1_actual <- score_zip_eb(in1$y, in1$mu, in1$p)
   expect_equal(out1_actual[[1]], out1_expected[[1]])
   expect_equal(out1_actual[[2]], out1_expected[[2]])
   
   # This input holds no zeros and should give q_hat = 2
   in2 <- list(y = c(2, 2), mu = c(1, 1), p = c(0.1, 0.2))
   out2_expected <- list(2 * (zip_lpmf(2, 2, 0.1) - zip_lpmf(2, 1, 0.1)), 2)
-  out2_actual <- score_zip(in2$y, in2$mu, in2$p, 1e-3)
+  out2_actual <- score_zip_eb(in2$y, in2$mu, in2$p, 1e-3)
   expect_equal(as.numeric(out2_actual[[1]]), as.numeric(out2_expected[[1]]))
   expect_equal(out2_actual[[2]], out2_expected[[2]])
   

@@ -2,9 +2,10 @@
 % Please edit documentation in R/RcppExports.R
 \name{calc_one_zip_eb}
 \alias{calc_one_zip_eb}
-\title{Calculate the highest-value ZIP loglihood ratio statistic.}
+\title{Calculate the highest-value (EB) ZIP loglihood ratio statistic.}
 \usage{
-calc_one_zip_eb(counts, baselines, probs, zones, zone_lengths, rel_tol = 0.01)
+calc_one_zip_eb(counts, baselines, probs, zones, zone_lengths,
+  rel_tol = 0.001)
 }
 \arguments{
 \item{counts}{A matrix of non-negative integers; the observed counts. Rows
@@ -45,10 +46,10 @@ A data frame with five columns:
    }
 }
 \description{
-Calculate the ZIP loglihood ratio statistic for each zone and duration, but 
-only keep the zone and duration with the highest value (the MLC). The 
-estimate of the relative risk is also calculated, along with the number of 
-iterations the EM algorithm performed.
+Calculate the expectation-based ZIP loglihood ratio statistic for each zone 
+and duration, but only keep the zone and duration with the highest value 
+(the MLC). The estimate of the relative risk is also calculated, along with 
+the number of iterations the EM algorithm performed.
 }
 \keyword{internal}
 

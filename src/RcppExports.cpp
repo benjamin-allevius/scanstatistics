@@ -72,6 +72,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// calc_all_poisson_pb
+Rcpp::DataFrame calc_all_poisson_pb(const arma::umat& counts, const arma::mat& agg_baselines, const arma::uvec& zones, const arma::uvec& zone_lengths);
+RcppExport SEXP scanstatistics_calc_all_poisson_pb(SEXP countsSEXP, SEXP agg_baselinesSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::umat& >::type counts(countsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type agg_baselines(agg_baselinesSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type zones(zonesSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type zone_lengths(zone_lengthsSEXP);
+    rcpp_result_gen = Rcpp::wrap(calc_all_poisson_pb(counts, agg_baselines, zones, zone_lengths));
+    return rcpp_result_gen;
+END_RCPP
+}
 // est_zip_zero_indicator
 double est_zip_zero_indicator(const double mu, const double p, const double q);
 RcppExport SEXP scanstatistics_est_zip_zero_indicator(SEXP muSEXP, SEXP pSEXP, SEXP qSEXP) {
@@ -85,9 +99,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// est_zip_relrisk
-double est_zip_relrisk(const int y_sum, const arma::vec& mu, const arma::vec& p, const arma::vec& d_hat);
-RcppExport SEXP scanstatistics_est_zip_relrisk(SEXP y_sumSEXP, SEXP muSEXP, SEXP pSEXP, SEXP d_hatSEXP) {
+// est_eb_zip_relrisk
+double est_eb_zip_relrisk(const int y_sum, const arma::vec& mu, const arma::vec& p, const arma::vec& d_hat);
+RcppExport SEXP scanstatistics_est_eb_zip_relrisk(SEXP y_sumSEXP, SEXP muSEXP, SEXP pSEXP, SEXP d_hatSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -95,13 +109,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type mu(muSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type p(pSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type d_hat(d_hatSEXP);
-    rcpp_result_gen = Rcpp::wrap(est_zip_relrisk(y_sum, mu, p, d_hat));
+    rcpp_result_gen = Rcpp::wrap(est_eb_zip_relrisk(y_sum, mu, p, d_hat));
     return rcpp_result_gen;
 END_RCPP
 }
-// score_zip
-Rcpp::List score_zip(const arma::uvec& y, const arma::vec& mu, const arma::vec& p, const double rel_tol);
-RcppExport SEXP scanstatistics_score_zip(SEXP ySEXP, SEXP muSEXP, SEXP pSEXP, SEXP rel_tolSEXP) {
+// score_zip_eb
+Rcpp::List score_zip_eb(const arma::uvec& y, const arma::vec& mu, const arma::vec& p, const double rel_tol);
+RcppExport SEXP scanstatistics_score_zip_eb(SEXP ySEXP, SEXP muSEXP, SEXP pSEXP, SEXP rel_tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -109,7 +123,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type mu(muSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type p(pSEXP);
     Rcpp::traits::input_parameter< const double >::type rel_tol(rel_tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(score_zip(y, mu, p, rel_tol));
+    rcpp_result_gen = Rcpp::wrap(score_zip_eb(y, mu, p, rel_tol));
     return rcpp_result_gen;
 END_RCPP
 }

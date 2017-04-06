@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{calc_all_poisson_eb}
 \alias{calc_all_poisson_eb}
-\title{Calculate the Poisson loglihood ratio statistic for each zone and duration.}
+\title{Calculate the EB Poisson loglihood ratio statistic for all clusters.}
 \usage{
 calc_all_poisson_eb(counts, agg_baselines, zones, zone_lengths)
 }
@@ -11,8 +11,8 @@ calc_all_poisson_eb(counts, agg_baselines, zones, zone_lengths)
 indicate time, ordered from most recent (row 1) to least recent. Columns
 indicate locations; the locations are numbered from 1 and up.}
 
-\item{agg_baselines}{A matrix of positive scalars; the expected values of the
-counts, cumulatively summed over locations (columns). Of the same 
+\item{agg_baselines}{A matrix of positive scalars; the expected values of 
+the counts, cumulatively summed over locations (columns). Of the same 
 dimensions as \code{counts}.}
 
 \item{zones}{An integer vector containing the zones, stored one after
@@ -41,8 +41,9 @@ A data frame with five columns:
    }
 }
 \description{
-Calculate the Poisson loglihood ratio statistic for each zone and duration. 
-The estimate of the relative risk is also calculated and returned.
+Calculate the expectation-based Poisson loglihood ratio statistic for each 
+zone and duration. The estimate of the relative risk is also calculated and 
+returned.
 }
 \keyword{internal}
 

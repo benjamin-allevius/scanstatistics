@@ -1,15 +1,16 @@
 #include <cmath>
 #include "probability_functions.h"
 
-//' Calculate the Poisson loglihood ratio statistic for each zone and duration.
+//' Calculate the EB Poisson loglihood ratio statistic for all clusters.
 //'
-//' Calculate the Poisson loglihood ratio statistic for each zone and duration. 
-//' The estimate of the relative risk is also calculated and returned.
+//' Calculate the expectation-based Poisson loglihood ratio statistic for each 
+//' zone and duration. The estimate of the relative risk is also calculated and 
+//' returned.
 //' @param counts A matrix of non-negative integers; the observed counts. Rows
 //'    indicate time, ordered from most recent (row 1) to least recent. Columns
 //'    indicate locations; the locations are numbered from 1 and up.
-//' @param agg_baselines A matrix of positive scalars; the expected values of the
-//'    counts, cumulatively summed over locations (columns). Of the same 
+//' @param agg_baselines A matrix of positive scalars; the expected values of 
+//'    the counts, cumulatively summed over locations (columns). Of the same 
 //'    dimensions as \code{counts}.
 //' @param zones An integer vector containing the zones, stored one after
 //'    another. Each zone is found using the elements of the parameter

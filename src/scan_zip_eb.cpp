@@ -28,7 +28,7 @@ double est_zip_zero_indicator(const double mu, const double p, const double q) {
 //' @return A scalar; the relative risk.
 //' @keywords internal
 // [[Rcpp::export]]
-double est_zip_relrisk(const int y_sum,
+double est_eb_zip_relrisk(const int y_sum,
                        const arma::vec& mu,
                        const arma::vec& p,
                        const arma::vec& d_hat) {
@@ -54,10 +54,10 @@ double est_zip_relrisk(const int y_sum,
 //'    } 
 //' @keywords internal
 // [[Rcpp::export]]
-Rcpp::List score_zip(const arma::uvec& y,
-                     const arma::vec& mu,
-                     const arma::vec& p,
-                     const double rel_tol = 1e-2) {
+Rcpp::List score_zip_eb(const arma::uvec& y,
+                        const arma::vec& mu,
+                        const arma::vec& p,
+                        const double rel_tol = 1e-2) {
   Rcpp::List score_q_niter (3);
   
   arma::vec d_hat = arma::zeros(y.n_elem); // Structural zero estimates
@@ -87,7 +87,7 @@ Rcpp::List score_zip(const arma::uvec& y,
       d_hat[i] = est_zip_zero_indicator(mu[i], p[i], q_hat);
     }
     // Maximization-step
-    q_hat = est_zip_relrisk(y_sum, mu, p, d_hat);
+    q_hat = est_eb_zip_relrisk(y_sum, mu, p, d_hat);
     
     // Update likelihood
     loglik_new = zip_loglihood(y, mu, p, q_hat);
@@ -104,11 +104,12 @@ Rcpp::List score_zip(const arma::uvec& y,
 
 // EB ZIP scan statistic -------------------------------------------------------
 
-//' Calculate the ZIP loglihood ratio statistic for each zone and duration.
+//' Calculate the EB ZIP loglihood ratio statistic for all clusters.
 //' 
-//' Calculate the ZIP loglihood ratio statistic for each zone and duration. The
-//' estimate of the relative risk is also calculated, along with the number of
-//' iterations the EM algorithm performed for each zone and duration.
+//' Calculate the expectation-based ZIP loglihood ratio statistic for each zone 
+//' and duration. The estimate of the relative risk is also calculated, along 
+//' with the number of iterations the EM algorithm performed for each zone and 
+//' duration.
 //' @param counts A matrix of non-negative integers; the observed counts. Rows
 //'    indicate time, ordered from most recent (row 1) to least recent. Columns
 //'    indicate locations; the locations are numbered from 1 and up.
@@ -140,11 +141,11 @@ Rcpp::List score_zip(const arma::uvec& y,
 //' @keywords internal
 // [[Rcpp::export]]
 Rcpp::DataFrame calc_all_zip_eb(const arma::umat& counts,
-                                const arma::mat& baselines,
-                                const arma::mat& probs,
+                                const arma::mat&  baselines,
+                                const arma::mat&  probs,
                                 const arma::uvec& zones,
                                 const arma::uvec& zone_lengths,
-                                const double rel_tol = 1e-2) {
+                                const double rel_tol = 1e-3) {
   int max_duration = counts.n_rows;
   int n_zones = zone_lengths.n_elem;
   
@@ -177,7 +178,7 @@ Rcpp::DataFrame calc_all_zip_eb(const arma::umat& counts,
       zone_end = zone_start + zone_lengths[z] - 1;
       arma::uvec current_zone = zones(arma::span(zone_start, zone_end));
       
-      score_q_niter = score_zip(
+      score_q_niter = score_zip_eb(
         arma::vectorise(counts.submat(row_idx, current_zone)),
         arma::vectorise(baselines.submat(row_idx, current_zone)),
         arma::vectorise(probs.submat(row_idx, current_zone)),
@@ -198,12 +199,12 @@ Rcpp::DataFrame calc_all_zip_eb(const arma::umat& counts,
                                  Rcpp::Named("n_iter")   = iterations);
 }
 
-//' Calculate the highest-value ZIP loglihood ratio statistic.
+//' Calculate the highest-value (EB) ZIP loglihood ratio statistic.
 //' 
-//' Calculate the ZIP loglihood ratio statistic for each zone and duration, but 
-//' only keep the zone and duration with the highest value (the MLC). The 
-//' estimate of the relative risk is also calculated, along with the number of 
-//' iterations the EM algorithm performed.
+//' Calculate the expectation-based ZIP loglihood ratio statistic for each zone 
+//' and duration, but only keep the zone and duration with the highest value 
+//' (the MLC). The estimate of the relative risk is also calculated, along with 
+//' the number of iterations the EM algorithm performed.
 //' @inheritParams calc_all_zip_eb
 //' @return A data frame with five columns:
 //'    \describe{
@@ -217,11 +218,11 @@ Rcpp::DataFrame calc_all_zip_eb(const arma::umat& counts,
 //' @keywords internal
 // [[Rcpp::export]]
 Rcpp::DataFrame calc_one_zip_eb(const arma::umat& counts,
-                                const arma::mat& baselines,
-                                const arma::mat& probs,
+                                const arma::mat&  baselines,
+                                const arma::mat&  probs,
                                 const arma::uvec& zones,
                                 const arma::uvec& zone_lengths,
-                                const double rel_tol = 1e-2) {
+                                const double rel_tol = 1e-3) {
   int max_duration = counts.n_rows;
   int n_zones = zone_lengths.n_elem;
   
@@ -250,7 +251,7 @@ Rcpp::DataFrame calc_one_zip_eb(const arma::umat& counts,
       zone_end = zone_start + zone_lengths[z] - 1;
       arma::uvec current_zone = zones(arma::span(zone_start, zone_end));
       
-      score_q_niter = score_zip(
+      score_q_niter = score_zip_eb(
         arma::vectorise(counts.submat(row_idx, current_zone)),
         arma::vectorise(baselines.submat(row_idx, current_zone)),
         arma::vectorise(probs.submat(row_idx, current_zone)),

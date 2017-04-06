@@ -2,9 +2,10 @@
 % Please edit documentation in R/RcppExports.R
 \name{calc_all_zip_eb}
 \alias{calc_all_zip_eb}
-\title{Calculate the ZIP loglihood ratio statistic for each zone and duration.}
+\title{Calculate the EB ZIP loglihood ratio statistic for all clusters.}
 \usage{
-calc_all_zip_eb(counts, baselines, probs, zones, zone_lengths, rel_tol = 0.01)
+calc_all_zip_eb(counts, baselines, probs, zones, zone_lengths,
+  rel_tol = 0.001)
 }
 \arguments{
 \item{counts}{A matrix of non-negative integers; the observed counts. Rows
@@ -44,9 +45,10 @@ A data frame with five columns:
    }
 }
 \description{
-Calculate the ZIP loglihood ratio statistic for each zone and duration. The
-estimate of the relative risk is also calculated, along with the number of
-iterations the EM algorithm performed for each zone and duration.
+Calculate the expectation-based ZIP loglihood ratio statistic for each zone 
+and duration. The estimate of the relative risk is also calculated, along 
+with the number of iterations the EM algorithm performed for each zone and 
+duration.
 }
 \keyword{internal}
 
