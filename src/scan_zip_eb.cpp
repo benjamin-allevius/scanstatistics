@@ -17,7 +17,7 @@
 //'    observation.
 //' @keywords internal
 // [[Rcpp::export]]
-double incomplete_loglihood_term(int y, double mu, double p, double q) {
+double incompl_zip_loglihood_term(int y, double mu, double p, double q) {
   if (y == 0) {
     return log(p + (1 - p) * exp(-q * mu));
   } else {
@@ -37,13 +37,13 @@ double incomplete_loglihood_term(int y, double mu, double p, double q) {
 //' @return A non-positive scalar; the incomplete information ZIP loglihood.
 //' @keywords internal
 // [[Rcpp::export]]
-double incomplete_loglihood(const arma::uvec& y,
-                            const arma::vec& mu,
-                            const arma::vec& p,
-                            double q) {
+double incomplete_zip_loglihood(const arma::uvec& y,
+                                const arma::vec& mu,
+                                const arma::vec& p,
+                                double q) {
   double loglihood = 0.0;
   for (int i = 0; i < y.n_elem; i++) {
-    loglihood += incomplete_loglihood_term(y[i], mu[i], p[i], q);
+    loglihood += incompl_zip_loglihood_term(y[i], mu[i], p[i], q);
   }
   return loglihood;
 }
@@ -105,7 +105,7 @@ Rcpp::List score_zip(const arma::uvec y,
   arma::vec d_hat = arma::zeros(y.n_elem); // Structural zero estimates
   double q_hat = 1.0; // Relative risk estimate
   
-  double loglik_null = incomplete_loglihood(y, mu, p, 1.0);
+  double loglik_null = incomplete_zip_loglihood(y, mu, p, 1.0);
   double loglik_old = loglik_null;
   double loglik_new;
   
@@ -132,7 +132,7 @@ Rcpp::List score_zip(const arma::uvec y,
     q_hat = estimate_q(y_sum, mu, p, d_hat);
     
     // Update likelihood
-    loglik_new = incomplete_loglihood(y, mu, p, q_hat);
+    loglik_new = incomplete_zip_loglihood(y, mu, p, q_hat);
     diff = abs(exp(loglik_new - loglik_old) - 1);
     loglik_old = loglik_new;
   }

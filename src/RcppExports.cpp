@@ -119,9 +119,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// incomplete_loglihood_term
-double incomplete_loglihood_term(int y, double mu, double p, double q);
-RcppExport SEXP scanstatistics_incomplete_loglihood_term(SEXP ySEXP, SEXP muSEXP, SEXP pSEXP, SEXP qSEXP) {
+// incompl_zip_loglihood_term
+double incompl_zip_loglihood_term(int y, double mu, double p, double q);
+RcppExport SEXP scanstatistics_incompl_zip_loglihood_term(SEXP ySEXP, SEXP muSEXP, SEXP pSEXP, SEXP qSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -129,13 +129,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type mu(muSEXP);
     Rcpp::traits::input_parameter< double >::type p(pSEXP);
     Rcpp::traits::input_parameter< double >::type q(qSEXP);
-    rcpp_result_gen = Rcpp::wrap(incomplete_loglihood_term(y, mu, p, q));
+    rcpp_result_gen = Rcpp::wrap(incompl_zip_loglihood_term(y, mu, p, q));
     return rcpp_result_gen;
 END_RCPP
 }
-// incomplete_loglihood
-double incomplete_loglihood(const arma::uvec& y, const arma::vec& mu, const arma::vec& p, double q);
-RcppExport SEXP scanstatistics_incomplete_loglihood(SEXP ySEXP, SEXP muSEXP, SEXP pSEXP, SEXP qSEXP) {
+// incomplete_zip_loglihood
+double incomplete_zip_loglihood(const arma::uvec& y, const arma::vec& mu, const arma::vec& p, double q);
+RcppExport SEXP scanstatistics_incomplete_zip_loglihood(SEXP ySEXP, SEXP muSEXP, SEXP pSEXP, SEXP qSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -143,7 +143,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type mu(muSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type p(pSEXP);
     Rcpp::traits::input_parameter< double >::type q(qSEXP);
-    rcpp_result_gen = Rcpp::wrap(incomplete_loglihood(y, mu, p, q));
+    rcpp_result_gen = Rcpp::wrap(incomplete_zip_loglihood(y, mu, p, q));
     return rcpp_result_gen;
 END_RCPP
 }

@@ -148,8 +148,8 @@ calc_zipstat_over_duration <- function(duration, p, mu, y, maxdur, tol = 0.01) {
 #' @return A non-positive scalar; the loglihood contribution of the 
 #'    observation.
 #' @keywords internal
-incomplete_loglihood_term <- function(y, mu, p, q) {
-    .Call('scanstatistics_incomplete_loglihood_term', PACKAGE = 'scanstatistics', y, mu, p, q)
+incompl_zip_loglihood_term <- function(y, mu, p, q) {
+    .Call('scanstatistics_incompl_zip_loglihood_term', PACKAGE = 'scanstatistics', y, mu, p, q)
 }
 
 #' Calculate the incomplete information loglihood.
@@ -163,8 +163,8 @@ incomplete_loglihood_term <- function(y, mu, p, q) {
 #' @param q A scalar greater than or equal to 1; the relative risk.
 #' @return A non-positive scalar; the incomplete information ZIP loglihood.
 #' @keywords internal
-incomplete_loglihood <- function(y, mu, p, q) {
-    .Call('scanstatistics_incomplete_loglihood', PACKAGE = 'scanstatistics', y, mu, p, q)
+incomplete_zip_loglihood <- function(y, mu, p, q) {
+    .Call('scanstatistics_incomplete_zip_loglihood', PACKAGE = 'scanstatistics', y, mu, p, q)
 }
 
 #' Calculate the conditional expectation of the structural zero indicator.
