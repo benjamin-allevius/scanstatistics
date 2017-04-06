@@ -62,8 +62,9 @@ zip_loglihood <- function(y, mu, p, q) {
 #' @param counts A matrix of non-negative integers; the observed counts. Rows
 #'    indicate time, ordered from most recent (row 1) to least recent. Columns
 #'    indicate locations; the locations are numbered from 1 and up.
-#' @param baselines A matrix of positive scalars; the expected values of the
-#'    counts. Of the same dimensions as \code{counts}.
+#' @param agg_baselines A matrix of positive scalars; the expected values of the
+#'    counts, cumulatively summed over locations (columns). Of the same 
+#'    dimensions as \code{counts}.
 #' @param zones An integer vector containing the zones, stored one after
 #'    another. Each zone is found using the elements of the parameter
 #'    \code{zone_lengths}. For example, if the first element of

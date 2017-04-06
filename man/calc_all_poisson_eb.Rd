@@ -11,6 +11,10 @@ calc_all_poisson_eb(counts, agg_baselines, zones, zone_lengths)
 indicate time, ordered from most recent (row 1) to least recent. Columns
 indicate locations; the locations are numbered from 1 and up.}
 
+\item{agg_baselines}{A matrix of positive scalars; the expected values of the
+counts, cumulatively summed over locations (columns). Of the same 
+dimensions as \code{counts}.}
+
 \item{zones}{An integer vector containing the zones, stored one after
 another. Each zone is found using the elements of the parameter
 \code{zone_lengths}. For example, if the first element of
@@ -22,9 +26,6 @@ from 1 and up in the output.}
 
 \item{zone_lengths}{An integer vector holding the number of locations in
 each zone.}
-
-\item{baselines}{A matrix of positive scalars; the expected values of the
-counts. Of the same dimensions as \code{counts}.}
 
 \item{rel_tol}{A positive scalar. If the relative change in the incomplete
 information likelihood is less than this value, then the EM algorithm is
