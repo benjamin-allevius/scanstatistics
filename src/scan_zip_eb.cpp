@@ -39,7 +39,7 @@ double est_zip_relrisk(const int y_sum,
   return std::max(1.0, y_sum / denominator);
 }
 
-//' Calculate the loglihood ratio statistic and the relative risk.
+//' Calculate the ZIP loglihood ratio statistic and the relative risk.
 //' @param y A non-negative integer vector; the observed counts.
 //' @param mu A vector of positive scalars; the expected values of the counts.
 //' @param p A vector of scalars between 0 and 1; the structural zero
@@ -104,9 +104,9 @@ Rcpp::List score_zip(const arma::uvec& y,
 
 // EB ZIP scan statistic -------------------------------------------------------
 
-//' Calculate the loglihood ratio statistic for each zone and duration.
+//' Calculate the ZIP loglihood ratio statistic for each zone and duration.
 //' 
-//' Calculate the loglihood ratio statistic for each zone and duration. The
+//' Calculate the ZIP loglihood ratio statistic for each zone and duration. The
 //' estimate of the relative risk is also calculated, along with the number of
 //' iterations the EM algorithm performed for each zone and duration.
 //' @param counts A matrix of non-negative integers; the observed counts. Rows
@@ -198,12 +198,12 @@ Rcpp::DataFrame calc_all_zip_eb(const arma::umat& counts,
                                  Rcpp::Named("n_iter")   = iterations);
 }
 
-//' Calculate the highest-value loglihood ratio statistic.
+//' Calculate the highest-value ZIP loglihood ratio statistic.
 //' 
-//' Calculate the loglihood ratio statistic for each zone and duration, but only
-//' keep the zone and duration with the highest value (the MLC). The estimate of 
-//' the relative risk is also calculated, along with the number of iterations 
-//' the EM algorithm performed.
+//' Calculate the ZIP loglihood ratio statistic for each zone and duration, but 
+//' only keep the zone and duration with the highest value (the MLC). The 
+//' estimate of the relative risk is also calculated, along with the number of 
+//' iterations the EM algorithm performed.
 //' @inheritParams calc_all_zip_eb
 //' @return A data frame with five columns:
 //'    \describe{

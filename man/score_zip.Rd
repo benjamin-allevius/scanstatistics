@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{score_zip}
 \alias{score_zip}
-\title{Calculate the loglihood ratio statistic and the relative risk.}
+\title{Calculate the ZIP loglihood ratio statistic and the relative risk.}
 \usage{
 score_zip(y, mu, p, rel_tol = 0.01)
 }
@@ -27,7 +27,7 @@ A list with three elements:
    }
 }
 \description{
-Calculate the loglihood ratio statistic and the relative risk.
+Calculate the ZIP loglihood ratio statistic and the relative risk.
 }
 \keyword{internal}
 

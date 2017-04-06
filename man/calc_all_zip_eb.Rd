@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{calc_all_zip_eb}
 \alias{calc_all_zip_eb}
-\title{Calculate the loglihood ratio statistic for each zone and duration.}
+\title{Calculate the ZIP loglihood ratio statistic for each zone and duration.}
 \usage{
 calc_all_zip_eb(counts, baselines, probs, zones, zone_lengths, rel_tol = 0.01)
 }
@@ -44,7 +44,7 @@ A data frame with five columns:
    }
 }
 \description{
-Calculate the loglihood ratio statistic for each zone and duration. The
+Calculate the ZIP loglihood ratio statistic for each zone and duration. The
 estimate of the relative risk is also calculated, along with the number of
 iterations the EM algorithm performed for each zone and duration.
 }
