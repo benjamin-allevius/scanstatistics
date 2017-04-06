@@ -1,67 +1,25 @@
 #include <cmath>
 #include "probability_functions.h"
-#include "RcppArmadillo.h"
-// [[depends(RcppArmadillo)]]
-
-// ZIP log-likelihood (incomplete information) ---------------------------------
-
-//' Calculate a term of the incomplete information loglihood.
-//' 
-//' Calculate a term of the incomplete information loglihood for the 
-//' zero-inflated Poisson distribution.
-//' @param y A non-negative integer; the observed count.
-//' @param mu A positive scalar; the expected value of the count.
-//' @param p A scalar between 0 and 1; the structural zero probability.
-//' @param q A scalar greater than or equal to 1; the relative risk.
-//' @return A non-positive scalar; the loglihood contribution of the 
-//'    observation.
-//' @keywords internal
-// [[Rcpp::export]]
-double incompl_zip_loglihood_term(int y, double mu, double p, double q) {
-  if (y == 0) {
-    return log(p + (1 - p) * exp(-q * mu));
-  } else {
-    return log(1 - p) + y * log(q * mu) - lgamma(y + 1.0) - q * mu;
-  }
-}
-
-//' Calculate the incomplete information loglihood.
-//'
-//' Calculate the incomplete information loglihood for the zero-inflated Poisson 
-//' distribution.
-//' @param y A non-negative integer vector; the observed counts.
-//' @param mu A vector of positive scalars; the expected values of the counts.
-//' @param p A vector of scalars between 0 and 1; the structural zero
-//'    probabilities.
-//' @param q A scalar greater than or equal to 1; the relative risk.
-//' @return A non-positive scalar; the incomplete information ZIP loglihood.
-//' @keywords internal
-// [[Rcpp::export]]
-double incomplete_zip_loglihood(const arma::uvec& y,
-                                const arma::vec& mu,
-                                const arma::vec& p,
-                                double q) {
-  double loglihood = 0.0;
-  for (int i = 0; i < y.n_elem; i++) {
-    loglihood += incompl_zip_loglihood_term(y[i], mu[i], p[i], q);
-  }
-  return loglihood;
-}
 
 // ZIP EM algorithm ------------------------------------------------------------
 
 //' Calculate the conditional expectation of the structural zero indicator.
+//' 
+//' Calculate the conditional expectation of the structural zero indicator for 
+//' the zero-inflated Poisson distribution.
 //' @param mu The expected values of the count (which is zero).
 //' @param p The structural zero probability.
 //' @param q A scalar greater than or equal to 1; the relative risk.
 //' @return A scalar between 0 and 1.
 //' @keywords internal
 // [[Rcpp::export]]
-double estimate_struc_zero(double mu, double p, double q) {
+double est_zip_zero_indicator(const double mu, const double p, const double q) {
   return p / (p + (1 - p) * exp(-q * mu));
 }
 
-//' Estimate the relative risk.
+//' Estimate the relative risk for the ZIP distribution.
+//' 
+//' Estimate the relative risk for the ZIP distribution.
 //' @param y_sum A non-negative integer; the sum of the observed counts.
 //' @param mu A vector of positive scalars; the expected values of the counts.
 //' @param p A vector of scalars between 0 and 1; the structural zero
@@ -70,10 +28,10 @@ double estimate_struc_zero(double mu, double p, double q) {
 //' @return A scalar; the relative risk.
 //' @keywords internal
 // [[Rcpp::export]]
-double estimate_q(const int y_sum,
-                  const arma::vec& mu,
-                  const arma::vec& p,
-                  const arma::vec& d_hat) {
+double est_zip_relrisk(const int y_sum,
+                       const arma::vec& mu,
+                       const arma::vec& p,
+                       const arma::vec& d_hat) {
   double denominator = 0;
   for (int i = 0; i < mu.n_elem; ++i) {
     denominator += mu[i] * (1.0 - d_hat[i]);
@@ -105,7 +63,7 @@ Rcpp::List score_zip(const arma::uvec y,
   arma::vec d_hat = arma::zeros(y.n_elem); // Structural zero estimates
   double q_hat = 1.0; // Relative risk estimate
   
-  double loglik_null = incomplete_zip_loglihood(y, mu, p, 1.0);
+  double loglik_null = zip_loglihood(y, mu, p, 1.0);
   double loglik_old = loglik_null;
   double loglik_new;
   
@@ -126,13 +84,13 @@ Rcpp::List score_zip(const arma::uvec y,
     
     // Expectation-step
     for (const int& i : zero_idx) {
-      d_hat[i] = estimate_struc_zero(mu[i], p[i], q_hat);
+      d_hat[i] = est_zip_zero_indicator(mu[i], p[i], q_hat);
     }
     // Maximization-step
-    q_hat = estimate_q(y_sum, mu, p, d_hat);
+    q_hat = est_zip_relrisk(y_sum, mu, p, d_hat);
     
     // Update likelihood
-    loglik_new = incomplete_zip_loglihood(y, mu, p, q_hat);
+    loglik_new = zip_loglihood(y, mu, p, q_hat);
     diff = abs(exp(loglik_new - loglik_old) - 1);
     loglik_old = loglik_new;
   }
@@ -196,7 +154,7 @@ Rcpp::DataFrame calc_all_zip_eb(const arma::umat& counts,
   arma::vec  scores       (n_zones * max_duration);
   arma::vec  relrisks     (n_zones * max_duration);
   arma::uvec iterations   (n_zones * max_duration);
-
+  
   int i = 0;
   
   Rcpp::List score_q_niter (3);
@@ -218,7 +176,7 @@ Rcpp::DataFrame calc_all_zip_eb(const arma::umat& counts,
       // Extract zone
       zone_end = zone_start + zone_lengths[z] - 1;
       arma::uvec current_zone = zones(arma::span(zone_start, zone_end));
-
+      
       score_q_niter = score_zip(
         arma::vectorise(counts.submat(row_idx, current_zone)),
         arma::vectorise(baselines.submat(row_idx, current_zone)),
@@ -240,7 +198,7 @@ Rcpp::DataFrame calc_all_zip_eb(const arma::umat& counts,
                                  Rcpp::Named("n_iter")   = iterations);
 }
 
-//' Calculate the highest-value loglihood ratio statistic..
+//' Calculate the highest-value loglihood ratio statistic.
 //' 
 //' Calculate the loglihood ratio statistic for each zone and duration, but only
 //' keep the zone and duration with the highest value (the MLC). The estimate of 
