@@ -102,6 +102,7 @@ estimate_variances <- function(counts,
 #'                   \code{counts} was a vector, a matrix with 1 row will be
 #'                   returned.}
 #'    }
+#' @importFrom stats uniroot var
 #' @keywords internal
 estimate_zip_params <- function(counts, population = NULL, 
                                 min_p = 0.001, min_mu = 0.3) {
