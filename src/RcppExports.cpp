@@ -174,3 +174,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// scan_pb_poisson_cpp_max
+Rcpp::DataFrame scan_pb_poisson_cpp_max(const arma::umat& counts, const arma::mat& agg_baselines, const arma::uvec& zones, const arma::uvec& zone_lengths, const int N);
+RcppExport SEXP scanstatistics_scan_pb_poisson_cpp_max(SEXP countsSEXP, SEXP agg_baselinesSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP NSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::umat& >::type counts(countsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type agg_baselines(agg_baselinesSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type zones(zonesSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type zone_lengths(zone_lengthsSEXP);
+    Rcpp::traits::input_parameter< const int >::type N(NSEXP);
+    rcpp_result_gen = Rcpp::wrap(scan_pb_poisson_cpp_max(counts, agg_baselines, zones, zone_lengths, N));
+    return rcpp_result_gen;
+END_RCPP
+}
