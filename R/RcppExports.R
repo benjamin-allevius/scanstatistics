@@ -76,9 +76,6 @@ zip_loglihood <- function(y, mu, p, q) {
 #'    from 1 and up in the output.
 #' @param zone_lengths An integer vector holding the number of locations in
 #'    each zone.
-#' @param rel_tol A positive scalar. If the relative change in the incomplete
-#'    information likelihood is less than this value, then the EM algorithm is
-#'    deemed to have converged.
 #' @return A data frame with five columns:
 #'    \describe{
 #'      \item{zone}{The (number of the) zone.}
@@ -87,44 +84,8 @@ zip_loglihood <- function(y, mu, p, q) {
 #'      \item{relrisk}{The estimated relative risk.}
 #'    }
 #' @keywords internal
-calc_all_poisson_eb <- function(counts, agg_baselines, zones, zone_lengths) {
-    .Call('scanstatistics_calc_all_poisson_eb', PACKAGE = 'scanstatistics', counts, agg_baselines, zones, zone_lengths)
-}
-
-#' Calculate the PB Poisson loglihood ratio statistic for all clusters.
-#'
-#' Calculate the population-based Poisson loglihood ratio statistic for each 
-#' zone and duration. The estimate of the relative risk is also calculated and 
-#' returned.
-#' @param counts A matrix of non-negative integers; the observed counts. Rows
-#'    indicate time, ordered from most recent (row 1) to least recent. Columns
-#'    indicate locations; the locations are numbered from 1 and up.
-#' @param agg_baselines A matrix of positive scalars; the expected values of 
-#'    the counts, cumulatively summed over locations (columns). Of the same
-#'    dimensions as \code{counts}.
-#' @param zones An integer vector containing the zones, stored one after
-#'    another. Each zone is found using the elements of the parameter
-#'    \code{zone_lengths}. For example, if the first element of
-#'    \code{zone_lengths} is 5, then the first 5 elements of \code{zones}
-#'    make up the first zone. If the second element of \code{zone_lengths} is
-#'    2, then elements 6 and 7 of \code{zones} make up the second zone, and so
-#'    on. Note that the zones are numbered from 0 and up in the input, but
-#'    from 1 and up in the output.
-#' @param zone_lengths An integer vector holding the number of locations in
-#'    each zone.
-#' @param rel_tol A positive scalar. If the relative change in the incomplete
-#'    information likelihood is less than this value, then the EM algorithm is
-#'    deemed to have converged.
-#' @return A data frame with five columns:
-#'    \describe{
-#'      \item{zone}{The (number of the) zone.}
-#'      \item{duration}{The duration.}
-#'      \item{score}{The value of the loglihood ratio statistic.}
-#'      \item{relrisk}{The estimated relative risk.}
-#'    }
-#' @keywords internal
-calc_all_poisson_pb <- function(counts, agg_baselines, zones, zone_lengths) {
-    .Call('scanstatistics_calc_all_poisson_pb', PACKAGE = 'scanstatistics', counts, agg_baselines, zones, zone_lengths)
+scan_eb_poisson_cpp <- function(counts, agg_baselines, zones, zone_lengths) {
+    .Call('scanstatistics_scan_eb_poisson_cpp', PACKAGE = 'scanstatistics', counts, agg_baselines, zones, zone_lengths)
 }
 
 #' Calculate the conditional expectation of the structural zero indicator.
@@ -136,8 +97,8 @@ calc_all_poisson_pb <- function(counts, agg_baselines, zones, zone_lengths) {
 #' @param q A scalar greater than or equal to 1; the relative risk.
 #' @return A scalar between 0 and 1.
 #' @keywords internal
-est_zip_zero_indicator <- function(mu, p, q) {
-    .Call('scanstatistics_est_zip_zero_indicator', PACKAGE = 'scanstatistics', mu, p, q)
+est_eb_zip_zeroindic <- function(mu, p, q) {
+    .Call('scanstatistics_est_eb_zip_zeroindic', PACKAGE = 'scanstatistics', mu, p, q)
 }
 
 #' Estimate the relative risk for the ZIP distribution.
@@ -168,8 +129,8 @@ est_eb_zip_relrisk <- function(y_sum, mu, p, d_hat) {
 #'      \item The number of iterations of the EM algorithm performed.
 #'    } 
 #' @keywords internal
-score_zip_eb <- function(y, mu, p, rel_tol = 1e-2) {
-    .Call('scanstatistics_score_zip_eb', PACKAGE = 'scanstatistics', y, mu, p, rel_tol)
+score_eb_zip <- function(y, mu, p, rel_tol = 1e-2) {
+    .Call('scanstatistics_score_eb_zip', PACKAGE = 'scanstatistics', y, mu, p, rel_tol)
 }
 
 #' Calculate the EB ZIP loglihood ratio statistic for all clusters.
@@ -207,8 +168,8 @@ score_zip_eb <- function(y, mu, p, rel_tol = 1e-2) {
 #'      \item{n_iter}{The number of iterations performed by the EM algorithm.}
 #'    } 
 #' @keywords internal
-calc_all_zip_eb <- function(counts, baselines, probs, zones, zone_lengths, rel_tol = 1e-3) {
-    .Call('scanstatistics_calc_all_zip_eb', PACKAGE = 'scanstatistics', counts, baselines, probs, zones, zone_lengths, rel_tol)
+scan_eb_zip_cpp <- function(counts, baselines, probs, zones, zone_lengths, rel_tol = 1e-3) {
+    .Call('scanstatistics_scan_eb_zip_cpp', PACKAGE = 'scanstatistics', counts, baselines, probs, zones, zone_lengths, rel_tol)
 }
 
 #' Calculate the highest-value (EB) ZIP loglihood ratio statistic.
@@ -217,7 +178,7 @@ calc_all_zip_eb <- function(counts, baselines, probs, zones, zone_lengths, rel_t
 #' and duration, but only keep the zone and duration with the highest value 
 #' (the MLC). The estimate of the relative risk is also calculated, along with 
 #' the number of iterations the EM algorithm performed.
-#' @inheritParams calc_all_zip_eb
+#' @inheritParams scan_eb_zip_cpp
 #' @return A data frame with five columns:
 #'    \describe{
 #'      \item{zone}{The top-scoring zone (spatial component of MLC).}
@@ -228,7 +189,42 @@ calc_all_zip_eb <- function(counts, baselines, probs, zones, zone_lengths, rel_t
 #'      \item{n_iter}{The number of iterations performed by the EM algorithm.}
 #'    } 
 #' @keywords internal
-calc_one_zip_eb <- function(counts, baselines, probs, zones, zone_lengths, rel_tol = 1e-3) {
-    .Call('scanstatistics_calc_one_zip_eb', PACKAGE = 'scanstatistics', counts, baselines, probs, zones, zone_lengths, rel_tol)
+scan_eb_zip_cpp_max <- function(counts, baselines, probs, zones, zone_lengths, rel_tol = 1e-3) {
+    .Call('scanstatistics_scan_eb_zip_cpp_max', PACKAGE = 'scanstatistics', counts, baselines, probs, zones, zone_lengths, rel_tol)
+}
+
+#' Calculate the PB Poisson loglihood ratio statistic for all clusters.
+#'
+#' Calculate the population-based Poisson loglihood ratio statistic for each 
+#' zone and duration. The estimate of the relative risk is also calculated and 
+#' returned.
+#' @param counts A matrix of non-negative integers; the observed counts. Rows
+#'    indicate time, ordered from most recent (row 1) to least recent. Columns
+#'    indicate locations; the locations are numbered from 1 and up.
+#' @param agg_baselines A matrix of positive scalars; the expected values of 
+#'    the counts, cumulatively summed over locations (columns). Of the same
+#'    dimensions as \code{counts}.
+#' @param zones An integer vector containing the zones, stored one after
+#'    another. Each zone is found using the elements of the parameter
+#'    \code{zone_lengths}. For example, if the first element of
+#'    \code{zone_lengths} is 5, then the first 5 elements of \code{zones}
+#'    make up the first zone. If the second element of \code{zone_lengths} is
+#'    2, then elements 6 and 7 of \code{zones} make up the second zone, and so
+#'    on. Note that the zones are numbered from 0 and up in the input, but
+#'    from 1 and up in the output.
+#' @param zone_lengths An integer vector holding the number of locations in
+#'    each zone.
+#' @param N The total observed count.
+#' @return A data frame with five columns:
+#'    \describe{
+#'      \item{zone}{The (number of the) zone.}
+#'      \item{duration}{The duration.}
+#'      \item{score}{The value of the loglihood ratio statistic.}
+#'      \item{relrisk_in}{The estimated relative risk inside the cluster.}
+#'      \item{relrisk_in}{The estimated relative risk outside the cluster.}
+#'    }
+#' @keywords internal
+scan_pb_poisson_cpp <- function(counts, agg_baselines, zones, zone_lengths, N) {
+    .Call('scanstatistics_scan_pb_poisson_cpp', PACKAGE = 'scanstatistics', counts, agg_baselines, zones, zone_lengths, N)
 }
 

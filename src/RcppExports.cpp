@@ -58,9 +58,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// calc_all_poisson_eb
-Rcpp::DataFrame calc_all_poisson_eb(const arma::umat& counts, const arma::mat& agg_baselines, const arma::uvec& zones, const arma::uvec& zone_lengths);
-RcppExport SEXP scanstatistics_calc_all_poisson_eb(SEXP countsSEXP, SEXP agg_baselinesSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP) {
+// scan_eb_poisson_cpp
+Rcpp::DataFrame scan_eb_poisson_cpp(const arma::umat& counts, const arma::mat& agg_baselines, const arma::uvec& zones, const arma::uvec& zone_lengths);
+RcppExport SEXP scanstatistics_scan_eb_poisson_cpp(SEXP countsSEXP, SEXP agg_baselinesSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -68,34 +68,20 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type agg_baselines(agg_baselinesSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type zones(zonesSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type zone_lengths(zone_lengthsSEXP);
-    rcpp_result_gen = Rcpp::wrap(calc_all_poisson_eb(counts, agg_baselines, zones, zone_lengths));
+    rcpp_result_gen = Rcpp::wrap(scan_eb_poisson_cpp(counts, agg_baselines, zones, zone_lengths));
     return rcpp_result_gen;
 END_RCPP
 }
-// calc_all_poisson_pb
-Rcpp::DataFrame calc_all_poisson_pb(const arma::umat& counts, const arma::mat& agg_baselines, const arma::uvec& zones, const arma::uvec& zone_lengths);
-RcppExport SEXP scanstatistics_calc_all_poisson_pb(SEXP countsSEXP, SEXP agg_baselinesSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::umat& >::type counts(countsSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type agg_baselines(agg_baselinesSEXP);
-    Rcpp::traits::input_parameter< const arma::uvec& >::type zones(zonesSEXP);
-    Rcpp::traits::input_parameter< const arma::uvec& >::type zone_lengths(zone_lengthsSEXP);
-    rcpp_result_gen = Rcpp::wrap(calc_all_poisson_pb(counts, agg_baselines, zones, zone_lengths));
-    return rcpp_result_gen;
-END_RCPP
-}
-// est_zip_zero_indicator
-double est_zip_zero_indicator(const double mu, const double p, const double q);
-RcppExport SEXP scanstatistics_est_zip_zero_indicator(SEXP muSEXP, SEXP pSEXP, SEXP qSEXP) {
+// est_eb_zip_zeroindic
+double est_eb_zip_zeroindic(const double mu, const double p, const double q);
+RcppExport SEXP scanstatistics_est_eb_zip_zeroindic(SEXP muSEXP, SEXP pSEXP, SEXP qSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
     Rcpp::traits::input_parameter< const double >::type p(pSEXP);
     Rcpp::traits::input_parameter< const double >::type q(qSEXP);
-    rcpp_result_gen = Rcpp::wrap(est_zip_zero_indicator(mu, p, q));
+    rcpp_result_gen = Rcpp::wrap(est_eb_zip_zeroindic(mu, p, q));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -113,9 +99,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// score_zip_eb
-Rcpp::List score_zip_eb(const arma::uvec& y, const arma::vec& mu, const arma::vec& p, const double rel_tol);
-RcppExport SEXP scanstatistics_score_zip_eb(SEXP ySEXP, SEXP muSEXP, SEXP pSEXP, SEXP rel_tolSEXP) {
+// score_eb_zip
+Rcpp::List score_eb_zip(const arma::uvec& y, const arma::vec& mu, const arma::vec& p, const double rel_tol);
+RcppExport SEXP scanstatistics_score_eb_zip(SEXP ySEXP, SEXP muSEXP, SEXP pSEXP, SEXP rel_tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -123,13 +109,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type mu(muSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type p(pSEXP);
     Rcpp::traits::input_parameter< const double >::type rel_tol(rel_tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(score_zip_eb(y, mu, p, rel_tol));
+    rcpp_result_gen = Rcpp::wrap(score_eb_zip(y, mu, p, rel_tol));
     return rcpp_result_gen;
 END_RCPP
 }
-// calc_all_zip_eb
-Rcpp::DataFrame calc_all_zip_eb(const arma::umat& counts, const arma::mat& baselines, const arma::mat& probs, const arma::uvec& zones, const arma::uvec& zone_lengths, const double rel_tol);
-RcppExport SEXP scanstatistics_calc_all_zip_eb(SEXP countsSEXP, SEXP baselinesSEXP, SEXP probsSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP rel_tolSEXP) {
+// scan_eb_zip_cpp
+Rcpp::DataFrame scan_eb_zip_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::mat& probs, const arma::uvec& zones, const arma::uvec& zone_lengths, const double rel_tol);
+RcppExport SEXP scanstatistics_scan_eb_zip_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP probsSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP rel_tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -139,13 +125,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::uvec& >::type zones(zonesSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type zone_lengths(zone_lengthsSEXP);
     Rcpp::traits::input_parameter< const double >::type rel_tol(rel_tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(calc_all_zip_eb(counts, baselines, probs, zones, zone_lengths, rel_tol));
+    rcpp_result_gen = Rcpp::wrap(scan_eb_zip_cpp(counts, baselines, probs, zones, zone_lengths, rel_tol));
     return rcpp_result_gen;
 END_RCPP
 }
-// calc_one_zip_eb
-Rcpp::DataFrame calc_one_zip_eb(const arma::umat& counts, const arma::mat& baselines, const arma::mat& probs, const arma::uvec& zones, const arma::uvec& zone_lengths, const double rel_tol);
-RcppExport SEXP scanstatistics_calc_one_zip_eb(SEXP countsSEXP, SEXP baselinesSEXP, SEXP probsSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP rel_tolSEXP) {
+// scan_eb_zip_cpp_max
+Rcpp::DataFrame scan_eb_zip_cpp_max(const arma::umat& counts, const arma::mat& baselines, const arma::mat& probs, const arma::uvec& zones, const arma::uvec& zone_lengths, const double rel_tol);
+RcppExport SEXP scanstatistics_scan_eb_zip_cpp_max(SEXP countsSEXP, SEXP baselinesSEXP, SEXP probsSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP rel_tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -155,7 +141,22 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::uvec& >::type zones(zonesSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type zone_lengths(zone_lengthsSEXP);
     Rcpp::traits::input_parameter< const double >::type rel_tol(rel_tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(calc_one_zip_eb(counts, baselines, probs, zones, zone_lengths, rel_tol));
+    rcpp_result_gen = Rcpp::wrap(scan_eb_zip_cpp_max(counts, baselines, probs, zones, zone_lengths, rel_tol));
+    return rcpp_result_gen;
+END_RCPP
+}
+// scan_pb_poisson_cpp
+Rcpp::DataFrame scan_pb_poisson_cpp(const arma::umat& counts, const arma::mat& agg_baselines, const arma::uvec& zones, const arma::uvec& zone_lengths, const int N);
+RcppExport SEXP scanstatistics_scan_pb_poisson_cpp(SEXP countsSEXP, SEXP agg_baselinesSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP NSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::umat& >::type counts(countsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type agg_baselines(agg_baselinesSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type zones(zonesSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type zone_lengths(zone_lengthsSEXP);
+    Rcpp::traits::input_parameter< const int >::type N(NSEXP);
+    rcpp_result_gen = Rcpp::wrap(scan_pb_poisson_cpp(counts, agg_baselines, zones, zone_lengths, N));
     return rcpp_result_gen;
 END_RCPP
 }

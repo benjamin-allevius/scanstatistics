@@ -13,7 +13,7 @@
 //' @return A scalar between 0 and 1.
 //' @keywords internal
 // [[Rcpp::export]]
-double est_zip_zero_indicator(const double mu, const double p, const double q) {
+double est_eb_zip_zeroindic(const double mu, const double p, const double q) {
   return p / (p + (1 - p) * exp(-q * mu));
 }
 
@@ -29,9 +29,9 @@ double est_zip_zero_indicator(const double mu, const double p, const double q) {
 //' @keywords internal
 // [[Rcpp::export]]
 double est_eb_zip_relrisk(const int y_sum,
-                       const arma::vec& mu,
-                       const arma::vec& p,
-                       const arma::vec& d_hat) {
+                          const arma::vec& mu,
+                          const arma::vec& p,
+                          const arma::vec& d_hat) {
   double denominator = 0;
   for (int i = 0; i < mu.n_elem; ++i) {
     denominator += mu[i] * (1.0 - d_hat[i]);
@@ -54,7 +54,7 @@ double est_eb_zip_relrisk(const int y_sum,
 //'    } 
 //' @keywords internal
 // [[Rcpp::export]]
-Rcpp::List score_zip_eb(const arma::uvec& y,
+Rcpp::List score_eb_zip(const arma::uvec& y,
                         const arma::vec& mu,
                         const arma::vec& p,
                         const double rel_tol = 1e-2) {
@@ -84,7 +84,7 @@ Rcpp::List score_zip_eb(const arma::uvec& y,
     
     // Expectation-step
     for (const int& i : zero_idx) {
-      d_hat[i] = est_zip_zero_indicator(mu[i], p[i], q_hat);
+      d_hat[i] = est_eb_zip_zeroindic(mu[i], p[i], q_hat);
     }
     // Maximization-step
     q_hat = est_eb_zip_relrisk(y_sum, mu, p, d_hat);
@@ -140,7 +140,7 @@ Rcpp::List score_zip_eb(const arma::uvec& y,
 //'    } 
 //' @keywords internal
 // [[Rcpp::export]]
-Rcpp::DataFrame calc_all_zip_eb(const arma::umat& counts,
+Rcpp::DataFrame scan_eb_zip_cpp(const arma::umat& counts,
                                 const arma::mat&  baselines,
                                 const arma::mat&  probs,
                                 const arma::uvec& zones,
@@ -156,9 +156,8 @@ Rcpp::DataFrame calc_all_zip_eb(const arma::umat& counts,
   arma::vec  relrisks     (n_zones * max_duration);
   arma::uvec iterations   (n_zones * max_duration);
   
-  int i = 0;
-  
-  Rcpp::List score_q_niter (3);
+  int i = 0; // Storage index
+  Rcpp::List score_q_niter (3); // Output from score_eb_zip
   
   for (int d = 0; d < max_duration; ++d) {
     
@@ -171,23 +170,24 @@ Rcpp::DataFrame calc_all_zip_eb(const arma::umat& counts,
     int zone_end = 0;
     
     for (int z = 0; z < n_zones; ++z) {
-      zone_numbers[i] = z + 1;
-      durations[i] = d + 1;
-      
       // Extract zone
       zone_end = zone_start + zone_lengths[z] - 1;
       arma::uvec current_zone = zones(arma::span(zone_start, zone_end));
       
-      score_q_niter = score_zip_eb(
+      score_q_niter = score_eb_zip(
         arma::vectorise(counts.submat(row_idx, current_zone)),
         arma::vectorise(baselines.submat(row_idx, current_zone)),
         arma::vectorise(probs.submat(row_idx, current_zone)),
         rel_tol);
       
-      scores[i]     = score_q_niter[0];
-      relrisks[i]   = score_q_niter[1];
-      iterations[i] = score_q_niter[2];
+      // Store results
+      scores[i]       = score_q_niter[0];
+      relrisks[i]     = score_q_niter[1];
+      iterations[i]   = score_q_niter[2];
+      zone_numbers[i] = z + 1;
+      durations[i]    = d + 1;
       
+      // Update indices
       zone_start = zone_end + 1;
       ++i;
     }
@@ -205,7 +205,7 @@ Rcpp::DataFrame calc_all_zip_eb(const arma::umat& counts,
 //' and duration, but only keep the zone and duration with the highest value 
 //' (the MLC). The estimate of the relative risk is also calculated, along with 
 //' the number of iterations the EM algorithm performed.
-//' @inheritParams calc_all_zip_eb
+//' @inheritParams scan_eb_zip_cpp
 //' @return A data frame with five columns:
 //'    \describe{
 //'      \item{zone}{The top-scoring zone (spatial component of MLC).}
@@ -217,23 +217,23 @@ Rcpp::DataFrame calc_all_zip_eb(const arma::umat& counts,
 //'    } 
 //' @keywords internal
 // [[Rcpp::export]]
-Rcpp::DataFrame calc_one_zip_eb(const arma::umat& counts,
-                                const arma::mat&  baselines,
-                                const arma::mat&  probs,
-                                const arma::uvec& zones,
-                                const arma::uvec& zone_lengths,
-                                const double rel_tol = 1e-3) {
+Rcpp::DataFrame scan_eb_zip_cpp_max(const arma::umat& counts,
+                                    const arma::mat&  baselines,
+                                    const arma::mat&  probs,
+                                    const arma::uvec& zones,
+                                    const arma::uvec& zone_lengths,
+                                    const double rel_tol = 1e-3) {
   int max_duration = counts.n_rows;
   int n_zones = zone_lengths.n_elem;
   
-  // Components of returned list
+  // Return values
   double mlc_score      = -1.0;
   int    mlc_zone       = -1;
   int    mlc_duration   = -1;
   double mlc_relrisk    = -1.0;
   int    mlc_iterations = -1;
   
-  Rcpp::List score_q_niter (3);
+  Rcpp::List score_q_niter (3); // Output from score_eb_zip
   
   for (int d = 0; d < max_duration; ++d) {
     
@@ -251,12 +251,13 @@ Rcpp::DataFrame calc_one_zip_eb(const arma::umat& counts,
       zone_end = zone_start + zone_lengths[z] - 1;
       arma::uvec current_zone = zones(arma::span(zone_start, zone_end));
       
-      score_q_niter = score_zip_eb(
+      score_q_niter = score_eb_zip(
         arma::vectorise(counts.submat(row_idx, current_zone)),
         arma::vectorise(baselines.submat(row_idx, current_zone)),
         arma::vectorise(probs.submat(row_idx, current_zone)),
         rel_tol);
       
+      // Update return values if new score is highest so far
       if (score_q_niter[0] > mlc_score) {
         mlc_score      = score_q_niter[0];
         mlc_zone       = z + 1;

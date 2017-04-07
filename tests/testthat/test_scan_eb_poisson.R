@@ -1,6 +1,6 @@
 context("EB Poisson statistic tests")
 
-test_that("calc_all_poisson_eb", {
+test_that("scan_eb_poisson_cpp", {
   # Single timepoint
   in1 <- list(
     counts = matrix(c(1, 0), nrow = 1),
@@ -9,7 +9,7 @@ test_that("calc_all_poisson_eb", {
   in1$zones_flat =  unlist(in1$zones)
   in1$zone_lengths = unlist(lapply(in1$zones, length))
   
-  actual1 <- calc_all_poisson_eb(
+  actual1 <- scan_eb_poisson_cpp(
     in1$counts, in1$baselines, in1$zones_flat - 1, in1$zone_lengths)
   expected1_score <- c(poisson_lpmf(1, 1) - poisson_lpmf(1, 0.5), 0, 0)
   expect_equal(actual1$score, expected1_score)
@@ -30,7 +30,7 @@ test_that("calc_all_poisson_eb", {
   in2$zones_flat =  unlist(in2$zones)
   in2$zone_lengths = unlist(lapply(in2$zones, length))
   
-  actual2 <- calc_all_poisson_eb(in2$counts,
+  actual2 <- scan_eb_poisson_cpp(in2$counts,
                                  apply(in2$baselines, 2, cumsum),
                                  in2$zones_flat - 1, in2$zone_lengths)
   
