@@ -67,6 +67,7 @@ ob_zone <- zones[[10]]
 counts[ob_dur, ob_zone] <- rpois(
   1, 2 * baselines[ob_dur, ob_zone])
 res <- scan_pb_poisson(counts = counts,
+                       population = population,
                        zones = zones,
                        n_mcsim = 100,
                        gumbel = TRUE,
