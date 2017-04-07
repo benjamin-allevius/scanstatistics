@@ -22,9 +22,6 @@
 //'    from 1 and up in the output.
 //' @param zone_lengths An integer vector holding the number of locations in
 //'    each zone.
-//' @param rel_tol A positive scalar. If the relative change in the incomplete
-//'    information likelihood is less than this value, then the EM algorithm is
-//'    deemed to have converged.
 //' @return A data frame with five columns:
 //'    \describe{
 //'      \item{zone}{The (number of the) zone.}
