@@ -199,7 +199,7 @@ Rcpp::DataFrame scan_eb_zip_cpp(const arma::umat& counts,
                                  Rcpp::Named("n_iter")   = iterations);
 }
 
-//' Calculate the highest-value (EB) ZIP loglihood ratio statistic.
+//' Calculate the highest-value EB ZIP loglihood ratio statistic.
 //' 
 //' Calculate the expectation-based ZIP loglihood ratio statistic for each zone 
 //' and duration, but only keep the zone and duration with the highest value 
@@ -227,9 +227,9 @@ Rcpp::DataFrame scan_eb_zip_cpp_max(const arma::umat& counts,
   int n_zones = zone_lengths.n_elem;
   
   // Return values
-  double mlc_score      = -1.0;
   int    mlc_zone       = -1;
   int    mlc_duration   = -1;
+  double mlc_score      = -1.0;
   double mlc_relrisk    = -1.0;
   int    mlc_iterations = -1;
   
@@ -259,9 +259,9 @@ Rcpp::DataFrame scan_eb_zip_cpp_max(const arma::umat& counts,
       
       // Update return values if new score is highest so far
       if (score_q_niter[0] > mlc_score) {
-        mlc_score      = score_q_niter[0];
         mlc_zone       = z + 1;
         mlc_duration   = d + 1;
+        mlc_score      = score_q_niter[0];
         mlc_relrisk    = score_q_niter[1];
         mlc_iterations = score_q_niter[2];
       }

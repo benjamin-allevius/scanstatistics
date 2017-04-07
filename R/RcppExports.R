@@ -88,6 +88,41 @@ scan_eb_poisson_cpp <- function(counts, agg_baselines, zones, zone_lengths) {
     .Call('scanstatistics_scan_eb_poisson_cpp', PACKAGE = 'scanstatistics', counts, agg_baselines, zones, zone_lengths)
 }
 
+#' Calculate the highest-value EB Poisson loglihood ratio statistic.
+#'
+#' Calculate the expectation-based Poisson loglihood ratio statistic for each 
+#' zone and duration, but only keep the zone and duration with the highest 
+#' value (the MLC). The estimate of the relative risks inside and outside the 
+#' MLC is also calculated and returned.
+#' @param counts A matrix of non-negative integers; the observed counts. Rows
+#'    indicate time, ordered from most recent (row 1) to least recent. Columns
+#'    indicate locations; the locations are numbered from 1 and up.
+#' @param agg_baselines A matrix of positive scalars; the expected values of 
+#'    the counts, cumulatively summed over locations (columns). Of the same 
+#'    dimensions as \code{counts}.
+#' @param zones An integer vector containing the zones, stored one after
+#'    another. Each zone is found using the elements of the parameter
+#'    \code{zone_lengths}. For example, if the first element of
+#'    \code{zone_lengths} is 5, then the first 5 elements of \code{zones}
+#'    make up the first zone. If the second element of \code{zone_lengths} is
+#'    2, then elements 6 and 7 of \code{zones} make up the second zone, and so
+#'    on. Note that the zones are numbered from 0 and up in the input, but
+#'    from 1 and up in the output.
+#' @param zone_lengths An integer vector holding the number of locations in
+#'    each zone.
+#' @return A data frame with five columns:
+#'    \describe{
+#'      \item{zone}{The top-scoring zone (spatial component of MLC).}
+#'      \item{duration}{The corresponding duration (time-length of MLC).}
+#'      \item{score}{The value of the loglihood ratio statistic (the scan
+#'                   statistic).}
+#'      \item{relrisk}{The estimated relative risk.}
+#'    }
+#' @keywords internal
+scan_eb_poisson_cpp_max <- function(counts, agg_baselines, zones, zone_lengths) {
+    .Call('scanstatistics_scan_eb_poisson_cpp_max', PACKAGE = 'scanstatistics', counts, agg_baselines, zones, zone_lengths)
+}
+
 #' Calculate the conditional expectation of the structural zero indicator.
 #' 
 #' Calculate the conditional expectation of the structural zero indicator for 
@@ -172,7 +207,7 @@ scan_eb_zip_cpp <- function(counts, baselines, probs, zones, zone_lengths, rel_t
     .Call('scanstatistics_scan_eb_zip_cpp', PACKAGE = 'scanstatistics', counts, baselines, probs, zones, zone_lengths, rel_tol)
 }
 
-#' Calculate the highest-value (EB) ZIP loglihood ratio statistic.
+#' Calculate the highest-value EB ZIP loglihood ratio statistic.
 #' 
 #' Calculate the expectation-based ZIP loglihood ratio statistic for each zone 
 #' and duration, but only keep the zone and duration with the highest value 
