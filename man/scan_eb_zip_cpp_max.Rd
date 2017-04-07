@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{scan_eb_zip_cpp_max}
 \alias{scan_eb_zip_cpp_max}
-\title{Calculate the highest-value (EB) ZIP loglihood ratio statistic.}
+\title{Calculate the highest-value EB ZIP loglihood ratio statistic.}
 \usage{
 scan_eb_zip_cpp_max(counts, baselines, probs, zones, zone_lengths,
   rel_tol = 0.001)

@@ -2,8 +2,8 @@
 
 #' Calculate the expectation-based ZIP scan statistic.
 #' @param counts A matrix of observed counts. Rows indicate time and are ordered
-#'    from most recent (row 1) to least recent. Columns indicate locations, 
-#'    numbered from 1 and up.
+#'    from least recent (row 1) to most recent (row \code{nrow(counts)}). 
+#'    Columns indicate locations, numbered from 1 and up.
 #' @param zones A list of integer vectors. Each vector corresponds to a single
 #'    zone; its elements are the numbers of the locations in that zone.
 #' @param baselines A matrix of the same dimensions as \code{counts}. Holds the
@@ -93,7 +93,7 @@
 #' ob_zone <- zones[[10]]
 #' counts[ob_dur, ob_zone] <- gamlss.dist::rZIP(
 #'   1, 2 * baselines[ob_dur, ob_zone], probs[ob_dur, ob_zone])
-#' res <- scan_zip_eb(counts = counts, 
+#' res <- scan_eb_zip(counts = counts, 
 #'                    zones = zones,
 #'                    baselines = baselines, 
 #'                    probs = probs,
@@ -102,7 +102,7 @@
 #'                    max_only = FALSE,
 #'                    rel_tol = 1e-3)
 #' }
-scan_zip_eb <- function(counts,
+scan_eb_zip <- function(counts,
                         zones,
                         baselines = NULL,
                         probs = NULL,
@@ -111,33 +111,41 @@ scan_zip_eb <- function(counts,
                         gumbel = TRUE, 
                         max_only = FALSE,
                         rel_tol = 1e-3) {
+  counts <- counts[rev(seq_len(nrow(counts))), ]
   
+  # Estimate baselines and probs if not supplied
   if (is.null(baselines) || is.null(probs)) {
     pars <- estimate_zip_params(counts, population)
     baselines <- pars$baselines
     probs <- pars$probs
+  } else {
+    baselines <- baselines[rev(seq_len(nrow(baselines))), ]
+    probs <- probs[rev(seq_len(nrow(probs))), ]
   }
   
+  # Prepare zone arguments for C++
   zones_flat <- unlist(zones) - 1
   zone_lengths <- unlist(lapply(zones, length))
   
+  # Run analysis on observed counts
   if (max_only) {
-    scan <- calc_one_zip_eb(counts, baselines, probs, 
-                            zones_flat, zone_lengths,
-                            rel_tol)
+    scan <- scan_eb_zip_cpp_max(counts, baselines, probs, 
+                                zones_flat, zone_lengths,
+                                rel_tol)
   } else {
-    scan <- calc_all_zip_eb(counts, baselines, probs, 
+    scan <- scan_eb_zip_cpp(counts, baselines, probs, 
                             zones_flat, zone_lengths,
                             rel_tol)
   }
   
+  # Extract the most likely cluster (MLC)
   MLC <- scan[which.max(scan$score), ]
   
-  # Monte Carlo replications of the scan statistic under null hypothesis
+  # Make Monte Carlo replications of the scan statistic under the null hypothesis
   repl_stat <- numeric(n_mcsim)
   for (i in seq_len(n_mcsim)) {
-    repl_stat[i] <- calc_one_zip_eb(
-      rZIP(nrow(counts) * ncol(counts), baselines, probs), 
+    repl_stat[i] <- scan_eb_zip_cpp_max(
+      rZIP(prod(dim(counts)), baselines, probs), # Simulate ZIP data
       baselines, 
       probs, 
       zones_flat, zone_lengths,
@@ -153,13 +161,14 @@ scan_zip_eb <- function(counts,
     gumbel_sigma <- gum_fit$mle[2]
   }
   
-  # Get P-value
-  pvalue <- NA
+  # Get P-values if Monte Carlo simulations were made
+  MC_pvalue <- NA
+  gumbel_pvalue <- NA
   if (n_mcsim > 0) {
+    MC_pvalue <- mc_pvalue(MLC$score, repl_stat)
     if (gumbel) {
-      pvalue <- pgumbel(MLC$score, gumbel_mu, gumbel_sigma, lower.tail = FALSE)
-    } else {
-      pvalue <- mc_pvalue(MLC$score, repl_stat)
+      gumbel_pvalue <- pgumbel(MLC$score, gumbel_mu, gumbel_sigma, 
+                               lower.tail = FALSE)
     }
   }
   
@@ -177,7 +186,8 @@ scan_zip_eb <- function(counts,
                                 zones[[MLC$zone]]]),
        table = scan,
        replicate_statistics = repl_stat,
-       gumbel_mu = gumbel_mu,
-       gumbel_sigma = gumbel_sigma,
-       pvalue = pvalue)
+       MC_pvalue = MC_pvalue,
+       Gumbel_pvalue = gumbel_pvalue,
+       Gumbel_mu = gumbel_mu,
+       Gumbel_sigma = gumbel_sigma)
 }
