@@ -33,7 +33,7 @@ vector, should be of the same length as the number of columns in
 \item{n_mcsim}{A non-negative integer; the number of replicate scan 
 statistics to generate in order to calculate a P-value.}
 
-\item{gumbel}{Boolean. If \code{TRUE}, and \code{n_mcsim > 0}, then a Gumbel
+\item{gumbel}{Boolean. If \code{TRUE} and \code{n_mcsim > 0}, then a Gumbel
 distribution is fit to the replicate scan statistics and a \eqn{p}-value
 for the observed scan statistic is calculated using the fitted 
 distribution. If \code{FALSE} and \code{n_mcsim > 0}, the empirical

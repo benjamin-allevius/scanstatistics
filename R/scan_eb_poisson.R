@@ -7,16 +7,17 @@
 #' @param zones A list of integer vectors. Each vector corresponds to a single
 #'    zone; its elements are the numbers of the locations in that zone.
 #' @param baselines A matrix of the same dimensions as \code{counts}. Holds the
-#'    Poisson mean parameter of the ZIP distribution for each observed count.
+#'    Poisson mean parameter of the ZIP distribution for each observed count. 
+#'    Will be estimated if not supplied.
 #' @param population A matrix or vector of populations for each location. Only
-#'    needed if \code{baselines} and \code{probs} are to be estimated and you 
-#'    want to account for the different populations in each location (and time).
+#'    needed if \code{baselines} are to be estimated and you want to account for 
+#'    the different populations in each location (and time).
 #'    If a matrix, should be of the same dimensions as \code{counts}. If a 
 #'    vector, should be of the same length as the number of columns in 
 #'    \code{counts}.
 #' @param n_mcsim A non-negative integer; the number of replicate scan 
 #'    statistics to generate in order to calculate a P-value.
-#' @param gumbel Boolean. If \code{TRUE}, and \code{n_mcsim > 0}, then a Gumbel
+#' @param gumbel Boolean. If \code{TRUE} and \code{n_mcsim > 0}, then a Gumbel
 #'    distribution is fit to the replicate scan statistics and a \eqn{p}-value
 #'    for the observed scan statistic is calculated using the fitted 
 #'    distribution. If \code{FALSE} and \code{n_mcsim > 0}, the empirical
@@ -27,9 +28,6 @@
 #'    statistic for each zone and duration is returned. If \code{TRUE}, only the
 #'    largest such statistic (i.e. the scan statistic) is returned, along with
 #'    the corresponding zone and duration.
-#' @param rel_tol A positive scalar. If the relative change in the incomplete
-#'    information likelihood is less than this value, then the EM algorithm is
-#'    deemed to have converged.
 #' @importFrom stats rpois
 #' @importFrom ismev gum.fit
 #' @importFrom reliaR pgumbel
@@ -66,8 +64,7 @@ scan_eb_poisson <- function(counts,
                             population = NULL,
                             n_mcsim = 0,
                             gumbel = TRUE, 
-                            max_only = FALSE,
-                            rel_tol = 1e-3) {
+                            max_only = FALSE) {
   counts <- counts[rev(seq_len(nrow(counts))), ]
   
   # Estimate baselines and probs if not supplied
