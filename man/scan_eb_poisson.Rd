@@ -4,9 +4,8 @@
 \alias{scan_eb_poisson}
 \title{Calculate the expectation-based Poisson scan statistic.}
 \usage{
-scan_eb_poisson(counts, zones, baselines = NULL, probs = NULL,
-  population = NULL, n_mcsim = 0, gumbel = TRUE, max_only = FALSE,
-  rel_tol = 0.001)
+scan_eb_poisson(counts, zones, baselines = NULL, population = NULL,
+  n_mcsim = 0, gumbel = TRUE, max_only = FALSE, rel_tol = 0.001)
 }
 \arguments{
 \item{counts}{A matrix of observed counts. Rows indicate time and are ordered
@@ -59,22 +58,20 @@ zones <- knn_zones(knn_mat)
 
 # Simulate data
 baselines <- matrix(rexp(50, 1/5), 5, 50)
-probs <- matrix(runif(50) / 4, 5, 50)
-counts <- gamlss.dist::rZIP(1, baselines, probs)
+counts <- rpois(1, baselines, probs)
 
 # Inject outbreak/event/anomaly
 ob_dur <- 1:3
 ob_zone <- zones[[10]]
-counts[ob_dur, ob_zone] <- gamlss.dist::rZIP(
-  1, 2 * baselines[ob_dur, ob_zone], probs[ob_dur, ob_zone])
-res <- scan_zip_eb(counts = counts, 
-                   zones = zones,
-                   baselines = baselines, 
-                   probs = probs,
-                   n_mcsim = 100,
-                   gumbel = TRUE,
-                   max_only = FALSE,
-                   rel_tol = 1e-3)
+counts[ob_dur, ob_zone] <- rpois(
+  1, 2 * baselines[ob_dur, ob_zone])
+res <- scan_eb_poisson(counts = counts, 
+                       zones = zones,
+                       baselines = baselines, 
+                       n_mcsim = 100,
+                       gumbel = TRUE,
+                       max_only = FALSE,
+                       rel_tol = 1e-3)
 }
 }
 \keyword{internal}

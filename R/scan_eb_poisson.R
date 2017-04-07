@@ -30,7 +30,7 @@
 #' @param rel_tol A positive scalar. If the relative change in the incomplete
 #'    information likelihood is less than this value, then the EM algorithm is
 #'    deemed to have converged.
-#' @importFrom gamlss.dist rZIP
+#' @importFrom stats rpois
 #' @importFrom ismev gum.fit
 #' @importFrom reliaR pgumbel
 #' @keywords internal
@@ -44,32 +44,30 @@
 #' 
 #' # Simulate data
 #' baselines <- matrix(rexp(50, 1/5), 5, 50)
-#' probs <- matrix(runif(50) / 4, 5, 50)
-#' counts <- gamlss.dist::rZIP(1, baselines, probs)
+#' counts <- matrix(rpois(prod(dim(baselines)), as.vector(baselines)),
+#'                  nrow(baselines), ncol(baselines))
 #' 
 #' # Inject outbreak/event/anomaly
 #' ob_dur <- 1:3
 #' ob_zone <- zones[[10]]
-#' counts[ob_dur, ob_zone] <- gamlss.dist::rZIP(
-#'   1, 2 * baselines[ob_dur, ob_zone], probs[ob_dur, ob_zone])
-#' res <- scan_zip_eb(counts = counts, 
-#'                    zones = zones,
-#'                    baselines = baselines, 
-#'                    probs = probs,
-#'                    n_mcsim = 100,
-#'                    gumbel = TRUE,
-#'                    max_only = FALSE,
-#'                    rel_tol = 1e-3)
+#' counts[ob_dur, ob_zone] <- rpois(
+#'   1, 2 * baselines[ob_dur, ob_zone])
+#' res <- scan_eb_poisson(counts = counts, 
+#'                        zones = zones,
+#'                        baselines = baselines, 
+#'                        n_mcsim = 100,
+#'                        gumbel = TRUE,
+#'                        max_only = FALSE,
+#'                        rel_tol = 1e-3)
 #' }
 scan_eb_poisson <- function(counts,
-                        zones,
-                        baselines = NULL,
-                        probs = NULL,
-                        population = NULL,
-                        n_mcsim = 0,
-                        gumbel = TRUE, 
-                        max_only = FALSE,
-                        rel_tol = 1e-3) {
+                            zones,
+                            baselines = NULL,
+                            population = NULL,
+                            n_mcsim = 0,
+                            gumbel = TRUE, 
+                            max_only = FALSE,
+                            rel_tol = 1e-3) {
   counts <- counts[rev(seq_len(nrow(counts))), ]
   
   # Estimate baselines and probs if not supplied
@@ -85,13 +83,11 @@ scan_eb_poisson <- function(counts,
   
   # Run analysis on observed counts
   if (max_only) {
-    scan <- scan_eb_zip_cpp_max(counts, baselines, probs, 
-                                zones_flat, zone_lengths,
-                                rel_tol)
+    scan <- scan_eb_poisson_cpp_max(counts, baselines, 
+                                    zones_flat, zone_lengths)
   } else {
-    scan <- scan_eb_zip_cpp(counts, baselines, probs, 
-                            zones_flat, zone_lengths,
-                            rel_tol)
+    scan <- scan_eb_poisson_cpp(counts, baselines, 
+                                zones_flat, zone_lengths)
   }
   
   # Extract the most likely cluster (MLC)
@@ -100,12 +96,11 @@ scan_eb_poisson <- function(counts,
   # Make Monte Carlo replications of the scan statistic under the null hypothesis
   repl_stat <- numeric(n_mcsim)
   for (i in seq_len(n_mcsim)) {
-    repl_stat[i] <- scan_eb_zip_cpp_max(
-      rZIP(prod(dim(counts)), baselines, probs), # Simulate ZIP data
+    repl_stat[i] <- scan_eb_poisson_cpp_max(
+      matrix(rpois(prod(dim(counts)), as.vector(baselines)),
+             nrow(baselines), ncol(baselines)),
       baselines, 
-      probs, 
-      zones_flat, zone_lengths,
-      rel_tol)$score
+      zones_flat, zone_lengths)$score
   }
   
   # Fit Gumbel distribution to Monte Carlo replicates
@@ -137,9 +132,7 @@ scan_eb_poisson <- function(counts,
                   observed = counts[seq_len(MLC$duration), 
                                     zones[[MLC$zone]]],
                   baselines = baselines[seq_len(MLC$duration), 
-                                        zones[[MLC$zone]]],
-                  probs = probs[seq_len(MLC$duration), 
-                                zones[[MLC$zone]]]),
+                                        zones[[MLC$zone]]]),
        table = scan,
        replicate_statistics = repl_stat,
        MC_pvalue = MC_pvalue,
