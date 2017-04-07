@@ -73,14 +73,16 @@ Rcpp::DataFrame scan_pb_poisson_cpp(const arma::umat& counts,
       double B = arma::accu(agg_baselines.submat(row_idx, current_zone));
 
       double risk_in  = C / B;
-      double risk_out = (N - C) / (N - B);
+      double risk_out = (N > B ? (N - C) / (N - B) : 1.0);
+      double term2 = (abs(N - C) < 1e-16 ? 0.0 : (N - C) * log(risk_out));
       
       // Store results
-      scores[i]       = C > B ? C * log(risk_in) + (N-C) * log(risk_out) : 0.0;
-      relrisks_in[i]  = risk_in;
-      relrisks_out[i] = risk_out;
       zone_numbers[i] = z + 1;
       durations[i]    = d + 1;
+      scores[i]     = (C > B ? C * log(risk_in) + term2 : 0.0);
+      relrisks_in[i]  = risk_in;
+      relrisks_out[i] = risk_out;
+      
       
       // Update indices
       zone_start = zone_end + 1;
