@@ -97,8 +97,8 @@ knn_mat <- coords_to_knn(geo, 15)
 zones <- knn_zones(knn_mat)
 
 # Simulate data
-baselines <- matrix(rexp(50, 1/5), 5, 50)
-probs <- matrix(runif(50) / 4, 5, 50)
+baselines <- matrix(rexp(50 * 5, 1/5), 5, 50)
+probs <- matrix(runif(50 * 5) / 4, 5, 50)
 counts <- gamlss.dist::rZIP(1, baselines, probs)
 
 # Inject outbreak/event/anomaly

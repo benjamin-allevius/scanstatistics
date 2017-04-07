@@ -84,8 +84,8 @@
 #' zones <- knn_zones(knn_mat)
 #' 
 #' # Simulate data
-#' baselines <- matrix(rexp(50, 1/5), 5, 50)
-#' probs <- matrix(runif(50) / 4, 5, 50)
+#' baselines <- matrix(rexp(50 * 5, 1/5), 5, 50)
+#' probs <- matrix(runif(50 * 5) / 4, 5, 50)
 #' counts <- gamlss.dist::rZIP(1, baselines, probs)
 #' 
 #' # Inject outbreak/event/anomaly
@@ -177,7 +177,6 @@ scan_eb_zip <- function(counts,
                   duration = MLC$duration,
                   score = MLC$score,
                   relative_risk = MLC$relrisk,
-                  EM_iterations = MLC$n_iter,
                   observed = counts[seq_len(MLC$duration), 
                                     zones[[MLC$zone]]],
                   baselines = baselines[seq_len(MLC$duration), 

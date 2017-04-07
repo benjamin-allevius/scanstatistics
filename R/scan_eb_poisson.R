@@ -41,7 +41,7 @@
 #' zones <- knn_zones(knn_mat)
 #' 
 #' # Simulate data
-#' baselines <- matrix(rexp(50, 1/5), 5, 50)
+#' baselines <- matrix(rexp(50 * 5, 1/5), 5, 50)
 #' counts <- matrix(rpois(prod(dim(baselines)), as.vector(baselines)),
 #'                  nrow(baselines), ncol(baselines))
 #' 
