@@ -30,7 +30,7 @@
 #'    statistic for each zone and duration is returned. If \code{TRUE}, only the
 #'    largest such statistic (i.e. the scan statistic) is returned, along with
 #'    the corresponding zone and duration.
-#' @importFrom stats rpois
+#' @importFrom stats rmultinom
 #' @importFrom ismev gum.fit
 #' @importFrom reliaR pgumbel
 #' @keywords internal
