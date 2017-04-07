@@ -4,7 +4,7 @@
 \alias{score_eb_zip}
 \title{Calculate the ZIP loglihood ratio statistic and the relative risk.}
 \usage{
-score_eb_zip(y, mu, p, rel_tol = 0.01)
+score_eb_zip(y, mu, p, rel_tol = 0.001)
 }
 \arguments{
 \item{y}{A non-negative integer vector; the observed counts.}
@@ -27,7 +27,8 @@ A list with three elements:
    }
 }
 \description{
-Calculate the ZIP loglihood ratio statistic and the relative risk.
+Calculate the ZIP loglihood ratio statistic and the relative risk in the 
+expectation-based ZIP scan statistic model.
 }
 \keyword{internal}
 

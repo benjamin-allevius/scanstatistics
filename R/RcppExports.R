@@ -126,7 +126,8 @@ scan_eb_poisson_cpp_max <- function(counts, agg_baselines, zones, zone_lengths) 
 #' Calculate the conditional expectation of the structural zero indicator.
 #' 
 #' Calculate the conditional expectation of the structural zero indicator for 
-#' the zero-inflated Poisson distribution.
+#' the zero-inflated Poisson distribution in the expectation-based ZIP scan
+#' statistic model.
 #' @param mu The expected values of the count (which is zero).
 #' @param p The structural zero probability.
 #' @param q A scalar greater than or equal to 1; the relative risk.
@@ -138,7 +139,8 @@ est_eb_zip_zeroindic <- function(mu, p, q) {
 
 #' Estimate the relative risk for the ZIP distribution.
 #' 
-#' Estimate the relative risk for the ZIP distribution.
+#' Estimate the relative risk for the ZIP distribution in the expectation-based
+#' ZIP scan statistic model.
 #' @param y_sum A non-negative integer; the sum of the observed counts.
 #' @param mu A vector of positive scalars; the expected values of the counts.
 #' @param p A vector of scalars between 0 and 1; the structural zero
@@ -151,6 +153,9 @@ est_eb_zip_relrisk <- function(y_sum, mu, p, d_hat) {
 }
 
 #' Calculate the ZIP loglihood ratio statistic and the relative risk.
+#' 
+#' Calculate the ZIP loglihood ratio statistic and the relative risk in the 
+#' expectation-based ZIP scan statistic model.
 #' @param y A non-negative integer vector; the observed counts.
 #' @param mu A vector of positive scalars; the expected values of the counts.
 #' @param p A vector of scalars between 0 and 1; the structural zero
@@ -164,7 +169,7 @@ est_eb_zip_relrisk <- function(y_sum, mu, p, d_hat) {
 #'      \item The number of iterations of the EM algorithm performed.
 #'    } 
 #' @keywords internal
-score_eb_zip <- function(y, mu, p, rel_tol = 1e-2) {
+score_eb_zip <- function(y, mu, p, rel_tol = 1e-3) {
     .Call('scanstatistics_score_eb_zip', PACKAGE = 'scanstatistics', y, mu, p, rel_tol)
 }
 

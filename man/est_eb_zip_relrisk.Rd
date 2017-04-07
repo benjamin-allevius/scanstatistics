@@ -20,7 +20,8 @@ probabilities.}
 A scalar; the relative risk.
 }
 \description{
-Estimate the relative risk for the ZIP distribution.
+Estimate the relative risk for the ZIP distribution in the expectation-based
+ZIP scan statistic model.
 }
 \keyword{internal}
 

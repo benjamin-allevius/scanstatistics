@@ -18,7 +18,8 @@ A scalar between 0 and 1.
 }
 \description{
 Calculate the conditional expectation of the structural zero indicator for 
-the zero-inflated Poisson distribution.
+the zero-inflated Poisson distribution in the expectation-based ZIP scan
+statistic model.
 }
 \keyword{internal}
 
