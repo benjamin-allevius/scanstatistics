@@ -58,7 +58,8 @@ zones <- knn_zones(knn_mat)
 
 # Simulate data
 baselines <- matrix(rexp(50, 1/5), 5, 50)
-counts <- rpois(1, baselines, probs)
+counts <- matrix(rpois(prod(dim(baselines)), as.vector(baselines)),
+                 nrow(baselines), ncol(baselines))
 
 # Inject outbreak/event/anomaly
 ob_dur <- 1:3
