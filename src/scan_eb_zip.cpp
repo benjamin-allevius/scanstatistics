@@ -6,7 +6,8 @@
 //' Calculate the conditional expectation of the structural zero indicator.
 //' 
 //' Calculate the conditional expectation of the structural zero indicator for 
-//' the zero-inflated Poisson distribution.
+//' the zero-inflated Poisson distribution in the expectation-based ZIP scan
+//' statistic model.
 //' @param mu The expected values of the count (which is zero).
 //' @param p The structural zero probability.
 //' @param q A scalar greater than or equal to 1; the relative risk.
@@ -19,7 +20,8 @@ double est_eb_zip_zeroindic(const double mu, const double p, const double q) {
 
 //' Estimate the relative risk for the ZIP distribution.
 //' 
-//' Estimate the relative risk for the ZIP distribution.
+//' Estimate the relative risk for the ZIP distribution in the expectation-based
+//' ZIP scan statistic model.
 //' @param y_sum A non-negative integer; the sum of the observed counts.
 //' @param mu A vector of positive scalars; the expected values of the counts.
 //' @param p A vector of scalars between 0 and 1; the structural zero
@@ -40,6 +42,9 @@ double est_eb_zip_relrisk(const int y_sum,
 }
 
 //' Calculate the ZIP loglihood ratio statistic and the relative risk.
+//' 
+//' Calculate the ZIP loglihood ratio statistic and the relative risk in the 
+//' expectation-based ZIP scan statistic model.
 //' @param y A non-negative integer vector; the observed counts.
 //' @param mu A vector of positive scalars; the expected values of the counts.
 //' @param p A vector of scalars between 0 and 1; the structural zero
@@ -57,7 +62,7 @@ double est_eb_zip_relrisk(const int y_sum,
 Rcpp::List score_eb_zip(const arma::uvec& y,
                         const arma::vec& mu,
                         const arma::vec& p,
-                        const double rel_tol = 1e-2) {
+                        const double rel_tol = 1e-3) {
   Rcpp::List score_q_niter (3);
   
   arma::vec d_hat = arma::zeros(y.n_elem); // Structural zero estimates
