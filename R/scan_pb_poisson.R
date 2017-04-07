@@ -76,7 +76,7 @@ scan_pb_poisson <- function(counts,
     baselines <- baselines[rev(seq_len(nrow(baselines))), ]
   }
   
-  if (!all.equal(sum(baselines), total_count)) {
+  if (!isTRUE(all.equal(sum(baselines), total_count))) {
     stop("Sum of baselines must equal sum of counts.")
   }
 
