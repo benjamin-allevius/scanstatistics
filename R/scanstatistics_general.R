@@ -40,9 +40,9 @@ extract_mlc <- function(table) {
 
 #' Calculate the Monte Carlo \eqn{p}-value for a scan statistic.
 #' 
-#' Given an observed scan statistic \eqn{\lambda^*} and a vector of replicate scan 
-#' statistics \eqn{\lambda_i}, \eqn{i=1,\ldots,R}, calculate the Monte carlo 
-#' \eqn{p}-value as
+#' Given an observed scan statistic \eqn{\lambda^*} and a vector of replicate 
+#' scan statistics \eqn{\lambda_i}, \eqn{i=1,\ldots,R}, calculate the Monte 
+#' Carlo \eqn{p}-value as
 #' \deqn{
 #'  \frac{1 + \sum_{i=1}^R \mathrm{I}(\lambda_i > \lambda^*)}{1 + R}
 #' }
@@ -67,6 +67,48 @@ mc_pvalue <- function(observed, replicates) {
     
     return(f(observed))
   }
+}
+
+#' Calculate the Gumbel \eqn{p}-value for a scan statistic.
+#' 
+#' Given an observed scan statistic \eqn{\lambda^*} and a vector of replicate 
+#' scan statistics \eqn{\lambda_i}, \eqn{i=1,\ldots,R}, fit a Gumbel 
+#' distribution to the replicates and calculate a \eqn{p}-value for the observed
+#' statistic based on the fitted distribution.
+#' \deqn{
+#'  \frac{1 + \sum_{i=1}^R \mathrm{I}(\lambda_i > \lambda^*)}{1 + R}
+#' }
+#' The function is vectorized, so multiple \eqn{p}-values can be calculated if
+#' several scan statistics (e.g. statistics from secondary clusters) are 
+#' supplied.
+#' @param observed A scalar containing the observed value of the scan statistic,
+#'    or a vector of observed values from secondary clusters.
+#' @param replicates A vector of Monte Carlo replicates of the scan statistic.
+#' @param method Either "ML", for maximum likelihood, or "MoM", for method of 
+#'    moments.
+#' @return The \eqn{p}-value or \eqn{p}-values corresponding to the observed 
+#'    scan statistic(s).
+#' @importFrom ismev gum.fit
+#' @importfrom reliaR pgumbel
+#' @export
+gumbel_pvalue <- function(observed, replicates, method = "ML") {
+  # Fit Gumbel distribution to Monte Carlo replicates
+  gumbel_mu <- NA
+  gumbel_sigma <- NA
+  if (method == "ML") {
+    gum_fit <- gum.fit(replicates, show = FALSE)
+    gumbel_mu <- gum_fit$mle[1]
+    gumbel_sigma <- gum_fit$mle[2]
+  } else {
+    gumbel_sigma <- sqrt(6 * var(replicates) / pi^2)
+    gumbel_mu <- mean(replicates) + digamma(1) * gumbel_sigma
+  }
+  
+  pvalue <- pgumbel(observed, gumbel_mu, gumbel_sigma, lower.tail = FALSE)
+  
+  return(list(pvalue = pvalue, 
+              gumbel_mu = gumbel_mu, 
+              gumbel_sigma = gumbel_sigma))
 }
 
 #' Creates an S3 object of class scanstatistic.
