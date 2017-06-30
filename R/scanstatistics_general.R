@@ -89,7 +89,7 @@ mc_pvalue <- function(observed, replicates) {
 #' @return The \eqn{p}-value or \eqn{p}-values corresponding to the observed 
 #'    scan statistic(s).
 #' @importFrom ismev gum.fit
-#' @importfrom reliaR pgumbel
+#' @importFrom reliaR pgumbel
 #' @export
 gumbel_pvalue <- function(observed, replicates, method = "ML") {
   # Fit Gumbel distribution to Monte Carlo replicates
