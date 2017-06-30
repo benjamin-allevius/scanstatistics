@@ -22,4 +22,3 @@ Reorder each row in the input matrix \code{A} by the column indices found
 in the corresponding row of the matrix \code{priority_indices}.
 }
 \keyword{internal}
-

@@ -17,4 +17,3 @@ Creates a list of all \eqn{2^(n-1)} non-empty subsets of the integers from 1
 to \eqn{n}.
 }
 \keyword{internal}
-

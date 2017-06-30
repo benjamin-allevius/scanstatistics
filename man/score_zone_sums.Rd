@@ -21,4 +21,3 @@ Computes the sum of the numerator and denominator terms over all locations in
 each zone, as part of the score calculation.
 }
 \keyword{internal}
-

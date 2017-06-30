@@ -22,4 +22,3 @@ A list containing matrices. This list has the same names as the input
 \description{
 For each array in a list, sum over dimension \code{d}.
 }
-

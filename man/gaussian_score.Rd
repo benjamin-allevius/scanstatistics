@@ -27,4 +27,3 @@ A matrix of the same dimension as the input matrices.
 Compute the Gaussian score for each priority subset, for each duration.
 }
 \keyword{internal}
-

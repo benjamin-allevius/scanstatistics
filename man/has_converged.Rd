@@ -19,4 +19,3 @@ Given two consecutive numbers in a sequence, return \code{TRUE} if the
 relative change is positive but less than the given tolerance.
 }
 \keyword{internal}
-

@@ -18,4 +18,3 @@ A vector of length \code{length(d)}.
 Computes the sum in the increasing score numerator.
 }
 \keyword{internal}
-

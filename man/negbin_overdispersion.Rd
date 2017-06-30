@@ -21,4 +21,3 @@ to the input \code{data.table}, meaning that this function \code{modifies}
 its input.
 }
 \keyword{internal}
-

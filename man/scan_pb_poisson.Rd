@@ -75,4 +75,3 @@ res <- scan_pb_poisson(counts = counts,
 }
 }
 \keyword{internal}
-

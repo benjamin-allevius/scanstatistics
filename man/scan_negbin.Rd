@@ -116,4 +116,3 @@ Tango, T., Takahashi, K. & Kohriyama, K. (2011), \emph{A space-time scan
 \concept{
 negative binomial negbin nbinom scanstatistic
 }
-

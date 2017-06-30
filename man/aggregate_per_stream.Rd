@@ -21,4 +21,3 @@ A matrix with \code{dim(A)[1]} rows and \code{dim(A)[3]} columns.
 Aggregate (sum) values over all locations, and cumulatively over time.
 }
 \keyword{internal}
-

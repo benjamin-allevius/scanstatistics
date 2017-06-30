@@ -25,4 +25,3 @@ the scan statistic for each generated data set using the supplied
 \code{zones}.
 }
 \keyword{internal}
-

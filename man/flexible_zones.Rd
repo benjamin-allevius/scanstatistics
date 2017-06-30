@@ -47,4 +47,3 @@ Tango, T. & Takahashi, K. (2005), \emph{A flexibly shaped spatial scan
    statistic for detecting clusters}, International Journal of Health 
    Geographics 4(1).
 }
-

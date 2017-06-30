@@ -27,4 +27,3 @@ given a duration of 2, and so on. This function \strong{modifies} the input
 table.
 }
 \keyword{internal}
-

@@ -30,4 +30,3 @@ supplied \code{zones}. The score can be calculated either according to the
 ordinary cluster model or the increasing outbreak/event/anomaly model.
 }
 \keyword{internal}
-

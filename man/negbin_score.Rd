@@ -19,4 +19,3 @@ ordinary outbreak/event/anomaly model and either a Poisson or a negative
 binomial distribution for the counts.
 }
 \keyword{internal}
-

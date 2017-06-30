@@ -15,4 +15,3 @@ validate_colnames(table, col_names)
 Check that the input table has the right columns. Raises error if not.
 }
 \keyword{internal}
-

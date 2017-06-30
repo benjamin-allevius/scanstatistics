@@ -39,4 +39,3 @@ zones <- scanstatistics:::powerset_zones(4)
 result <- scan_poisson(table, zones, 100)
 score_locations(result)
 }
-

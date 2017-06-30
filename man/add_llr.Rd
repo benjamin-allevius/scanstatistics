@@ -31,4 +31,3 @@ by subtracting null log-likelihoods from the event log-likelihoods,
 for each location, stream, and event duration.
 }
 \keyword{internal}
-

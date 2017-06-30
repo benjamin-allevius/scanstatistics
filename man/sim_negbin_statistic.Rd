@@ -25,4 +25,3 @@ parameters and calculate the value of the score scan statistic, according to
 the specified model.
 }
 \keyword{internal}
-

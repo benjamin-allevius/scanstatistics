@@ -26,4 +26,3 @@ then return the set containing the location and its neighbors;
 otherwise, return the empty set
 }
 \keyword{internal}
-

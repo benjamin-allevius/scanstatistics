@@ -44,4 +44,3 @@ value (the MLC). The estimate of the relative risks inside and outside the
 MLC is also calculated and returned.
 }
 \keyword{internal}
-

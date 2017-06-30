@@ -17,4 +17,3 @@ over each zone and duration.}
 Sum columns over all location in each zone, for each duration.
 }
 \keyword{internal}
-

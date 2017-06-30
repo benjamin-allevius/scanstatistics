@@ -22,4 +22,3 @@ NM_map
 Map data for New Mexico. Was created using \code{ggplot2::map_data}.
 }
 \keyword{datasets}
-

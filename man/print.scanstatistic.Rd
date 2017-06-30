@@ -15,4 +15,3 @@
 Prints a scanstatistic object and returns it invisibly.
 }
 \keyword{internal}
-

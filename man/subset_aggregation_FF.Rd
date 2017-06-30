@@ -102,4 +102,3 @@ Neill, Daniel B., Edward McFowland, and Huanian Zheng (2013). \emph{Fast
    32 (13), pp. 2185-2208.
 }
 \keyword{internal}
-

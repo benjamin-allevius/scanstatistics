@@ -97,4 +97,3 @@ result
 \concept{
 poisson scanstatistic
 }
-

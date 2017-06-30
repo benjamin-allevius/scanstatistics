@@ -22,4 +22,3 @@ A matrix of the same dimension as \code{A}.
 Order locations accorder to priority, then apply function.
 }
 \keyword{internal}
-

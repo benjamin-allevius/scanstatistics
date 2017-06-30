@@ -31,4 +31,3 @@ nn <- matrix(c(1L, 2L, 4L, 3L, 5L,
                ncol = 5, byrow = TRUE)
 knn_zones(nn[, 1:3])
 }
-

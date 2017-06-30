@@ -40,4 +40,3 @@ structural zero probabilities for each location and time point. Assumes the
 structural zero probability is constant over time for each location.
 }
 \keyword{internal}
-

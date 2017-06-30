@@ -31,4 +31,3 @@ Calculate the increasing score for each space-time window, given the initial
 data of counts, expected values, and overdispersion parameters.
 }
 \keyword{internal}
-

@@ -35,4 +35,3 @@ zones <- scanstatistics:::powerset_zones(4)
 result <- scan_poisson(table, zones, 0)
 top_clusters(result, k = 4, overlapping = FALSE)
 }
-

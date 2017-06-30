@@ -19,4 +19,3 @@ This function extracts the value of the scan statistic, which is the maximum
 of the statistics calculated for each spatial or space-time window.
 }
 \keyword{internal}
-

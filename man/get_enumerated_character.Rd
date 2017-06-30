@@ -17,4 +17,3 @@ Get the name (as character) corresponding to the given number, from a list of
 enumerated names.
 }
 \keyword{internal}
-

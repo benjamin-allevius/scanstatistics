@@ -20,4 +20,3 @@ according to the parameters on each row of the input \code{data.table}, and
 adds the counts to a new column \code{count}.
 }
 \keyword{internal}
-

@@ -21,4 +21,3 @@ spatiotemporal window that corresponds to the scan statistic. It also returns
 the value of the scan statistc.
 }
 \keyword{internal}
-

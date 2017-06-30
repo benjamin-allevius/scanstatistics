@@ -24,4 +24,3 @@ statistic for each space-time window, given already calculated relative risks
 and aggregate counts and mus.
 }
 \keyword{internal}
-

@@ -19,4 +19,3 @@ haskeys(data_table, keys)
 Determine if table has all the given keys.
 }
 \keyword{internal}
-

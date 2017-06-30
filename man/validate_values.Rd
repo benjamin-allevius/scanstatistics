@@ -16,4 +16,3 @@ table must not have any missing values.}
 Check that the input table does not contain any missing values.
 }
 \keyword{internal}
-

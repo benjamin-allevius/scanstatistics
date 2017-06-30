@@ -51,4 +51,3 @@ with the number of iterations the EM algorithm performed for each zone and
 duration.
 }
 \keyword{internal}
-

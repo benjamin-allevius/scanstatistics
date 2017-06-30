@@ -17,4 +17,3 @@ A list of integer vectors; the same as input \code{x} but with
 Remove duplicates from a list of integer vectors.
 }
 \keyword{internal}
-

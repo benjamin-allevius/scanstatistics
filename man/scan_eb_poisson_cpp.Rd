@@ -42,4 +42,3 @@ zone and duration. The estimate of the relative risk is also calculated and
 returned.
 }
 \keyword{internal}
-

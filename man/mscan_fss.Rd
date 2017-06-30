@@ -128,6 +128,7 @@ versions of this method exist, available through the parameter
 }
 Note: this method is called "Kulldorff's method" in Neill et al. (2013).
 }
+
 \examples{
 \dontrun{
 # Set simulation parameters (small)
@@ -181,4 +182,3 @@ Neill, Daniel B., Edward McFowland, and Huanian Zheng (2013). \emph{Fast
    subset scan for multivariate event detection}. Statistics in Medicine 
    32 (13), pp. 2185-2208.
 }
-

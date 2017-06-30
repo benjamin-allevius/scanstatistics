@@ -18,4 +18,3 @@ statistic, and possibly others.}
 Creates an S3 object of class scanstatistic.
 }
 \keyword{internal}
-

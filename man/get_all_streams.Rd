@@ -14,4 +14,3 @@ From a \code{data.table} with a column \code{stream}, extract the unique and
 sorted values from this column as a vector.
 }
 \keyword{internal}
-

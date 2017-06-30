@@ -27,4 +27,3 @@ create_table(cols)
 }
 }
 \keyword{internal}
-

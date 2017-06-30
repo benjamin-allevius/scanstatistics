@@ -123,4 +123,3 @@ Kjellson, B. (2015), \emph{Spatiotemporal Outbreak Detection: A Scan
    \href{http://goo.gl/6Q89ML}{Link to PDF}.
 }
 \keyword{internal}
-

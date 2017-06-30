@@ -22,4 +22,3 @@ of \code{v}, the second set the first and second elements of \code{v}, and so
 on.
 }
 \keyword{internal}
-

@@ -19,4 +19,3 @@ increasing type of outbreak/event/anomaly and either a Poisson or a negative
 binomial distribution for the counts.
 }
 \keyword{internal}
-

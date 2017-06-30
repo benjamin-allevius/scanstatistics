@@ -25,4 +25,3 @@ year-to-year changes are overly smooth but match the census numbers in the
 three years mentioned.
 }
 \keyword{datasets}
-

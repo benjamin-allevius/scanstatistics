@@ -31,4 +31,3 @@ cumulatively backwards in time, and compute the exponential priority function
 value for each column and subset of time.
 }
 \keyword{internal}
-

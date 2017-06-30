@@ -24,4 +24,3 @@ Return those elements in the second set \eqn{Z_1} which are connected to
 those in the first set \eqn{Z_0}, according to the adjacency matrix.
 }
 \keyword{internal}
-

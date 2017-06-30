@@ -19,4 +19,3 @@ This function extracts the values of a \code{data.table} column as a vector;
 the column name is supplied as a character.
 }
 \keyword{internal}
-

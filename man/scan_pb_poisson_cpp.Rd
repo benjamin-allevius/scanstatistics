@@ -11,7 +11,7 @@ scan_pb_poisson_cpp(counts, agg_baselines, zones, zone_lengths, N)
 indicate time, ordered from most recent (row 1) to least recent. Columns
 indicate locations; the locations are numbered from 1 and up.}
 
-\item{agg_baselines}{A matrix of positive scalars; the expected values of 
+\item{agg_baselines}{A matrix of positive scalars; the expected values of
 the counts, cumulatively summed over locations (columns). Of the same
 dimensions as \code{counts}.}
 
@@ -40,9 +40,8 @@ A data frame with five columns:
    }
 }
 \description{
-Calculate the population-based Poisson loglihood ratio statistic for each 
-zone and duration. The estimate of the relative risk is also calculated and 
+Calculate the population-based Poisson loglihood ratio statistic for each
+zone and duration. The estimate of the relative risk is also calculated and
 returned.
 }
 \keyword{internal}
-

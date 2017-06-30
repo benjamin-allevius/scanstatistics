@@ -36,4 +36,3 @@ join_zones(locs_etc, list(1, 2, 1:2), keys = c("duration", "zone"))
 }
 }
 \keyword{internal}
-

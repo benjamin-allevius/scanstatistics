@@ -20,4 +20,3 @@ A scalar; the score.
 Compute the score for an individual Gaussian observation.
 }
 \keyword{internal}
-

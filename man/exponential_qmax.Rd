@@ -20,4 +20,3 @@ Calculates the largest value for which the exponential score function is
 zero.
 }
 \keyword{internal}
-

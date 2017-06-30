@@ -23,4 +23,3 @@ The enumeration is done according to the unique and sorted values of the
 original column elements. This function \strong{modifies} the input table.
 }
 \keyword{internal}
-

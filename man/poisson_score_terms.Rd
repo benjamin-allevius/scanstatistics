@@ -20,4 +20,3 @@ sums for the ordinary version of the Poisson scan statistic (Tango et al.
 version).
 }
 \keyword{internal}
-

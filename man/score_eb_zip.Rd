@@ -31,4 +31,3 @@ Calculate the ZIP loglihood ratio statistic and the relative risk in the
 expectation-based ZIP scan statistic model.
 }
 \keyword{internal}
-

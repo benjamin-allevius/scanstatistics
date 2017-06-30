@@ -17,4 +17,3 @@ NULL if the supplied \code{data.table} has no keys,
 Get the keys from a data.table.
 }
 \keyword{internal}
-

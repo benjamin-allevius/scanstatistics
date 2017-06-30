@@ -20,4 +20,3 @@ A non-positive scalar; the log-likelihood.
 Calculate the log-likelihood for the Poisson distribution.
 }
 \keyword{internal}
-

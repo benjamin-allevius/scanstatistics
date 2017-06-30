@@ -32,4 +32,3 @@ given the initial data of counts, expected values, and overdispersion
 parameters.
 }
 \keyword{internal}
-

@@ -13,4 +13,3 @@ validate_zones(zones)
 Check that the zones argument is a list of integer or factor vectors.
 }
 \keyword{internal}
-

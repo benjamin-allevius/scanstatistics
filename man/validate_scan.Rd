@@ -18,4 +18,3 @@ table must not have any missing values.}
 Check that input to scanstatistic function is valid.
 }
 \keyword{internal}
-

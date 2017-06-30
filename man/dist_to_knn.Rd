@@ -31,4 +31,3 @@ x <- matrix(c(0, 0,
 d <- dist(x, diag = TRUE, upper = TRUE)
 dist_to_knn(d, k = 3)
 }
-

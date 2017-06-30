@@ -24,4 +24,3 @@ Returns TRUE if the neighboring locations are connected to the given
 location, FALSE if not.
 }
 \keyword{internal}
-

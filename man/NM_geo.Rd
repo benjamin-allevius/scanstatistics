@@ -23,4 +23,3 @@ A dataset containing the longitude and latitude of the county seats of New
 Mexico, except for Cibola county.
 }
 \keyword{datasets}
-

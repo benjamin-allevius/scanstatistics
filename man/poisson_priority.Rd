@@ -30,4 +30,3 @@ cumulatively backwards in time, and compute the Poisson priority function
 value for each column and subset of time.
 }
 \keyword{internal}
-

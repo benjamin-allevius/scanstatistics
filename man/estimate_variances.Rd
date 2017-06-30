@@ -31,4 +31,3 @@ Estimate the variances for the supplied counts. It is assumed that variances
 are constant over time for each location.
 }
 \keyword{internal}
-

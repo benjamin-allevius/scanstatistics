@@ -23,4 +23,3 @@ row gives the column indices of the corresponding row in the priority matrix,
 when that row has been sorted from highest to lowest priority value.
 }
 \keyword{internal}
-

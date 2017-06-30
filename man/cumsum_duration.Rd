@@ -24,4 +24,3 @@ This function calculates the cumulative sum over the (column) duration for
 one or more columns, by some other columns.
 }
 \keyword{internal}
-

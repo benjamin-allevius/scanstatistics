@@ -22,4 +22,3 @@ Enumerate the unique and sorted values of a \code{data.table} column, and
 return the result as a list.
 }
 \keyword{internal}
-

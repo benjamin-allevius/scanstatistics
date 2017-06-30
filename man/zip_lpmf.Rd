@@ -22,4 +22,3 @@ The log probability mass function of the Poisson distribution, evaluated at
 \code{x}.
 }
 \keyword{internal}
-

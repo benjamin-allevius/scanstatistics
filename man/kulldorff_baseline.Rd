@@ -23,4 +23,3 @@ for that time point multiplied by the proportion of all counts for that
 location.
 }
 \keyword{internal}
-

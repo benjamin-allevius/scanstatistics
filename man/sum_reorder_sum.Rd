@@ -18,4 +18,3 @@ columns. Reorder the row contents in this matrix by the corresponding indices
 in the given priority matrix. Then cumulatively sum over each row, yielding
 a new matrix of the same size as the input matrix.
 }
-

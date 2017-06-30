@@ -18,4 +18,3 @@ A scalar greater than or equal to 1.
 Calculates the largest value for which the Gaussian score function is zero.
 }
 \keyword{internal}
-

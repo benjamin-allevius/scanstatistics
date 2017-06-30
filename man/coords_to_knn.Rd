@@ -39,4 +39,3 @@ x <- matrix(c(0, 0,
 plot(x)
 coords_to_knn(x)
 }
-

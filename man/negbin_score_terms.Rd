@@ -19,4 +19,3 @@ This function calculates the terms found in the numerator and denominator
 sums for the ordinary version of the negative binomial scan statistic.
 }
 \keyword{internal}
-

@@ -24,4 +24,3 @@ A matrix of the same dimension as the input matrices.
 Compute the exponential score for each priority subset, for each duration.
 }
 \keyword{internal}
-

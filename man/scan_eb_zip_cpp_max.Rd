@@ -52,4 +52,3 @@ and duration, but only keep the zone and duration with the highest value
 the number of iterations the EM algorithm performed.
 }
 \keyword{internal}
-

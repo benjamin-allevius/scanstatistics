@@ -17,4 +17,3 @@ are integers.}
 Get the set with the given index from an implicitly ordered set.
 }
 \keyword{internal}
-

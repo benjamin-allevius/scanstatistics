@@ -24,4 +24,3 @@ Calculate the (incomplete information) log-likelihood for the zero-inflated
 Poisson distribution.
 }
 \keyword{internal}
-

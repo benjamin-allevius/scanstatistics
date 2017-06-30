@@ -22,4 +22,3 @@ A matrix of baselines of the same dimensions as \code{counts}.
 Estimate the baselines (expected values) for the supplied counts.
 }
 \keyword{internal}
-

@@ -18,4 +18,3 @@ A scalar; the score.
 Compute the score for an individual exponential observation.
 }
 \keyword{internal}
-

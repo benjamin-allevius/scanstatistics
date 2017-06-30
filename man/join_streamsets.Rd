@@ -36,4 +36,3 @@ scanstatistics:::join_streamsets(tab, list(1, 2, 1:2),
                                  keys = c("streamset", "duration"))
 }
 \keyword{internal}
-

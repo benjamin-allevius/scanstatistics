@@ -24,4 +24,3 @@ Returns a \code{set} of \code{set}s, each set of the latter type containing
 the location itself and zero or more of its neighbors, if they are connected.
 }
 \keyword{internal}
-

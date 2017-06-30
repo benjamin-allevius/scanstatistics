@@ -20,4 +20,3 @@ Simulate Poisson-distributed data according to the supplied parameters and
 calculate the value of the expectation-based Poisson scan statistic.
 }
 \keyword{internal}
-

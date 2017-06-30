@@ -73,4 +73,3 @@ res <- scan_eb_poisson(counts = counts,
 }
 }
 \keyword{internal}
-

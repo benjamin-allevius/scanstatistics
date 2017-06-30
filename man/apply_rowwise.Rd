@@ -26,4 +26,3 @@ then return a vector. If the function returns a vector, return a matrix with
 the same number of rows.
 }
 \keyword{internal}
-

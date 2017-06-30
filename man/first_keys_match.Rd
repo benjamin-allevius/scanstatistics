@@ -20,4 +20,3 @@ those found in the supplied character vector, in the given order. Boolean
 output.
 }
 \keyword{internal}
-

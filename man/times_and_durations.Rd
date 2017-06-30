@@ -21,4 +21,3 @@ input table. In the output, the most recent time given a duration of 1, the
 second most recent time given a duration of 2, and so on.
 }
 \keyword{internal}
-

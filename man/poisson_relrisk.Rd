@@ -22,4 +22,3 @@ aggregates (sums) of the counts and expected value parameters for each zone
 and duration.
 }
 \keyword{internal}
-

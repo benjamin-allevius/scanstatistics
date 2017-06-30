@@ -23,4 +23,3 @@ Calculate the expectation-based Poisson statistic for each space-time window,
 given the initial data of counts and mus.
 }
 \keyword{internal}
-
