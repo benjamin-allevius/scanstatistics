@@ -2,52 +2,47 @@
 % Please edit documentation in R/RcppExports.R
 \name{scan_eb_zip_cpp}
 \alias{scan_eb_zip_cpp}
-\title{Calculate the EB ZIP loglihood ratio statistic for all clusters.}
+\title{Calculate the highest-value EB ZIP loglihood ratio statistic.}
 \usage{
-scan_eb_zip_cpp(counts, baselines, probs, zones, zone_lengths,
-  rel_tol = 0.001)
+scan_eb_zip_cpp(counts, baselines, probs, zones, zone_lengths, num_locs,
+  num_zones, max_dur, rel_tol, store_everything)
 }
 \arguments{
-\item{counts}{A matrix of non-negative integers; the observed counts. Rows
-indicate time, ordered from most recent (row 1) to least recent. Columns
-indicate locations; the locations are numbered from 1 and up.}
+\item{counts}{matrix}
 
-\item{baselines}{A matrix of positive scalars; the expected values of the 
-counts. Of the same dimensions as \code{counts}.}
+\item{baselines}{matrix}
 
-\item{probs}{A matrix of scalars between 0 and 1; the structural zero
-probabilities. Of the same dimensions as \code{counts}.}
+\item{probs}{matrix}
 
-\item{zones}{An integer vector containing the zones, stored one after 
-another. Each zone is found using the elements of the parameter 
-\code{zone_lengths}. For example, if the first element of 
-\code{zone_lengths} is 5, then the first 5 elements of \code{zones}
-make up the first zone. If the second element of \code{zone_lengths} is
-2, then elements 6 and 7 of \code{zones} make up the second zone, and so
-on. Note that the zones are numbered from 0 and up in the input, but
-from 1 and up in the output.}
+\item{zones}{list of integer vectors}
 
-\item{zone_lengths}{An integer vector holding the number of locations in 
-each zone.}
+\item{zone_lengths}{vector}
 
-\item{rel_tol}{A positive scalar. If the relative change in the incomplete
-information likelihood is less than this value, then the EM algorithm is
-deemed to have converged.}
+\item{num_locs}{int}
+
+\item{num_zones}{int}
+
+\item{max_dur}{int}
+
+\item{rel_tol}{double}
+
+\item{store_everything}{boolean}
 }
 \value{
 A data frame with five columns:
    \describe{
-     \item{zone}{The (number of the) zone.}
-     \item{duration}{The duration.}
-     \item{score}{The value of the loglihood ratio statistic.}
+     \item{zone}{The top-scoring zone (spatial component of MLC).}
+     \item{duration}{The corresponding duration (time-length of MLC).}
+     \item{score}{The value of the loglihood ratio statistic (the scan
+                  statistic).}
      \item{relrisk}{The estimated relative risk.}
      \item{n_iter}{The number of iterations performed by the EM algorithm.}
    }
 }
 \description{
-Calculate the expectation-based ZIP loglihood ratio statistic for each zone 
-and duration. The estimate of the relative risk is also calculated, along 
-with the number of iterations the EM algorithm performed for each zone and 
-duration.
+Calculate the expectation-based ZIP loglihood ratio statistic for each zone
+and duration, but only keep the zone and duration with the highest value
+(the MLC). The estimate of the relative risk is also calculated, along with
+the number of iterations the EM algorithm performed.
 }
 \keyword{internal}

@@ -2,46 +2,45 @@
 % Please edit documentation in R/RcppExports.R
 \name{scan_pb_poisson_cpp}
 \alias{scan_pb_poisson_cpp}
-\title{Calculate the PB Poisson loglihood ratio statistic for all clusters.}
+\title{Calculate the highest-value EB ZIP loglihood ratio statistic.}
 \usage{
-scan_pb_poisson_cpp(counts, agg_baselines, zones, zone_lengths, N)
+scan_pb_poisson_cpp(counts, baselines, total_count, zones, zone_lengths,
+  num_locs, num_zones, max_dur, store_everything)
 }
 \arguments{
-\item{counts}{A matrix of non-negative integers; the observed counts. Rows
-indicate time, ordered from most recent (row 1) to least recent. Columns
-indicate locations; the locations are numbered from 1 and up.}
+\item{counts}{matrix}
 
-\item{agg_baselines}{A matrix of positive scalars; the expected values of
-the counts, cumulatively summed over locations (columns). Of the same
-dimensions as \code{counts}.}
+\item{baselines}{matrix}
 
-\item{zones}{An integer vector containing the zones, stored one after
-another. Each zone is found using the elements of the parameter
-\code{zone_lengths}. For example, if the first element of
-\code{zone_lengths} is 5, then the first 5 elements of \code{zones}
-make up the first zone. If the second element of \code{zone_lengths} is
-2, then elements 6 and 7 of \code{zones} make up the second zone, and so
-on. Note that the zones are numbered from 0 and up in the input, but
-from 1 and up in the output.}
+\item{total_count}{int}
 
-\item{zone_lengths}{An integer vector holding the number of locations in
-each zone.}
+\item{zones}{list of integer vectors}
 
-\item{N}{The total observed count.}
+\item{zone_lengths}{vector}
+
+\item{num_locs}{int}
+
+\item{num_zones}{int}
+
+\item{max_dur}{int}
+
+\item{store_everything}{boolean}
 }
 \value{
 A data frame with five columns:
    \describe{
-     \item{zone}{The (number of the) zone.}
-     \item{duration}{The duration.}
-     \item{score}{The value of the loglihood ratio statistic.}
-     \item{relrisk_in}{The estimated relative risk inside the cluster.}
-     \item{relrisk_in}{The estimated relative risk outside the cluster.}
+     \item{zone}{The top-scoring zone (spatial component of MLC).}
+     \item{duration}{The corresponding duration (time-length of MLC).}
+     \item{score}{The value of the loglihood ratio statistic (the scan
+                  statistic).}
+     \item{relrisk_in}{The estimated relative risk inside.}
+     \item{relrisk_in}{The estimated relative risk outside.}
    }
 }
 \description{
-Calculate the population-based Poisson loglihood ratio statistic for each
-zone and duration. The estimate of the relative risk is also calculated and
-returned.
+Calculate the expectation-based ZIP loglihood ratio statistic for each zone
+and duration, but only keep the zone and duration with the highest value
+(the MLC). The estimate of the relative risk is also calculated, along with
+the number of iterations the EM algorithm performed.
 }
 \keyword{internal}
