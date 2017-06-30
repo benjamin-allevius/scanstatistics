@@ -7,9 +7,9 @@ Description: Detection of anomalous space-time clusters using the scan
     possible by Monte Carlo simulation.
 Version: 0.1.0.9000
 Date: 2017-04-05
-Authors@R: person("Benjamin", "Kjellson", email = "benjak@math.su.se",
+Authors@R: person("Benjamin", "Allévius", email = "benjak@math.su.se",
   role = c("aut", "cre"))
-Maintainer: Benjamin Kjellson <benjak@math.su.se>
+Maintainer: Benjamin Allévius <benjak@math.su.se>
 Encoding: UTF-8
 License: GPL (>= 3)
 URL: https://github.com/BenjaK/scanstatistics
