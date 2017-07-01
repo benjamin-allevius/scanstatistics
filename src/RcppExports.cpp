@@ -113,18 +113,3 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-
-static const R_CallMethodDef CallEntries[] = {
-    {"scanstatistics_scan_eb_negbin_cpp", (DL_FUNC) &scanstatistics_scan_eb_negbin_cpp, 10},
-    {"scanstatistics_scan_eb_poisson_cpp", (DL_FUNC) &scanstatistics_scan_eb_poisson_cpp, 8},
-    {"scanstatistics_scan_eb_zip_cpp", (DL_FUNC) &scanstatistics_scan_eb_zip_cpp, 10},
-    {"scanstatistics_scan_pb_poisson_cpp", (DL_FUNC) &scanstatistics_scan_pb_poisson_cpp, 9},
-    {"scanstatistics_scan_pb_zip_cpp", (DL_FUNC) &scanstatistics_scan_pb_zip_cpp, 9},
-    {"scanstatistics_get_zero_indices", (DL_FUNC) &scanstatistics_get_zero_indices, 1},
-    {NULL, NULL, 0}
-};
-
-RcppExport void R_init_scanstatistics(DllInfo *dll) {
-    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
-    R_useDynamicSymbols(dll, FALSE);
-}
