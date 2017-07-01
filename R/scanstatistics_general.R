@@ -179,6 +179,7 @@ print.scanstatistic <- function(x, ...) {
 #' }
 #' @export
 #' @examples
+#' \dontrun{
 #' # Simple example
 #' set.seed(1)
 #' table <- scanstatistics:::create_table(list(location = 1:4, duration = 1:4),
@@ -189,6 +190,7 @@ print.scanstatistic <- function(x, ...) {
 #' zones <- scanstatistics:::powerset_zones(4)
 #' result <- scan_poisson(table, zones, 100)
 #' score_locations(result)
+#' }
 score_locations <- function(x) {
   tab <- data.table(location = seq_len(x$n_locations),
                     total_score = 0,
@@ -219,6 +221,7 @@ score_locations <- function(x) {
 #'    \code{zone, duration, statistic}. 
 #' @export
 #' @examples 
+#' \dontrun{
 #' set.seed(1)
 #' table <- scanstatistics:::create_table(list(location = 1:4, duration = 1:4), 
 #'                                         keys = c("location", "duration"))
@@ -228,6 +231,7 @@ score_locations <- function(x) {
 #' zones <- scanstatistics:::powerset_zones(4)
 #' result <- scan_poisson(table, zones, 0)
 #' top_clusters(result, k = 4, overlapping = FALSE)
+#' }
 top_clusters <- function(x, k = 5, overlapping = FALSE) {
   if (overlapping) {
     return(x$observed[seq_len(k), ])

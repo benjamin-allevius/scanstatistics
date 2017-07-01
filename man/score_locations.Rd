@@ -28,6 +28,7 @@ space-time window that the location is included in, i.e. average the
 statistic over both zones and the maximum duration.
 }
 \examples{
+\dontrun{
 # Simple example
 set.seed(1)
 table <- scanstatistics:::create_table(list(location = 1:4, duration = 1:4),
@@ -38,4 +39,5 @@ table[location \%in\% c(1, 4) & duration < 3, count := rpois(.N, 2 * mu)]
 zones <- scanstatistics:::powerset_zones(4)
 result <- scan_poisson(table, zones, 100)
 score_locations(result)
+}
 }
