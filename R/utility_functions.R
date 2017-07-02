@@ -159,6 +159,14 @@ remove_intlist_duplicates <- function(x) {
   unname(lapply(x[idx_keep], as.integer))
 }
 
+#' Flip a matrix upside down
+#' @param x A matrix
+#' @return A matrix, \code{x} with rows reversed.
+#' @keywords internal
+flipud <- function(x) {
+  x[rev(seq_len(nrow(x))), , drop = FALSE]
+}
+
 # Clean up when package is unloaded.
 .onUnload <- function (libpath) {
   library.dynam.unload("scanstatistics", libpath)
