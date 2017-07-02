@@ -16,7 +16,7 @@
 #' @param num_zones int
 #' @param max_dur int
 #' @param store_everything boolean
-#' @param score_type boolean
+#' @param score_hotspot boolean
 #' @return A data frame with five columns:
 #'    \describe{
 #'      \item{zone}{The top-scoring zone (spatial component of MLC).}
@@ -28,8 +28,8 @@
 #'    }
 #' @export
 #' @keywords internal
-scan_eb_negbin_cpp <- function(counts, baselines, overdisp, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything, score_type) {
-    .Call('scanstatistics_scan_eb_negbin_cpp', PACKAGE = 'scanstatistics', counts, baselines, overdisp, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything, score_type)
+scan_eb_negbin_cpp <- function(counts, baselines, overdisp, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything, score_hotspot) {
+    .Call('scanstatistics_scan_eb_negbin_cpp', PACKAGE = 'scanstatistics', counts, baselines, overdisp, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything, score_hotspot)
 }
 
 #' Calculate the highest-value EB ZIP loglihood ratio statistic.
