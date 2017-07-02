@@ -15,7 +15,7 @@
 #' @import data.table
 NULL
 
-#' @useDynLib scanstatistics
+#' @useDynLib scanstatistics, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
 NULL
 
