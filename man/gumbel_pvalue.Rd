@@ -31,3 +31,4 @@ The function is vectorized, so multiple \eqn{p}-values can be calculated if
 several scan statistics (e.g. statistics from secondary clusters) are 
 supplied.
 }
+\keyword{internal}
