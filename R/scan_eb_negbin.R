@@ -1,23 +1,24 @@
-
-
-#' Calculate the expectation-based Poisson scan statistic.
-#' 
-#' Calculate the expectation-based Poisson scan statistic devised by Neill et 
-#' al. (2005).
+#' Calculate the expectation-based negative binomial scan statistic.
+#'
+#' Calculate the expectation-based negative binomial scan statistic devised by
+#' Tango et al. (2011).
 #' @param counts A matrix of observed counts. Rows indicate time and are ordered
 #'    from least recent (row 1) to most recent (row \code{nrow(counts)}).
 #'    Columns indicate locations, numbered from 1 and up.
 #' @param zones A list of integer vectors. Each vector corresponds to a single
 #'    zone; its elements are the numbers of the locations in that zone.
 #' @param baselines A matrix of the same dimensions as \code{counts}. Holds the
-#'    Poisson mean parameter for each observed count. Will be estimated if not 
-#'    supplied (requires the \code{population} argument). These parameters are 
-#'    typically estimated from past data using e.g. Poisson (GLM) regression.
-#' @param population A matrix or vector of populations for each location. Only
-#'    needed if \code{baselines} are to be estimated and you want to account for
-#'    the different populations in each location (and time). If a matrix, should 
-#'    be of the same dimensions as \code{counts}. If a vector, should be of the 
-#'    same length as the number of columns in \code{counts}.
+#'    expected value parameter for each observed count. These parameters are
+#'    typically estimated from past data using e.g. GLM.
+#' @param thetas A matrix of the same dimensions as \code{counts}, or a scalar.
+#'    Holds the dispersion parameter of the distribution, which is such that if
+#'    \eqn{\mu} is the expected value, the variance is \eqn{\mu+\mu^2/\theta}.
+#'    These parameters are typically estimated from past data using e.g. GLM.
+#'    If a scalar is supplied, the dispersion parameter is assumed to be the
+#'    same for all locations and time points.
+#' @param type A string, either "hotspot" or "emerging". If "hotspot", the
+#'    relative risk is assumed to be fixed over time. If "emerging", the
+#'    relative risk is assumed to increase with the duration of the outbreak.
 #' @param n_mcsim A non-negative integer; the number of replicate scan
 #'    statistics to generate in order to calculate a \eqn{P}-value.
 #' @param max_only Boolean. If \code{FALSE} (default) the log-likelihood ratio
@@ -27,29 +28,27 @@
 #' @return A list with the following components:
 #'    \describe{
 #'      \item{MLC}{A list containing the number of the zone of the most likely
-#'            cluster (MLC), the locations in that zone, the duration of the 
-#'            MLC, the calculated score, the relative risk, and matrices of the 
-#'            observed counts and baselines for each location and time point in 
-#'            the MLC.}
+#'            cluster (MLC), the locations in that zone, the duration of the
+#'            MLC, the calculated score, and matrices of the observed counts,
+#'            baselines and dispersion parameters for each location and time
+#'            point in the MLC.}
 #'      \item{table}{A data frame containing, for each combination of zone and
-#'            duration investigated, the zone number, duration, score, relative 
-#'            risk. If \code{max_only = TRUE}, only contains a single row 
+#'            duration investigated, the zone number, duration, and score.
+#'            If \code{max_only = TRUE}, only contains a single row
 #'            corresponding to the MLC.}
 #'      \item{replicate_statistics}{A vector of the Monte Carlo replicates of
 #'            the scan statistic, if any (otherwise empty).}
 #'      \item{MC_pvalue}{The Monte Carlo \eqn{P}-value.}
-#'      \item{Gumbel_pvalue}{A \eqn{P}-value obtained by fitting a Gumbel 
+#'      \item{Gumbel_pvalue}{A \eqn{P}-value obtained by fitting a Gumbel
 #'            distribution to the replicate scan statistics.}
 #'      \item{n_zones}{The number of zones scanned.}
 #'      \item{n_locations}{The number of locations.}
 #'      \item{max_duration}{The maximum duration considered.}
 #'    }
-#' @references 
-#'    Neill, D. B., Moore, A. W., Sabhnani, M. and Daniel, K. (2005). 
-#'    \emph{Detection of emerging space-time clusters}. Proceeding of the 
-#'    eleventh ACM SIGKDD international conference on Knowledge discovery in 
-#'    data mining - KDD ’05, 218.
-#' @importFrom stats rpois
+#' @references
+#'    Tango, T., Takahashi, K. & Kohriyama, K. (2011), A space-time scan
+#'    statistic for detecting emerging outbreaks, Biometrics 67(1), 106–115.
+#' @importFrom stats rnbinom
 #' @importFrom ismev gum.fit
 #' @importFrom reliaR pgumbel
 #' @export
@@ -65,36 +64,42 @@
 #' zones <- knn_zones(knn_mat)
 #'
 #' # Simulate data
-#' baselines <- matrix(rexp(n_total, 1/5), max_duration, n_locs)
-#' counts <- matrix(rpois(n_total, as.vector(baselines)), max_duration, n_locs)
+#'  baselines <- matrix(rexp(n_total, 1/5), max_duration, n_locs)
+#'  thetas <- matrix(runif(n_total, 0.05, 3), max_duration, n_locs)
+#'  counts <- matrix(rnbinom(n_total,  mu = baselines,  size = thetas), 
+#'                   max_duration, n_locs)
 #'
 #' # Inject outbreak/event/anomaly
 #' ob_dur <- 3
 #' ob_cols <- zones[[10]]
 #' ob_rows <- max_duration + 1 - seq_len(ob_dur)
 #' counts[ob_rows, ob_cols] <- matrix(
-#'   rpois(ob_dur * length(ob_cols), 2 * baselines[ob_rows, ob_cols]), 
+#'   rnbinom(ob_dur * length(ob_cols), 
+#'           mu = 2 * baselines[ob_rows, ob_cols],
+#'           size = thetas[ob_rows, ob_cols]),
 #'   length(ob_rows), length(ob_cols))
-#' res <- scan_eb_poisson(counts = counts,
-#'                        zones = zones,
-#'                        baselines = baselines,
-#'                        n_mcsim = 99,
-#'                        max_only = FALSE)
+#' res <- scan_eb_negbin(counts = counts,
+#'                       zones = zones,
+#'                       baselines = baselines,
+#'                       thetas = thetas,
+#'                       type = "hotspot",
+#'                       n_mcsim = 99,
+#'                       max_only = FALSE)
 #' }
-scan_eb_poisson <- function(counts,
-                            zones,
-                            baselines = NULL,
-                            population = NULL,
-                            n_mcsim = 0,
-                            max_only = FALSE) {
+scan_eb_negbin <- function(counts,
+                           zones,
+                           baselines,
+                           thetas = 1,
+                           type = c("hotspot", "emerging"),
+                           n_mcsim = 0,
+                           max_only = FALSE) {
   # Validate input -------------------------------------------------------------
   if (any(as.vector(counts) != as.integer(counts))) {
     stop("counts must be integer")
   }
-  if (!is.null(baselines) && any(baselines <= 0)) {
-    stop("baselines must be positive")
-  }
-  
+  if (any(baselines <= 0)) stop("baselines must be positive")
+  if (any(thetas <= 0)) stop("thetas must be positive")
+
   # Reshape into matrices ------------------------------------------------------
   if (is.vector(counts)) {
     counts <- matrix(counts, nrow = 1)
@@ -102,15 +107,22 @@ scan_eb_poisson <- function(counts,
   if (!is.null(baselines) && is.vector(baselines)) {
     baselines <- matrix(baselines, nrow = 1)
   }
-
-  # Estimate baselines and probs if not supplied -------------------------------
-  if (is.null(baselines)) {
-    baselines <- estimate_baselines(counts, population)
-  } 
   
+  if (is.vector(thetas)) {
+    if (length(thetas) == 1) {
+      thetas <- matrix(thetas, nrow(counts), ncol(counts))
+    } else if (length(thetas) == ncol(counts)) {
+      thetas <- matrix(thetas, nrow(counts), ncol(counts), byrow = TRUE)
+    } else {
+      stop("If thetas is supplied as a vector, it must be of the same length ",
+           "as the number of locations.")
+    }
+  }
+
   # Reverse time order: most recent first --------------------------------------
   counts <- flipud(counts)
   baselines <- flipud(baselines)
+  thetas <- flipud(thetas)
 
   # Prepare zone arguments for C++ ---------------------------------------------
   zones_flat <- unlist(zones) - 1
@@ -118,12 +130,15 @@ scan_eb_poisson <- function(counts,
   num_locs <- ncol(counts)
   max_dur <- nrow(counts)
   num_zones <- length(zones)
+  type_hotspot <- type[1] == "hotspot"
+  overdisp <- 1 + baselines / thetas
 
   # Run analysis on observed counts --------------------------------------------
-  scan <- scan_eb_poisson_cpp(counts, baselines,
-                              zones_flat, zone_lengths,
-                              num_locs, num_zones, max_dur, 
-                              store_everything = !max_only)
+  scan <- scan_eb_negbin_cpp(counts, baselines, overdisp,
+                             zones_flat, zone_lengths,
+                             num_locs, num_zones, max_dur,
+                             store_everything = !max_only,
+                             type_hotspot)
 
   # Extract the most likely cluster (MLC)
   MLC <- scan[which.max(scan$score), ]
@@ -131,13 +146,13 @@ scan_eb_poisson <- function(counts,
   # Make MC replications of the scan statistic under the null hypothesis
   repl_stat <- numeric(n_mcsim)
   for (i in seq_len(n_mcsim)) {
-    repl_stat[i] <- scan_eb_poisson_cpp(matrix(rpois(prod(dim(counts)),
-                                                     as.vector(baselines)), 
-                                               nrow(counts), ncol(counts)), 
-                                        baselines,
-                                        zones_flat, zone_lengths,
-                                        num_locs, num_zones, max_dur, 
-                                        store_everything = FALSE)$score
+    repl_stat[i] <- scan_eb_negbin_cpp(
+      matrix(rnbinom(prod(dim(counts)), mu = baselines, size = thetas),
+             nrow(counts), ncol(counts)),
+      baselines, overdisp,
+      zones_flat, zone_lengths,
+      num_locs, num_zones, max_dur,
+      store_everything = FALSE, type_hotspot)$score
   }
 
   # Get P-values
@@ -150,14 +165,15 @@ scan_eb_poisson <- function(counts,
   
   MLC_counts <- counts[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
   MLC_basel <- baselines[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
+  MLC_thetas <- thetas[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
 
   list(MLC = list(zone_number = MLC$zone,
                   locations = zones[[MLC$zone]],
                   duration = MLC$duration,
                   score = MLC$score,
-                  relative_risk = MLC$relrisk,
                   observed = flipud(MLC_counts),
-                  baselines = flipud(MLC_basel)),
+                  baselines = flipud(MLC_basel),
+                  thetas = flipud(MLC_thetas)),
        table = scan,
        replicate_statistics = repl_stat,
        MC_pvalue = MC_pvalue,

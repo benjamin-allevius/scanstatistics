@@ -41,13 +41,16 @@
 #'      \item{table}{A data frame containing, for each combination of zone and
 #'            duration investigated, the zone number, duration, score, relative 
 #'            risk, and number of iterations until convergence. If 
-#'            \code[max_only = TRUE], only contains a single row corresponding 
+#'            \code{max_only = TRUE}, only contains a single row corresponding 
 #'            to the MLC.}
 #'      \item{replicate_statistics}{A vector of the Monte Carlo replicates of
 #'            the scan statistic, if any (otherwise empty).}
 #'      \item{MC_pvalue}{The Monte Carlo \eqn{P}-value.}
 #'      \item{Gumbel_pvalue}{A \eqn{P}-value obtained by fitting a Gumbel 
 #'            distribution to the replicate scan statistics.}
+#'      \item{n_zones}{The number of zones scanned.}
+#'      \item{n_locations}{The number of locations.}
+#'      \item{max_duration}{The maximum duration considered.}
 #'    }
 #' @details For the expectation-based zero-inflated Poisson scan statistic
 #'    (Kjellson 2015), the null hypothesis of no anomaly holds that the count
@@ -90,7 +93,7 @@
 #' @importFrom gamlss.dist rZIP
 #' @importFrom ismev gum.fit
 #' @importFrom reliaR pgumbel
-#' @keywords internal
+#' @export
 #' @examples
 #' \dontrun{
 #' set.seed(1)
@@ -130,6 +133,12 @@ scan_eb_zip <- function(counts,
                         n_mcsim = 0,
                         max_only = FALSE,
                         rel_tol = 1e-3) {
+  if (any(as.vector(counts) != as.integer(counts))) {
+    stop("counts must be integer")
+  }
+  if (any(baselines <= 0)) stop("baselines must be positive")
+  if (any(probs <= 0)) stop("probs must be positive")
+  
   if (is.vector(counts)) {
     counts <- matrix(counts, nrow = 1)
   }
@@ -150,9 +159,9 @@ scan_eb_zip <- function(counts,
   } 
   
   # Reverse time order: most recent first
-  counts <- counts[rev(seq_len(nrow(counts))), , drop = FALSE]
-  baselines <- baselines[rev(seq_len(nrow(baselines))), , drop = FALSE]
-  probs <- probs[rev(seq_len(nrow(probs))), , drop = FALSE]
+  counts <- flipud(counts)
+  baselines <- flipud(baselines)
+  probs <- flipud(probs)
   
 
   # Prepare zone arguments for C++
@@ -189,6 +198,10 @@ scan_eb_zip <- function(counts,
     gumbel_pvalue <- gumbel_pvalue(MLC$score, repl_stat, method = "ML")$pvalue
     MC_pvalue <- mc_pvalue(MLC$score, repl_stat)
   }
+  
+  MLC_counts <- counts[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
+  MLC_basel <- baselines[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
+  MLC_probs <- probs[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
 
   list(
     MLC = list(
@@ -197,12 +210,14 @@ scan_eb_zip <- function(counts,
       duration = MLC$duration,
       score = MLC$score,
       relative_risk = MLC$relrisk,
-      observed = counts[seq_len(MLC$duration), zones[[MLC$zone]]],
-      baselines = baselines[seq_len(MLC$duration), zones[[MLC$zone]]],
-      probs = probs[seq_len(MLC$duration),
-                    zones[[MLC$zone]]]),
+      observed = flipud(MLC_counts),
+      baselines = flipud(MLC_basel),
+      probs = flipud(MLC_probs)),
     table = scan,
     replicate_statistics = repl_stat,
     MC_pvalue = MC_pvalue,
-    Gumbel_pvalue = gumbel_pvalue)
+    Gumbel_pvalue = gumbel_pvalue,
+    n_zones = length(zones),
+    n_locations = ncol(counts),
+    max_duration = nrow(counts))
 }

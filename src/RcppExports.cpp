@@ -7,8 +7,8 @@
 using namespace Rcpp;
 
 // scan_eb_negbin_cpp
-Rcpp::DataFrame scan_eb_negbin_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::mat& overdisp, const arma::uvec& zones, const arma::uvec& zone_lengths, const int num_locs, const int num_zones, const int max_dur, const bool store_everything, const bool score_type);
-RcppExport SEXP scanstatistics_scan_eb_negbin_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP overdispSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP num_locsSEXP, SEXP num_zonesSEXP, SEXP max_durSEXP, SEXP store_everythingSEXP, SEXP score_typeSEXP) {
+Rcpp::DataFrame scan_eb_negbin_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::mat& overdisp, const arma::uvec& zones, const arma::uvec& zone_lengths, const int num_locs, const int num_zones, const int max_dur, const bool store_everything, const bool score_hotspot);
+RcppExport SEXP scanstatistics_scan_eb_negbin_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP overdispSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP num_locsSEXP, SEXP num_zonesSEXP, SEXP max_durSEXP, SEXP store_everythingSEXP, SEXP score_hotspotSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -21,8 +21,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int >::type num_zones(num_zonesSEXP);
     Rcpp::traits::input_parameter< const int >::type max_dur(max_durSEXP);
     Rcpp::traits::input_parameter< const bool >::type store_everything(store_everythingSEXP);
-    Rcpp::traits::input_parameter< const bool >::type score_type(score_typeSEXP);
-    rcpp_result_gen = Rcpp::wrap(scan_eb_negbin_cpp(counts, baselines, overdisp, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything, score_type));
+    Rcpp::traits::input_parameter< const bool >::type score_hotspot(score_hotspotSEXP);
+    rcpp_result_gen = Rcpp::wrap(scan_eb_negbin_cpp(counts, baselines, overdisp, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything, score_hotspot));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -112,4 +112,19 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(get_zero_indices(v));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"scanstatistics_scan_eb_negbin_cpp", (DL_FUNC) &scanstatistics_scan_eb_negbin_cpp, 10},
+    {"scanstatistics_scan_eb_poisson_cpp", (DL_FUNC) &scanstatistics_scan_eb_poisson_cpp, 8},
+    {"scanstatistics_scan_eb_zip_cpp", (DL_FUNC) &scanstatistics_scan_eb_zip_cpp, 10},
+    {"scanstatistics_scan_pb_poisson_cpp", (DL_FUNC) &scanstatistics_scan_pb_poisson_cpp, 9},
+    {"scanstatistics_scan_pb_zip_cpp", (DL_FUNC) &scanstatistics_scan_pb_zip_cpp, 9},
+    {"scanstatistics_get_zero_indices", (DL_FUNC) &scanstatistics_get_zero_indices, 1},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_scanstatistics(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

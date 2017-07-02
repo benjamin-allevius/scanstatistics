@@ -39,7 +39,7 @@ A list with the following components:
            estimated baselines for each location and time point in the MLC.}
      \item{table}{A data frame containing, for each combination of zone and
            duration investigated, the zone number, duration, score, relative 
-           risk. If \code[max_only = TRUE], only contains a single row 
+           risk. If \code{max_only = TRUE}, only contains a single row 
            corresponding to the MLC.}
      \item{replicate_statistics}{A vector of the Monte Carlo replicates of
            the scan statistic, if any (otherwise empty).}
@@ -90,4 +90,3 @@ Kulldorff, M. (1997). \emph{A spatial scan statistic}. Communications in
    surveillance using a scan statistic}. Journal of the Royal Statistical 
    Society, Series A (Statistics in Society), 164, 61–72.
 }
-\keyword{internal}

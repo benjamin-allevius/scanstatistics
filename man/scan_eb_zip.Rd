@@ -55,7 +55,7 @@ A list with the following components:
      \item{table}{A data frame containing, for each combination of zone and
            duration investigated, the zone number, duration, score, relative 
            risk, and number of iterations until convergence. If 
-           \code[max_only = TRUE], only contains a single row corresponding 
+           \code{max_only = TRUE}, only contains a single row corresponding 
            to the MLC.}
      \item{replicate_statistics}{A vector of the Monte Carlo replicates of
            the scan statistic, if any (otherwise empty).}
@@ -140,4 +140,3 @@ Kjellson, B. (2015), \emph{Spatiotemporal Outbreak Detection: A Scan
    Thesis, Stockholm University),
    \href{http://goo.gl/6Q89ML}{Link to PDF}.
 }
-\keyword{internal}

@@ -37,7 +37,7 @@ test_that("scan_eb_negbin: 1 timepoint, hotspot", {
                                  length(in1$zones),
                                  nrow(in1$counts),
                                  store_everything = TRUE,
-                                score_type = TRUE) # hotspot
+                                score_hotspot = TRUE) # hotspot
   actual1b <- scan_eb_negbin_cpp(in1$counts, 
                                 in1$baselines, 
                                 in1$overdisp,
@@ -47,7 +47,7 @@ test_that("scan_eb_negbin: 1 timepoint, hotspot", {
                                 length(in1$zones),
                                 nrow(in1$counts),
                                 store_everything = FALSE,
-                                score_type = TRUE) # hotspot
+                                score_hotspot = TRUE) # hotspot
 
   expected1_score <- c(
     # Duration = 1
@@ -85,7 +85,7 @@ test_that("scan_eb_negbin: 3 timepoints, hotspot", {
                                 length(in2$zones),
                                 nrow(in2$counts),
                                 store_everything = TRUE,
-                                score_type = TRUE) # hotspot
+                                score_hotspot = TRUE) # hotspot
   
   actual2b <- scan_eb_negbin_cpp(in2$counts, 
                                 in2$baselines, 
@@ -96,7 +96,7 @@ test_that("scan_eb_negbin: 3 timepoints, hotspot", {
                                 length(in2$zones),
                                 nrow(in2$counts),
                                 store_everything = FALSE,
-                                score_type = TRUE) # hotspot
+                                score_hotspot = TRUE) # hotspot
   
   expected2_score <- c(
     # Duration = 1
@@ -137,7 +137,7 @@ test_that("scan_eb_negbin: 1 timepoint, emerging", {
                                 length(in1$zones),
                                 nrow(in1$counts),
                                 store_everything = TRUE,
-                                score_type = FALSE) # emerging
+                                score_hotspot = FALSE) # emerging
   actual1b <- scan_eb_negbin_cpp(in1$counts, 
                                  in1$baselines, 
                                  in1$overdisp,
@@ -147,7 +147,7 @@ test_that("scan_eb_negbin: 1 timepoint, emerging", {
                                  length(in1$zones),
                                  nrow(in1$counts),
                                  store_everything = FALSE,
-                                 score_type = FALSE) # emerging
+                                 score_hotspot = FALSE) # emerging
   
   expected1_score <- c(
     # Duration = 1
@@ -186,7 +186,7 @@ test_that("scan_eb_negbin: 3 timepoints, emerging", {
                                 length(in2$zones),
                                 nrow(in2$counts),
                                 store_everything = TRUE,
-                                score_type = FALSE) # hotspot
+                                score_hotspot = FALSE) # hotspot
   
   actual2b <- scan_eb_negbin_cpp(in2$counts, 
                                  in2$baselines, 
@@ -197,7 +197,7 @@ test_that("scan_eb_negbin: 3 timepoints, emerging", {
                                  length(in2$zones),
                                  nrow(in2$counts),
                                  store_everything = FALSE,
-                                 score_type = FALSE) # hotspot
+                                 score_hotspot = FALSE) # hotspot
   
   expected2_score <- c(
     # Duration = 1

@@ -5,7 +5,7 @@
 \title{Calculate the highest-value EB Negbin loglihood ratio statistic.}
 \usage{
 scan_eb_negbin_cpp(counts, baselines, overdisp, zones, zone_lengths, num_locs,
-  num_zones, max_dur, store_everything, score_type)
+  num_zones, max_dur, store_everything, score_hotspot)
 }
 \arguments{
 \item{counts}{matrix}
@@ -26,7 +26,7 @@ scan_eb_negbin_cpp(counts, baselines, overdisp, zones, zone_lengths, num_locs,
 
 \item{store_everything}{boolean}
 
-\item{score_type}{boolean}
+\item{score_hotspot}{boolean}
 }
 \value{
 A data frame with five columns:

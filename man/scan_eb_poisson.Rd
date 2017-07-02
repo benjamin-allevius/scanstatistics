@@ -44,7 +44,7 @@ A list with the following components:
            the MLC.}
      \item{table}{A data frame containing, for each combination of zone and
            duration investigated, the zone number, duration, score, relative 
-           risk. If \code[max_only = TRUE], only contains a single row 
+           risk. If \code{max_only = TRUE}, only contains a single row 
            corresponding to the MLC.}
      \item{replicate_statistics}{A vector of the Monte Carlo replicates of
            the scan statistic, if any (otherwise empty).}
@@ -82,7 +82,7 @@ counts[ob_rows, ob_cols] <- matrix(
 res <- scan_eb_poisson(counts = counts,
                        zones = zones,
                        baselines = baselines,
-                       n_mcsim = 100,
+                       n_mcsim = 99,
                        max_only = FALSE)
 }
 }
@@ -92,4 +92,3 @@ Neill, D. B., Moore, A. W., Sabhnani, M. and Daniel, K. (2005).
    eleventh ACM SIGKDD international conference on Knowledge discovery in 
    data mining - KDD ’05, 218.
 }
-\keyword{internal}
