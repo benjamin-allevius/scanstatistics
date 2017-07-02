@@ -1,26 +1,51 @@
 
 
 #' Calculate the expectation-based Poisson scan statistic.
+#' 
+#' Calculate the expectation-based Poisson scan statistic devised by Neill et 
+#' al. (2005).
 #' @param counts A matrix of observed counts. Rows indicate time and are ordered
 #'    from least recent (row 1) to most recent (row \code{nrow(counts)}).
 #'    Columns indicate locations, numbered from 1 and up.
 #' @param zones A list of integer vectors. Each vector corresponds to a single
 #'    zone; its elements are the numbers of the locations in that zone.
 #' @param baselines A matrix of the same dimensions as \code{counts}. Holds the
-#'    Poisson mean parameter of the ZIP distribution for each observed count.
-#'    Will be estimated if not supplied.
+#'    Poisson mean parameter for each observed count. Will be estimated if not 
+#'    supplied (requires the \code{population} argument). These parameters are 
+#'    typically estimated from past data using e.g. Poisson (GLM) regression.
 #' @param population A matrix or vector of populations for each location. Only
 #'    needed if \code{baselines} are to be estimated and you want to account for
-#'    the different populations in each location (and time).
-#'    If a matrix, should be of the same dimensions as \code{counts}. If a
-#'    vector, should be of the same length as the number of columns in
-#'    \code{counts}.
+#'    the different populations in each location (and time). If a matrix, should 
+#'    be of the same dimensions as \code{counts}. If a vector, should be of the 
+#'    same length as the number of columns in \code{counts}.
 #' @param n_mcsim A non-negative integer; the number of replicate scan
-#'    statistics to generate in order to calculate a P-value.
+#'    statistics to generate in order to calculate a \eqn{P}-value.
 #' @param max_only Boolean. If \code{FALSE} (default) the log-likelihood ratio
 #'    statistic for each zone and duration is returned. If \code{TRUE}, only the
 #'    largest such statistic (i.e. the scan statistic) is returned, along with
 #'    the corresponding zone and duration.
+#' @return A list with the following components:
+#'    \describe{
+#'      \item{MLC}{A list containing the number of the zone of the most likely
+#'            cluster (MLC), the locations in that zone, the duration of the 
+#'            MLC, the calculated score, the relative risk, and matrices of the 
+#'            observed counts and baselines for each location and time point in 
+#'            the MLC.}
+#'      \item{table}{A data frame containing, for each combination of zone and
+#'            duration investigated, the zone number, duration, score, relative 
+#'            risk. If \code[max_only = TRUE], only contains a single row 
+#'            corresponding to the MLC.}
+#'      \item{replicate_statistics}{A vector of the Monte Carlo replicates of
+#'            the scan statistic, if any (otherwise empty).}
+#'      \item{MC_pvalue}{The Monte Carlo \eqn{P}-value.}
+#'      \item{Gumbel_pvalue}{A \eqn{P}-value obtained by fitting a Gumbel 
+#'            distribution to the replicate scan statistics.}
+#'    }
+#' @references 
+#'    Neill, D. B., Moore, A. W., Sabhnani, M. and Daniel, K. (2005). 
+#'    \emph{Detection of emerging space-time clusters}. Proceeding of the 
+#'    eleventh ACM SIGKDD international conference on Knowledge discovery in 
+#'    data mining - KDD ’05, 218.
 #' @importFrom stats rpois
 #' @importFrom ismev gum.fit
 #' @importFrom reliaR pgumbel
@@ -51,8 +76,7 @@
 #'                        zones = zones,
 #'                        baselines = baselines,
 #'                        n_mcsim = 100,
-#'                        max_only = FALSE,
-#'                        rel_tol = 1e-3)
+#'                        max_only = FALSE)
 #' }
 scan_eb_poisson <- function(counts,
                             zones,

@@ -16,11 +16,14 @@ Columns indicate locations, numbered from 1 and up.}
 zone; its elements are the numbers of the locations in that zone.}
 
 \item{baselines}{A matrix of the same dimensions as \code{counts}. Holds the
-Poisson mean parameter of the ZIP distribution for each observed count.}
+Poisson mean parameter of the ZIP distribution for each observed count.
+These parameters are typically estimated from past data using e.g. ZIP
+regression.}
 
 \item{probs}{A matrix of the same dimensions as \code{counts}. Holds the
 structural zero probability of the ZIP distribution for each observed
-count.}
+count. These parameters are typically estimated from past data using e.g. 
+ZIP regression.}
 
 \item{population}{A matrix or vector of populations for each location. Only
 needed if \code{baselines} and \code{probs} are to be estimated and you
@@ -30,7 +33,7 @@ vector, should be of the same length as the number of columns in
 \code{counts}.}
 
 \item{n_mcsim}{A non-negative integer; the number of replicate scan
-statistics to generate in order to calculate a P-value.}
+statistics to generate in order to calculate a \eqn{P}-value.}
 
 \item{max_only}{Boolean. If \code{FALSE} (default) the log-likelihood ratio
 statistic for each zone and duration is returned. If \code{TRUE}, only the
@@ -41,8 +44,28 @@ the corresponding zone and duration.}
 information likelihood is less than this value, then the EM algorithm is
 deemed to have converged.}
 }
+\value{
+A list with the following components:
+   \describe{
+     \item{MLC}{A list containing the number of the zone of the most likely
+           cluster (MLC), the locations in that zone, the duration of the 
+           MLC, the calculated score, the relative risk, and matrices of the 
+           observed counts, baselines and structural zero probabilities for 
+           each location and time point in the MLC.}
+     \item{table}{A data frame containing, for each combination of zone and
+           duration investigated, the zone number, duration, score, relative 
+           risk, and number of iterations until convergence. If 
+           \code[max_only = TRUE], only contains a single row corresponding 
+           to the MLC.}
+     \item{replicate_statistics}{A vector of the Monte Carlo replicates of
+           the scan statistic, if any (otherwise empty).}
+     \item{MC_pvalue}{The Monte Carlo \eqn{P}-value.}
+     \item{Gumbel_pvalue}{A \eqn{P}-value obtained by fitting a Gumbel 
+           distribution to the replicate scan statistics.}
+   }
+}
 \description{
-Calculate the expectation-based ZIP scan statistic.
+Calculates the expectation-based scan statistic. See details below.
 }
 \details{
 For the expectation-based zero-inflated Poisson scan statistic
@@ -106,7 +129,7 @@ res <- scan_eb_zip(counts = counts,
                    zones = zones,
                    baselines = baselines,
                    probs = probs,
-                   n_mcsim = 100,
+                   n_mcsim = 99,
                    max_only = FALSE,
                    rel_tol = 1e-3)
 }
