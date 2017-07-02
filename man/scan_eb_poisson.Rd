@@ -44,13 +44,17 @@ A list with the following components:
            the MLC.}
      \item{table}{A data frame containing, for each combination of zone and
            duration investigated, the zone number, duration, score, relative 
-           risk. If \code{max_only = TRUE}, only contains a single row 
+           risk. The table is sorted by score with the top-scoring location 
+           on top.If \code{max_only = TRUE}, only contains a single row 
            corresponding to the MLC.}
      \item{replicate_statistics}{A vector of the Monte Carlo replicates of
            the scan statistic, if any (otherwise empty).}
      \item{MC_pvalue}{The Monte Carlo \eqn{P}-value.}
      \item{Gumbel_pvalue}{A \eqn{P}-value obtained by fitting a Gumbel 
            distribution to the replicate scan statistics.}
+     \item{n_zones}{The number of zones scanned.}
+     \item{n_locations}{The number of locations.}
+     \item{max_duration}{The maximum duration considered.}
    }
 }
 \description{

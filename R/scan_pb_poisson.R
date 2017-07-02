@@ -28,7 +28,8 @@
 #'            estimated baselines for each location and time point in the MLC.}
 #'      \item{table}{A data frame containing, for each combination of zone and
 #'            duration investigated, the zone number, duration, score, relative 
-#'            risk. If \code{max_only = TRUE}, only contains a single row 
+#'            risk. The table is sorted by score with the top-scoring location 
+#'            on top. If \code{max_only = TRUE}, only contains a single row 
 #'            corresponding to the MLC.}
 #'      \item{replicate_statistics}{A vector of the Monte Carlo replicates of
 #'            the scan statistic, if any (otherwise empty).}
@@ -49,6 +50,7 @@
 #' @importFrom stats rmultinom
 #' @importFrom ismev gum.fit
 #' @importFrom reliaR pgumbel
+#' @importFrom dplyr arrange
 #' @export
 #' @examples
 #' \dontrun{
@@ -156,7 +158,7 @@ scan_pb_poisson <- function(counts,
                   observed = flipud(MLC_counts),
                   population = flipud(MLC_pop),
                   baselines = flipud(MLC_basel)),
-       table = scan,
+       table = arrange(scan, -score),
        replicate_statistics = repl_stat,
        MC_pvalue = MC_pvalue,
        Gumbel_pvalue = gumbel_pvalue,
