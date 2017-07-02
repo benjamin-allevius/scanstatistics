@@ -30,12 +30,14 @@ data. The gist of the methodology, at least in this package, is this:
 
 ### Scan statistics
 
-- __`scan_poisson`__: computes a scan statistic for data following a Poisson
-                      distribution.
-- __`scan_negbin`__: computes a scan statistic for data following a negative 
-                     binomial distribution.
-- __`scan_zip`__: computes a scan statistic for data following a zero-inflated 
-                  Poisson distribution.
+- __`scan_eb_poisson`__: computes an \emph{expectation-based} scan statistic for 
+  data following a Poisson distribution.
+- __`scan_pb_poisson`__: computes a \emph{population-based} scan statistic for 
+  data following a Poisson distribution.
+- __`scan_eb_negbin`__: computes an \emph{expectation-based} scan statistic for 
+  data following a negative binomial distribution.
+- __`scan_eb_zip`__: computes an \emph{expectation-based} scan statistic for 
+  data following a zero-inflated Poisson distribution.
 
 ### Zone creation                  
 
