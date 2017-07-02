@@ -19,6 +19,7 @@ Depends:
     R (>= 3.3)
 Imports:
     digest,
+    dplyr,
     emdbook,
     gamlss.dist, 
     ismev,
@@ -28,7 +29,8 @@ Imports:
     purrr,
     Rcpp,
     reliaR,
-    sets
+    sets,
+    tibble
 Suggests:
     doParallel,
     foreach,

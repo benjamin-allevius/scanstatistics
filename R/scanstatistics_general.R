@@ -54,7 +54,7 @@ extract_mlc <- function(table) {
 #' @param replicates A vector of Monte Carlo replicates of the scan statistic.
 #' @return The \eqn{p}-value or \eqn{p}-values corresponding to the observed 
 #'    scan statistic(s).
-#' @export
+#' @keywords internal
 mc_pvalue <- function(observed, replicates) {
   if (length(replicates) == 0) {
     return(NULL)
@@ -90,7 +90,7 @@ mc_pvalue <- function(observed, replicates) {
 #'    scan statistic(s).
 #' @importFrom ismev gum.fit
 #' @importFrom reliaR pgumbel
-#' @export
+#' @keywords internal
 gumbel_pvalue <- function(observed, replicates, method = "ML") {
   # Fit Gumbel distribution to Monte Carlo replicates
   gumbel_mu <- NA
@@ -166,6 +166,7 @@ print.scanstatistic <- function(x, ...) {
 #' space-time window that the location is included in, i.e. average the 
 #' statistic over both zones and the maximum duration.
 #' @param x An object of class \code{scanstatistic}.
+#' @param zones A list of integer vectors.
 #' @return A \code{data.table} with the following columns:
 #'    \describe{
 #'      \item{location}{The locations (as integers).}
@@ -177,6 +178,9 @@ print.scanstatistic <- function(x, ...) {
 #'                   maximum duration.}
 #'      \item{relative_score}{The score divided by the maximum score.}
 #' }
+#' @importFrom magrittr %>%
+#' @importFrom dplyr group_by summarise
+#' @importFrom tibble tibble
 #' @export
 #' @examples
 #' \dontrun{
@@ -191,20 +195,26 @@ print.scanstatistic <- function(x, ...) {
 #' result <- scan_poisson(table, zones, 100)
 #' score_locations(result)
 #' }
-score_locations <- function(x) {
-  tab <- data.table(location = seq_len(x$n_locations),
-                    total_score = 0,
-                    n_zones = 0)
-  zone_scores <- x$observed[, .(score = sum(statistic)), by = zone]
-  i <- 1
-  for (z in x$zones) {
-    tab[z, total_score := total_score + zone_scores[z, sum(score)]]
-    tab[z, n_zones := n_zones + 1]
-    i <- i + 1
+score_locations <- function(x, zones) {
+  res <- tibble(location = seq_len(x$n_locations),
+                score = 0,
+                n_zones = 0)
+  z_scores <- x$table %>% 
+    group_by(zone) %>% 
+    summarise(score = sum(score)) %>%
+    arrange(zone)
+  
+  if (nrow(z_scores) != length(zones)) stop("zones don't match x")
+  
+  for (i in seq_along(zones)) {
+    for (location in zones[[i]]) {
+      res[location, ]$score <- res[location, ]$score + z_scores$score[i]
+      res[location, ]$n_zones <- res[location, ]$n_zones + 1
+    }
   }
-  tab[, score := total_score / (n_zones * x$max_duration)]
-  tab[, relative_score := score / max(score)]
-  tab
+  res$score <- res$score / (x$n_zones * x$max_duration)
+  res$relative_score <- res$score / max(res$score)
+  return(res)
 }
 
 #' Get the top (non-overlappig) clusters.
