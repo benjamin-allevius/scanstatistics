@@ -224,42 +224,39 @@ score_locations <- function(x, zones) {
 #' return the spatially non-overlapping clusters, i.e. those that do not have 
 #' any locations in common.
 #' @param x An object of class scanstatistics.
-#' @param k An integer, the number of clusters to return
+#' @param zones A list of integer vectors.
+#' @param k An integer, the number of clusters to return.
 #' @param overlapping Logical; should the top clusters be allowed to overlap in
 #'    the spatial dimension? The default is \code{FALSE}.
-#' @return A \code{data.table} with at most \eqn{k} rows, with columns 
-#'    \code{zone, duration, statistic}. 
+#' @return A \code{tibble} with at most \eqn{k} rows, with columns 
+#'    \code{zone, duration, score}. 
 #' @export
 #' @examples 
 #' \dontrun{
 #' set.seed(1)
-#' table <- scanstatistics:::create_table(list(location = 1:4, duration = 1:4), 
-#'                                         keys = c("location", "duration"))
-#' table[, mu := 3 * location]
-#' table[, count := rpois(.N, mu)]
-#' table[location %in% c(1, 4) & duration < 3, count := rpois(.N, 2 * mu)]
-#' zones <- scanstatistics:::powerset_zones(4)
-#' result <- scan_poisson(table, zones, 0)
-#' top_clusters(result, k = 4, overlapping = FALSE)
+#' table <- data.frame(zone = 1:5, duration = 1, score = 5:1)
+#' zones <- list(1:2, 1:3, 2:5, c(1, 3), 4:5, c(1, 5))
+#' top_clusters(list(table = table), zones, k = 4, overlapping = FALSE)
 #' }
-top_clusters <- function(x, k = 5, overlapping = FALSE) {
+top_clusters <- function(x, zones, k = 5, overlapping = FALSE) {
   if (overlapping) {
-    return(x$observed[seq_len(k), ])
+    return(x$table[seq_len(k), ])
   } else {
-    row_idx <- integer(k)
-    seen_locations <- integer(0)
-    n_added <- 0L
-    i <- 1L
-    while (n_added < k && i < nrow(x$observed)) {
-      zone <- x$observed[i, zone]
-      if (length(intersect(seen_locations, x$zones[[zone]])) == 0) {
+    row_idx <- c(1L, integer(k - 1))
+    seen_locations <- zones[[1]]
+    n_added <- 1L
+    i <- 2L
+    while (n_added < k && i <= nrow(x$table)) {
+      zone <- x$table[i, ]$zone
+      if (zone != x$table[i-1, ]$zone && 
+            length(intersect(seen_locations, zones[[zone]])) == 0) {
+        seen_locations <- c(seen_locations, zones[[zone]])
         n_added <- n_added + 1L
-        seen_locations <- c(seen_locations, x$zones[[zone]])
         row_idx[n_added] <- i
       }
       i <- i + 1L
     }
-    return(x$observed[row_idx[row_idx > 0], ])
+    return(x$table[row_idx[row_idx > 0], ])
   }
 }
 

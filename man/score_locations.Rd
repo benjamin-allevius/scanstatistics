@@ -4,10 +4,12 @@
 \alias{score_locations}
 \title{Score each location over zones and duration.}
 \usage{
-score_locations(x)
+score_locations(x, zones)
 }
 \arguments{
 \item{x}{An object of class \code{scanstatistic}.}
+
+\item{zones}{A list of integer vectors.}
 }
 \value{
 A \code{data.table} with the following columns:

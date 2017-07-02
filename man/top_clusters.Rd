@@ -4,19 +4,21 @@
 \alias{top_clusters}
 \title{Get the top (non-overlappig) clusters.}
 \usage{
-top_clusters(x, k = 5, overlapping = FALSE)
+top_clusters(x, zones, k = 5, overlapping = FALSE)
 }
 \arguments{
 \item{x}{An object of class scanstatistics.}
 
-\item{k}{An integer, the number of clusters to return}
+\item{zones}{A list of integer vectors.}
+
+\item{k}{An integer, the number of clusters to return.}
 
 \item{overlapping}{Logical; should the top clusters be allowed to overlap in
 the spatial dimension? The default is \code{FALSE}.}
 }
 \value{
-A \code{data.table} with at most \eqn{k} rows, with columns 
-   \code{zone, duration, statistic}.
+A \code{tibble} with at most \eqn{k} rows, with columns 
+   \code{zone, duration, score}.
 }
 \description{
 Get the top \eqn{k} space-time clusters according to the statistic calculated
@@ -27,13 +29,8 @@ any locations in common.
 \examples{
 \dontrun{
 set.seed(1)
-table <- scanstatistics:::create_table(list(location = 1:4, duration = 1:4), 
-                                        keys = c("location", "duration"))
-table[, mu := 3 * location]
-table[, count := rpois(.N, mu)]
-table[location \%in\% c(1, 4) & duration < 3, count := rpois(.N, 2 * mu)]
-zones <- scanstatistics:::powerset_zones(4)
-result <- scan_poisson(table, zones, 0)
-top_clusters(result, k = 4, overlapping = FALSE)
+table <- data.frame(zone = 1:5, duration = 1, score = 5:1)
+zones <- list(1:2, 1:3, 2:5, c(1, 3), 4:5, c(1, 5))
+top_clusters(list(table = table), zones, k = 4, overlapping = FALSE)
 }
 }
