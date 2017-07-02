@@ -19,7 +19,7 @@
 //' @param num_zones int
 //' @param max_dur int
 //' @param store_everything boolean
-//' @param score_type boolean
+//' @param score_hotspot boolean
 //' @return A data frame with five columns:
 //'    \describe{
 //'      \item{zone}{The top-scoring zone (spatial component of MLC).}
@@ -41,7 +41,7 @@ Rcpp::DataFrame scan_eb_negbin_cpp(const arma::umat& counts,
                                    const int num_zones,
                                    const int max_dur,
                                    const bool store_everything,
-                                   const bool score_type);
+                                   const bool score_hotspot);
 
 
 #endif

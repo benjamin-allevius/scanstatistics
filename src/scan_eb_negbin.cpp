@@ -10,10 +10,10 @@ Rcpp::DataFrame scan_eb_negbin_cpp(const arma::umat& counts,
                                    const int num_zones,
                                    const int max_dur,
                                    const bool store_everything,
-                                   const bool score_type) {
+                                   const bool score_hotspot) {
 
   EBNBscan ob {counts, baselines, overdisp, zones, zone_lengths, num_locs,
-                num_zones, max_dur, store_everything, score_type};
+                num_zones, max_dur, store_everything, score_hotspot};
   ob.run_scan();
   return ob.get_results();
 }
