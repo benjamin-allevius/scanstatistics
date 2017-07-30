@@ -47,8 +47,9 @@ A list with the following components:
            risk. The table is sorted by score with the top-scoring location 
            on top.If \code{max_only = TRUE}, only contains a single row 
            corresponding to the MLC.}
-     \item{replicate_statistics}{A vector of the Monte Carlo replicates of
-           the scan statistic, if any (otherwise empty).}
+     \item{replicate_statistics}{A data frame of the Monte Carlo replicates 
+           of the scan statistic (if any ), and the corresponding zones and
+           durations.}
      \item{MC_pvalue}{The Monte Carlo \eqn{P}-value.}
      \item{Gumbel_pvalue}{A \eqn{P}-value obtained by fitting a Gumbel 
            distribution to the replicate scan statistics.}

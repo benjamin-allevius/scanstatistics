@@ -33,10 +33,10 @@ relative risk is assumed to increase with the duration of the outbreak.}
 \item{n_mcsim}{A non-negative integer; the number of replicate scan
 statistics to generate in order to calculate a \eqn{P}-value.}
 
-\item{max_only}{Boolean. If \code{FALSE} (default) the log-likelihood ratio
-statistic for each zone and duration is returned. If \code{TRUE}, only the
-largest such statistic (i.e. the scan statistic) is returned, along with
-the corresponding zone and duration.}
+\item{max_only}{Boolean. If \code{FALSE} (default) the statistic calculated
+for each zone and duration is returned. If \code{TRUE}, only the largest 
+such statistic (i.e. the scan statistic) is returned, along with the 
+corresponding zone and duration.}
 }
 \value{
 A list with the following components:
@@ -51,8 +51,9 @@ A list with the following components:
            The table is sorted by score with the top-scoring location on top.
            If \code{max_only = TRUE}, only contains a single row
            corresponding to the MLC.}
-     \item{replicate_statistics}{A vector of the Monte Carlo replicates of
-           the scan statistic, if any (otherwise empty).}
+     \item{replicate_statistics}{A data frame of the Monte Carlo replicates 
+           of the scan statistic (if any) and the corresponding zones and 
+           durations.}
      \item{MC_pvalue}{The Monte Carlo \eqn{P}-value.}
      \item{Gumbel_pvalue}{A \eqn{P}-value obtained by fitting a Gumbel
            distribution to the replicate scan statistics.}

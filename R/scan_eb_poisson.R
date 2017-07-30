@@ -36,8 +36,9 @@
 #'            risk. The table is sorted by score with the top-scoring location 
 #'            on top.If \code{max_only = TRUE}, only contains a single row 
 #'            corresponding to the MLC.}
-#'      \item{replicate_statistics}{A vector of the Monte Carlo replicates of
-#'            the scan statistic, if any (otherwise empty).}
+#'      \item{replicate_statistics}{A data frame of the Monte Carlo replicates 
+#'            of the scan statistic (if any ), and the corresponding zones and
+#'            durations.}
 #'      \item{MC_pvalue}{The Monte Carlo \eqn{P}-value.}
 #'      \item{Gumbel_pvalue}{A \eqn{P}-value obtained by fitting a Gumbel 
 #'            distribution to the replicate scan statistics.}
@@ -50,10 +51,8 @@
 #'    \emph{Detection of emerging space-time clusters}. Proceeding of the 
 #'    eleventh ACM SIGKDD international conference on Knowledge discovery in 
 #'    data mining - KDD ’05, 218.
-#' @importFrom stats rpois
-#' @importFrom ismev gum.fit
-#' @importFrom reliaR pgumbel
 #' @importFrom dplyr arrange
+#' @importFrom magrittr %<>%
 #' @export
 #' @examples
 #' \dontrun{
@@ -105,7 +104,7 @@ scan_eb_poisson <- function(counts,
     baselines <- matrix(baselines, nrow = 1)
   }
 
-  # Estimate baselines and probs if not supplied -------------------------------
+  # Estimate baselines if not supplied -----------------------------------------
   if (is.null(baselines)) {
     baselines <- estimate_baselines(counts, population)
   } 
@@ -122,32 +121,27 @@ scan_eb_poisson <- function(counts,
   num_zones <- length(zones)
 
   # Run analysis on observed counts --------------------------------------------
-  scan <- scan_eb_poisson_cpp(counts, baselines,
-                              zones_flat, zone_lengths,
-                              num_locs, num_zones, max_dur, 
-                              store_everything = !max_only)
+  scan <- scan_eb_poisson_cpp(counts = counts, 
+                              baselines = baselines,
+                              zones = zones_flat, 
+                              zone_lengths = zone_lengths,
+                              num_locs = num_locs, 
+                              num_zones = num_zones, 
+                              max_dur = max_dur, 
+                              store_everything = !max_only,
+                              num_mcsim = n_mcsim)
 
   # Extract the most likely cluster (MLC)
-  MLC <- scan[which.max(scan$score), ]
-
-  # Make MC replications of the scan statistic under the null hypothesis
-  repl_stat <- numeric(n_mcsim)
-  for (i in seq_len(n_mcsim)) {
-    repl_stat[i] <- scan_eb_poisson_cpp(matrix(rpois(prod(dim(counts)),
-                                                     as.vector(baselines)), 
-                                               nrow(counts), ncol(counts)), 
-                                        baselines,
-                                        zones_flat, zone_lengths,
-                                        num_locs, num_zones, max_dur, 
-                                        store_everything = FALSE)$score
-  }
+  scan$observed %<>% arrange(-score)
+  MLC <- scan$observed[1, ]
 
   # Get P-values
   gumbel_pvalue <- NA
   MC_pvalue <- NA
   if (n_mcsim > 0) {
-    gumbel_pvalue <- gumbel_pvalue(MLC$score, repl_stat, method = "ML")$pvalue
-    MC_pvalue <- mc_pvalue(MLC$score, repl_stat)
+    gumbel_pvalue <- gumbel_pvalue(MLC$score, scan$simulated$score, 
+                                   method = "ML")$pvalue
+    MC_pvalue <- mc_pvalue(MLC$score, scan$simulated$score)
   }
   
   MLC_counts <- counts[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
@@ -160,8 +154,8 @@ scan_eb_poisson <- function(counts,
                   relative_risk = MLC$relrisk,
                   observed = flipud(MLC_counts),
                   baselines = flipud(MLC_basel)),
-       table = arrange(scan, -score),
-       replicate_statistics = repl_stat,
+       table = scan$observed,
+       replicate_statistics = scan$simulated,
        MC_pvalue = MC_pvalue,
        Gumbel_pvalue = gumbel_pvalue,
        n_zones = length(zones),

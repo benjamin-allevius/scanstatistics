@@ -44,8 +44,9 @@
 #'            sorted by score with the top-scoring location on top. If 
 #'            \code{max_only = TRUE}, only contains a single row corresponding 
 #'            to the MLC.}
-#'      \item{replicate_statistics}{A vector of the Monte Carlo replicates of
-#'            the scan statistic, if any (otherwise empty).}
+#'      \item{replicate_statistics}{A data frame of the Monte Carlo replicates 
+#'            of the scan statistic (if any ), and the corresponding zones and
+#'            durations.}
 #'      \item{MC_pvalue}{The Monte Carlo \eqn{P}-value.}
 #'      \item{Gumbel_pvalue}{A \eqn{P}-value obtained by fitting a Gumbel 
 #'            distribution to the replicate scan statistics.}
@@ -91,10 +92,8 @@
 #'    Statistic Based on the Zero-Inflated Poisson Distribution}, (Master
 #'    Thesis, Stockholm University),
 #'    \href{http://goo.gl/6Q89ML}{Link to PDF}.
-#' @importFrom gamlss.dist rZIP
-#' @importFrom ismev gum.fit
-#' @importFrom reliaR pgumbel
 #' @importFrom dplyr arrange
+#' @importFrom magrittr %<>%
 #' @export
 #' @examples
 #' \dontrun{
@@ -135,20 +134,15 @@ scan_eb_zip <- function(counts,
                         n_mcsim = 0,
                         max_only = FALSE,
                         rel_tol = 1e-3) {
+  
+  # Validate input -------------------------------------------------------------
   if (any(as.vector(counts) != as.integer(counts))) {
     stop("counts must be integer")
   }
   if (any(baselines <= 0)) stop("baselines must be positive")
   if (any(probs <= 0)) stop("probs must be positive")
   
-  if (is.vector(counts)) {
-    counts <- matrix(counts, nrow = 1)
-  }
-  
-  
-  
-
-  # Estimate baselines and probs if not supplied
+  # Estimate baselines and probs if not supplied -------------------------------
   if (is.null(baselines) & is.null(population)) {
     stop("baselines or population matrices must be supplied")
   }
@@ -160,45 +154,54 @@ scan_eb_zip <- function(counts,
     probs <- pars$probs
   } 
   
-  # Reverse time order: most recent first
+  # Reshape into matrices ------------------------------------------------------
+  if (is.vector(counts)) {
+    counts <- matrix(counts, nrow = 1)
+  }
+  if (!is.null(baselines) && is.vector(baselines)) {
+    baselines <- matrix(baselines, nrow = 1)
+  }
+  if (!is.null(probs) && is.vector(probs)) {
+    probs <- matrix(probs, nrow = 1)
+  }
+  
+  # Reverse time order: most recent first --------------------------------------
   counts <- flipud(counts)
   baselines <- flipud(baselines)
   probs <- flipud(probs)
   
 
-  # Prepare zone arguments for C++
+  # Prepare zone arguments for C++ ---------------------------------------------
   zones_flat <- unlist(zones) - 1
   zone_lengths <- unlist(lapply(zones, length))
   num_locs <- ncol(counts)
   max_dur <- nrow(counts)
   num_zones <- length(zones)
 
-  # Run analysis on observed counts
-  scan <- scan_eb_zip_cpp(counts, baselines, probs,
-                          zones_flat, zone_lengths,
-                          num_locs, num_zones, max_dur, 
-                          rel_tol, store_everything = !max_only)
+  # Run analysis on observed counts --------------------------------------------
+  scan <- scan_eb_zip_cpp(counts = counts, 
+                          baselines = baselines, 
+                          probs = probs,
+                          zones = zones_flat, 
+                          zone_lengths = zone_lengths,
+                          num_locs = num_locs, 
+                          num_zones = num_zones, 
+                          max_dur = max_dur, 
+                          rel_tol = rel_tol, 
+                          store_everything = !max_only,
+                          num_mcsim = n_mcsim)
 
   # Extract the most likely cluster (MLC)
-  MLC <- scan[which.max(scan$score), ]
-
-  # Make Monte Carlo replications of the scan statistic under the null hypothesis
-  repl_stat <- numeric(n_mcsim)
-  for (i in seq_len(n_mcsim)) {
-    repl_stat[i] <- scan_eb_zip_cpp(
-      rZIP(prod(dim(counts)), baselines, probs), # Simulate ZIP data
-      baselines, probs,
-      zones_flat, zone_lengths,
-      num_locs, num_zones, max_dur, 
-      rel_tol, store_everything = FALSE)$score
-  }
+  scan$observed %<>% arrange(-score)
+  MLC <- scan$observed[1, ]
 
   # Get P-values
   gumbel_pvalue <- NA
   MC_pvalue <- NA
   if (n_mcsim > 0) {
-    gumbel_pvalue <- gumbel_pvalue(MLC$score, repl_stat, method = "ML")$pvalue
-    MC_pvalue <- mc_pvalue(MLC$score, repl_stat)
+    gumbel_pvalue <- gumbel_pvalue(MLC$score, scan$simulated$score, 
+                                   method = "ML")$pvalue
+    MC_pvalue <- mc_pvalue(MLC$score, scan$simulated$score)
   }
   
   MLC_counts <- counts[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
@@ -215,8 +218,8 @@ scan_eb_zip <- function(counts,
       observed = flipud(MLC_counts),
       baselines = flipud(MLC_basel),
       probs = flipud(MLC_probs)),
-    table = arrange(scan, -score),
-    replicate_statistics = repl_stat,
+    table = scan$observed,
+    replicate_statistics = scan$simulated,
     MC_pvalue = MC_pvalue,
     Gumbel_pvalue = gumbel_pvalue,
     n_zones = length(zones),
