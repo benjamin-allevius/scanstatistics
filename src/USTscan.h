@@ -143,8 +143,8 @@ inline void USTscan<T, t>::run_mcsim() {
 
 template <class T, class t>
 inline void USTscan<T, t>::simulate_counts() {
-  for (arma::uword i = 0; i < m_counts.n_cols; ++i) {
-    for (arma::uword j = 0; j < m_counts.n_rows; ++j) {
+  for (arma::uword j = 0; j < m_counts.n_cols; ++j) {
+    for (arma::uword i = 0; i < m_counts.n_rows; ++i) {
       m_counts.at(i, j) = draw_sample(i, j);
     }
   }
