@@ -29,7 +29,7 @@
 #' @export
 #' @keywords internal
 scan_eb_negbin_cpp <- function(counts, baselines, overdisp, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything, score_hotspot) {
-    .Call(scanstatistics_scan_eb_negbin_cpp, counts, baselines, overdisp, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything, score_hotspot)
+    .Call(`_scanstatistics_scan_eb_negbin_cpp`, counts, baselines, overdisp, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything, score_hotspot)
 }
 
 #' Calculate the highest-value EB ZIP loglihood ratio statistic.
@@ -58,7 +58,7 @@ scan_eb_negbin_cpp <- function(counts, baselines, overdisp, zones, zone_lengths,
 #' @export
 #' @keywords internal
 scan_eb_poisson_cpp <- function(counts, baselines, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything) {
-    .Call(scanstatistics_scan_eb_poisson_cpp, counts, baselines, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything)
+    .Call(`_scanstatistics_scan_eb_poisson_cpp`, counts, baselines, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything)
 }
 
 #' Calculate the highest-value EB ZIP loglihood ratio statistic.
@@ -89,7 +89,7 @@ scan_eb_poisson_cpp <- function(counts, baselines, zones, zone_lengths, num_locs
 #' @export
 #' @keywords internal
 scan_eb_zip_cpp <- function(counts, baselines, probs, zones, zone_lengths, num_locs, num_zones, max_dur, rel_tol, store_everything) {
-    .Call(scanstatistics_scan_eb_zip_cpp, counts, baselines, probs, zones, zone_lengths, num_locs, num_zones, max_dur, rel_tol, store_everything)
+    .Call(`_scanstatistics_scan_eb_zip_cpp`, counts, baselines, probs, zones, zone_lengths, num_locs, num_zones, max_dur, rel_tol, store_everything)
 }
 
 #' Calculate the highest-value EB ZIP loglihood ratio statistic.
@@ -119,7 +119,7 @@ scan_eb_zip_cpp <- function(counts, baselines, probs, zones, zone_lengths, num_l
 #' @export
 #' @keywords internal
 scan_pb_poisson_cpp <- function(counts, baselines, total_count, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything) {
-    .Call(scanstatistics_scan_pb_poisson_cpp, counts, baselines, total_count, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything)
+    .Call(`_scanstatistics_scan_pb_poisson_cpp`, counts, baselines, total_count, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything)
 }
 
 #' Calculate the highest-value PB ZIP loglihood ratio statistic.
@@ -149,7 +149,7 @@ scan_pb_poisson_cpp <- function(counts, baselines, total_count, zones, zone_leng
 #' @export
 #' @keywords internal
 scan_pb_zip_cpp <- function(counts, pop, zones, zone_lengths, num_locs, num_zones, max_dur, rel_tol, store_everything) {
-    .Call(scanstatistics_scan_pb_zip_cpp, counts, pop, zones, zone_lengths, num_locs, num_zones, max_dur, rel_tol, store_everything)
+    .Call(`_scanstatistics_scan_pb_zip_cpp`, counts, pop, zones, zone_lengths, num_locs, num_zones, max_dur, rel_tol, store_everything)
 }
 
 #' Get indices of zero elements in a vector.
@@ -159,6 +159,6 @@ scan_pb_zip_cpp <- function(counts, pop, zones, zone_lengths, num_locs, num_zone
 #' @keywords internal
 #' @export
 get_zero_indices <- function(v) {
-    .Call(scanstatistics_get_zero_indices, v)
+    .Call(`_scanstatistics_get_zero_indices`, v)
 }
 

@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // scan_eb_negbin_cpp
 Rcpp::DataFrame scan_eb_negbin_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::mat& overdisp, const arma::uvec& zones, const arma::uvec& zone_lengths, const int num_locs, const int num_zones, const int max_dur, const bool store_everything, const bool score_hotspot);
-RcppExport SEXP scanstatistics_scan_eb_negbin_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP overdispSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP num_locsSEXP, SEXP num_zonesSEXP, SEXP max_durSEXP, SEXP store_everythingSEXP, SEXP score_hotspotSEXP) {
+RcppExport SEXP _scanstatistics_scan_eb_negbin_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP overdispSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP num_locsSEXP, SEXP num_zonesSEXP, SEXP max_durSEXP, SEXP store_everythingSEXP, SEXP score_hotspotSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -28,7 +28,7 @@ END_RCPP
 }
 // scan_eb_poisson_cpp
 Rcpp::DataFrame scan_eb_poisson_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::uvec& zones, const arma::uvec& zone_lengths, const int num_locs, const int num_zones, const int max_dur, const bool store_everything);
-RcppExport SEXP scanstatistics_scan_eb_poisson_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP num_locsSEXP, SEXP num_zonesSEXP, SEXP max_durSEXP, SEXP store_everythingSEXP) {
+RcppExport SEXP _scanstatistics_scan_eb_poisson_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP num_locsSEXP, SEXP num_zonesSEXP, SEXP max_durSEXP, SEXP store_everythingSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -46,7 +46,7 @@ END_RCPP
 }
 // scan_eb_zip_cpp
 Rcpp::DataFrame scan_eb_zip_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::mat& probs, const arma::uvec& zones, const arma::uvec& zone_lengths, const int num_locs, const int num_zones, const int max_dur, const double rel_tol, const bool store_everything);
-RcppExport SEXP scanstatistics_scan_eb_zip_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP probsSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP num_locsSEXP, SEXP num_zonesSEXP, SEXP max_durSEXP, SEXP rel_tolSEXP, SEXP store_everythingSEXP) {
+RcppExport SEXP _scanstatistics_scan_eb_zip_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP probsSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP num_locsSEXP, SEXP num_zonesSEXP, SEXP max_durSEXP, SEXP rel_tolSEXP, SEXP store_everythingSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -66,7 +66,7 @@ END_RCPP
 }
 // scan_pb_poisson_cpp
 Rcpp::DataFrame scan_pb_poisson_cpp(const arma::umat& counts, const arma::mat& baselines, const int total_count, const arma::uvec& zones, const arma::uvec& zone_lengths, const int num_locs, const int num_zones, const int max_dur, const bool store_everything);
-RcppExport SEXP scanstatistics_scan_pb_poisson_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP total_countSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP num_locsSEXP, SEXP num_zonesSEXP, SEXP max_durSEXP, SEXP store_everythingSEXP) {
+RcppExport SEXP _scanstatistics_scan_pb_poisson_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP total_countSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP num_locsSEXP, SEXP num_zonesSEXP, SEXP max_durSEXP, SEXP store_everythingSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -85,7 +85,7 @@ END_RCPP
 }
 // scan_pb_zip_cpp
 Rcpp::DataFrame scan_pb_zip_cpp(const arma::umat& counts, const arma::mat& pop, const arma::uvec& zones, const arma::uvec& zone_lengths, const int num_locs, const int num_zones, const int max_dur, const double rel_tol, const bool store_everything);
-RcppExport SEXP scanstatistics_scan_pb_zip_cpp(SEXP countsSEXP, SEXP popSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP num_locsSEXP, SEXP num_zonesSEXP, SEXP max_durSEXP, SEXP rel_tolSEXP, SEXP store_everythingSEXP) {
+RcppExport SEXP _scanstatistics_scan_pb_zip_cpp(SEXP countsSEXP, SEXP popSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP num_locsSEXP, SEXP num_zonesSEXP, SEXP max_durSEXP, SEXP rel_tolSEXP, SEXP store_everythingSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -104,7 +104,7 @@ END_RCPP
 }
 // get_zero_indices
 std::vector<int> get_zero_indices(arma::uvec v);
-RcppExport SEXP scanstatistics_get_zero_indices(SEXP vSEXP) {
+RcppExport SEXP _scanstatistics_get_zero_indices(SEXP vSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -115,12 +115,12 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"scanstatistics_scan_eb_negbin_cpp", (DL_FUNC) &scanstatistics_scan_eb_negbin_cpp, 10},
-    {"scanstatistics_scan_eb_poisson_cpp", (DL_FUNC) &scanstatistics_scan_eb_poisson_cpp, 8},
-    {"scanstatistics_scan_eb_zip_cpp", (DL_FUNC) &scanstatistics_scan_eb_zip_cpp, 10},
-    {"scanstatistics_scan_pb_poisson_cpp", (DL_FUNC) &scanstatistics_scan_pb_poisson_cpp, 9},
-    {"scanstatistics_scan_pb_zip_cpp", (DL_FUNC) &scanstatistics_scan_pb_zip_cpp, 9},
-    {"scanstatistics_get_zero_indices", (DL_FUNC) &scanstatistics_get_zero_indices, 1},
+    {"_scanstatistics_scan_eb_negbin_cpp", (DL_FUNC) &_scanstatistics_scan_eb_negbin_cpp, 10},
+    {"_scanstatistics_scan_eb_poisson_cpp", (DL_FUNC) &_scanstatistics_scan_eb_poisson_cpp, 8},
+    {"_scanstatistics_scan_eb_zip_cpp", (DL_FUNC) &_scanstatistics_scan_eb_zip_cpp, 10},
+    {"_scanstatistics_scan_pb_poisson_cpp", (DL_FUNC) &_scanstatistics_scan_pb_poisson_cpp, 9},
+    {"_scanstatistics_scan_pb_zip_cpp", (DL_FUNC) &_scanstatistics_scan_pb_zip_cpp, 9},
+    {"_scanstatistics_get_zero_indices", (DL_FUNC) &_scanstatistics_get_zero_indices, 1},
     {NULL, NULL, 0}
 };
 
