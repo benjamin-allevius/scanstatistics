@@ -21,10 +21,10 @@
 #'    relative risk is assumed to increase with the duration of the outbreak.
 #' @param n_mcsim A non-negative integer; the number of replicate scan
 #'    statistics to generate in order to calculate a \eqn{P}-value.
-#' @param max_only Boolean. If \code{FALSE} (default) the log-likelihood ratio
-#'    statistic for each zone and duration is returned. If \code{TRUE}, only the
-#'    largest such statistic (i.e. the scan statistic) is returned, along with
-#'    the corresponding zone and duration.
+#' @param max_only Boolean. If \code{FALSE} (default) the statistic calculated
+#'    for each zone and duration is returned. If \code{TRUE}, only the largest 
+#'    such statistic (i.e. the scan statistic) is returned, along with the 
+#'    corresponding zone and duration.
 #' @return A list with the following components:
 #'    \describe{
 #'      \item{MLC}{A list containing the number of the zone of the most likely
@@ -37,8 +37,9 @@
 #'            The table is sorted by score with the top-scoring location on top.
 #'            If \code{max_only = TRUE}, only contains a single row
 #'            corresponding to the MLC.}
-#'      \item{replicate_statistics}{A vector of the Monte Carlo replicates of
-#'            the scan statistic, if any (otherwise empty).}
+#'      \item{replicate_statistics}{A data frame of the Monte Carlo replicates 
+#'            of the scan statistic (if any) and the corresponding zones and 
+#'            durations.}
 #'      \item{MC_pvalue}{The Monte Carlo \eqn{P}-value.}
 #'      \item{Gumbel_pvalue}{A \eqn{P}-value obtained by fitting a Gumbel
 #'            distribution to the replicate scan statistics.}
@@ -53,6 +54,7 @@
 #' @importFrom ismev gum.fit
 #' @importFrom reliaR pgumbel
 #' @importFrom dplyr arrange
+#' @importFrom magrittr %<>%
 #' @export
 #' @examples
 #' \dontrun{
@@ -102,7 +104,7 @@ scan_eb_negbin <- function(counts,
   if (any(baselines <= 0)) stop("baselines must be positive")
   if (any(thetas <= 0)) stop("thetas must be positive")
 
-  # Reshape into matrices ------------------------------------------------------
+  # Reshape arguments into matrices --------------------------------------------
   if (is.vector(counts)) {
     counts <- matrix(counts, nrow = 1)
   }
@@ -136,33 +138,29 @@ scan_eb_negbin <- function(counts,
   overdisp <- 1 + baselines / thetas
 
   # Run analysis on observed counts --------------------------------------------
-  scan <- scan_eb_negbin_cpp(counts, baselines, overdisp,
-                             zones_flat, zone_lengths,
-                             num_locs, num_zones, max_dur,
+  scan <- scan_eb_negbin_cpp(counts = counts, 
+                             baselines = baselines, 
+                             overdisp = overdisp,
+                             zones = zones_flat, 
+                             zone_lengths = zone_lengths,
+                             num_locs = num_locs, 
+                             num_zones = num_zones, 
+                             max_dur = max_dur,
                              store_everything = !max_only,
-                             type_hotspot)
+                             num_mcsim = n_mcsim,
+                             score_hotspot = type_hotspot)
 
   # Extract the most likely cluster (MLC)
-  MLC <- scan[which.max(scan$score), ]
-
-  # Make MC replications of the scan statistic under the null hypothesis
-  repl_stat <- numeric(n_mcsim)
-  for (i in seq_len(n_mcsim)) {
-    repl_stat[i] <- scan_eb_negbin_cpp(
-      matrix(rnbinom(prod(dim(counts)), mu = baselines, size = thetas),
-             nrow(counts), ncol(counts)),
-      baselines, overdisp,
-      zones_flat, zone_lengths,
-      num_locs, num_zones, max_dur,
-      store_everything = FALSE, type_hotspot)$score
-  }
+  scan$observed %<>% arrange(-score)
+  MLC <- scan$observed[1, ]
 
   # Get P-values
   gumbel_pvalue <- NA
   MC_pvalue <- NA
   if (n_mcsim > 0) {
-    gumbel_pvalue <- gumbel_pvalue(MLC$score, repl_stat, method = "ML")$pvalue
-    MC_pvalue <- mc_pvalue(MLC$score, repl_stat)
+    gumbel_pvalue <- gumbel_pvalue(MLC$score, scan$simulated$score, 
+                                   method = "ML")$pvalue
+    MC_pvalue <- mc_pvalue(MLC$score, scan$simulated$score)
   }
   
   MLC_counts <- counts[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
@@ -176,8 +174,8 @@ scan_eb_negbin <- function(counts,
                   observed = flipud(MLC_counts),
                   baselines = flipud(MLC_basel),
                   thetas = flipud(MLC_thetas)),
-       table = arrange(scan, -score),
-       replicate_statistics = repl_stat,
+       table = scan$observed,
+       replicate_statistics = scan$simulated,
        MC_pvalue = MC_pvalue,
        Gumbel_pvalue = gumbel_pvalue,
        n_zones = length(zones),
