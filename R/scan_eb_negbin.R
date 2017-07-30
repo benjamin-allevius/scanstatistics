@@ -50,9 +50,6 @@
 #' @references
 #'    Tango, T., Takahashi, K. & Kohriyama, K. (2011), A space-time scan
 #'    statistic for detecting emerging outbreaks, Biometrics 67(1), 106–115.
-#' @importFrom stats rnbinom
-#' @importFrom ismev gum.fit
-#' @importFrom reliaR pgumbel
 #' @importFrom dplyr arrange
 #' @importFrom magrittr %<>%
 #' @export
