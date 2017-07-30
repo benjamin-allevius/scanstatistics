@@ -5,7 +5,7 @@
 \title{Calculate the highest-value EB ZIP loglihood ratio statistic.}
 \usage{
 scan_eb_poisson_cpp(counts, baselines, zones, zone_lengths, num_locs, num_zones,
-  max_dur, store_everything)
+  max_dur, store_everything, num_mcsim)
 }
 \arguments{
 \item{counts}{matrix}
@@ -23,6 +23,8 @@ scan_eb_poisson_cpp(counts, baselines, zones, zone_lengths, num_locs, num_zones,
 \item{max_dur}{int}
 
 \item{store_everything}{boolean}
+
+\item{num_mcsim}{int}
 }
 \value{
 A data frame with five columns:

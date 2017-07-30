@@ -1,7 +1,7 @@
 context("EB Poisson statistic tests")
 
 test_that("scan_eb_poisson", {
-  
+
   # Helper functions -----------------------------------------------------------
   poisson_lpmf <- function(y, mu) dpois(y, mu, log = TRUE)
   poisson_loglihood <- function(y, mu, q) {
@@ -11,7 +11,7 @@ test_that("scan_eb_poisson", {
     }
     return(llh)
   }
-  
+
   # Single timepoint -----------------------------------------------------------
   in1 <- list(
     counts = matrix(c(1, 0), nrow = 1),
@@ -20,22 +20,24 @@ test_that("scan_eb_poisson", {
   in1$zones_flat =  unlist(in1$zones)
   in1$zone_lengths = unlist(lapply(in1$zones, length))
 
-  actual1 <- scan_eb_poisson_cpp(in1$counts, 
-                                 in1$baselines, 
-                                 in1$zones_flat - 1, 
+  actual1 <- scan_eb_poisson_cpp(in1$counts,
+                                 in1$baselines,
+                                 in1$zones_flat - 1,
                                  in1$zone_lengths,
                                  ncol(in1$counts),
                                  length(in1$zones),
                                  nrow(in1$counts),
-                                 store_everything = TRUE)
-  actual1b <- scan_eb_poisson_cpp(in1$counts, 
-                                 in1$baselines, 
-                                 in1$zones_flat - 1, 
+                                 store_everything = TRUE,
+                                 num_mcsim = 0)$observed
+  actual1b <- scan_eb_poisson_cpp(in1$counts,
+                                 in1$baselines,
+                                 in1$zones_flat - 1,
                                  in1$zone_lengths,
                                  ncol(in1$counts),
                                  length(in1$zones),
                                  nrow(in1$counts),
-                                 store_everything = FALSE)
+                                 store_everything = FALSE,
+                                 num_mcsim = 0)$observed
   expected1_score <- c(poisson_lpmf(1, 1) - poisson_lpmf(1, 0.5), 0, 0)
   expect_equal(actual1$score, expected1_score)
   expect_equal(actual1$relrisk, c(2, 1, 1))
@@ -55,32 +57,34 @@ test_that("scan_eb_poisson", {
 
   actual2 <- scan_eb_poisson_cpp(apply(in2$counts, 2, cumsum),
                                  apply(in2$baselines, 2, cumsum),
-                                 in2$zones_flat - 1, 
+                                 in2$zones_flat - 1,
                                  in2$zone_lengths,
                                  ncol(in2$counts),
                                  length(in2$zones),
                                  nrow(in2$counts),
-                                 store_everything = TRUE)
+                                 store_everything = TRUE,
+                                 num_mcsim = 0)$observed
   actual2b <- scan_eb_poisson_cpp(apply(in2$counts, 2, cumsum),
                                  apply(in2$baselines, 2, cumsum),
-                                 in2$zones_flat - 1, 
+                                 in2$zones_flat - 1,
                                  in2$zone_lengths,
                                  ncol(in2$counts),
                                  length(in2$zones),
                                  nrow(in2$counts),
-                                 store_everything = FALSE)
+                                 store_everything = FALSE,
+                                 num_mcsim = 0)$observed
 
   expected2_relrisk <- c(# Duration = 1
-                         sum(in2$counts[1, 1]) / sum(in2$baselines[1, 1]), 
-                         sum(in2$counts[1, 2]) / sum(in2$baselines[1, 2]), 
-                         sum(in2$counts[1, 1:2]) / sum(in2$baselines[1, 1:2]), 
+                         sum(in2$counts[1, 1]) / sum(in2$baselines[1, 1]),
+                         sum(in2$counts[1, 2]) / sum(in2$baselines[1, 2]),
+                         sum(in2$counts[1, 1:2]) / sum(in2$baselines[1, 1:2]),
                          # Duration = 2
-                         sum(in2$counts[1:2, 1]) / sum(in2$baselines[1:2, 1]), 
-                         sum(in2$counts[1:2, 2]) / sum(in2$baselines[1:2, 2]), 
-                         sum(in2$counts[1:2, 1:2]) / sum(in2$baselines[1:2, 1:2]), 
+                         sum(in2$counts[1:2, 1]) / sum(in2$baselines[1:2, 1]),
+                         sum(in2$counts[1:2, 2]) / sum(in2$baselines[1:2, 2]),
+                         sum(in2$counts[1:2, 1:2]) / sum(in2$baselines[1:2, 1:2]),
                          # Duration = 3
-                         sum(in2$counts[1:3, 1]) / sum(in2$baselines[1:3, 1]), 
-                         sum(in2$counts[1:3, 2]) / sum(in2$baselines[1:3, 2]), 
+                         sum(in2$counts[1:3, 1]) / sum(in2$baselines[1:3, 1]),
+                         sum(in2$counts[1:3, 2]) / sum(in2$baselines[1:3, 2]),
                          sum(in2$counts[1:3, 1:2]) / sum(in2$baselines[1:3, 1:2]))
   expected2_relrisk <- pmax(expected2_relrisk, 1)
 

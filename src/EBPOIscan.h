@@ -3,7 +3,7 @@
 
 #include "USTscan.h"
 
-class EBPOIscan : public USTscan<arma::umat> {
+class EBPOIscan : public USTscan<arma::umat, int> {
 
 public:
   EBPOIscan(const arma::umat& counts,
@@ -13,30 +13,38 @@ public:
             const int num_locs,
             const int num_zones,
             const int max_dur,
-            const bool store_everything);
-  void calculate(const int storage_index,
-                 const int zone_nr,
-                 const int duration,
-                 const arma::uvec& current_zone,
-                 const arma::uvec& current_rows);
-  Rcpp::DataFrame get_results();
+            const bool store_everything,
+            const int num_mcsim);
+
+  Rcpp::DataFrame get_scan()  override;
+  Rcpp::DataFrame get_mcsim() override;
 
 private:
   arma::mat m_baselines;
 
-  // Components of returned list
-  arma::uvec m_zone_numbers;
-  arma::uvec m_durations;
-  arma::vec  m_scores;
-  arma::vec  m_relrisks;
+  // Values calculated on observed data
+  arma::vec m_relrisks;
+
+  // Values calculated on simulated data
+  arma::vec sim_relrisks;
 
   // Functions
+  void calculate(const int storage_index,
+                 const int zone_nr,
+                 const int duration,
+                 const arma::uvec& current_zone,
+                 const arma::uvec& current_rows) override;
+  int draw_sample(arma::uword row, arma::uword col) override;
+  void set_sim_store_fun() override;
+
   using store_ptr = void (EBPOIscan::*)(int storage_index, double score,
                                         double q, int zone_nr, int duration);
   store_ptr store;
   void store_max(int storage_index, double score, double q, int zone_nr,
                  int duration);
   void store_all(int storage_index, double score, double q, int zone_nr,
+                 int duration);
+  void store_sim(int storage_index, double score, double q, int zone_nr,
                  int duration);
 
 };
@@ -50,28 +58,23 @@ inline EBPOIscan::EBPOIscan(const arma::umat& counts,
                             const int num_locs,
                             const int num_zones,
                             const int max_dur,
-                            const bool store_everything)
-  : USTscan(counts, zones, zone_lengths, num_locs, num_zones, max_dur),
+                            const bool store_everything,
+                            const int num_mcsim)
+  : USTscan(counts, zones, zone_lengths, num_locs, num_zones, max_dur,
+            store_everything, num_mcsim),
     m_baselines(baselines) {
 
-  int out_length;
-  if (store_everything) {
-    out_length = m_num_zones * m_max_dur;
-    store = &EBPOIscan::store_all;
-  } else {
-    out_length = 1;
-    store = &EBPOIscan::store_max;
-  }
+  store = (store_everything ? &EBPOIscan::store_all : &EBPOIscan::store_max);
 
-  m_zone_numbers.set_size(out_length);
-  m_durations.set_size(out_length);
-  m_scores.set_size(out_length);
-  m_relrisks.set_size(out_length);
+  // Reserve sizes for values calculated on observed data
+  m_relrisks.set_size(m_out_length);
 
-  if (!store_everything) {
-    m_scores[0] = -1.0;
-  }
+  // Reserve sizes for values calculated on simulated
+  sim_relrisks.set_size(m_num_mcsim);
+
 }
+
+// Workhorse functions ---------------------------------------------------------
 
 inline void EBPOIscan::calculate(const int storage_index,
                                  const int zone_nr,
@@ -91,13 +94,11 @@ inline void EBPOIscan::calculate(const int storage_index,
    duration + 1);
 }
 
-inline Rcpp::DataFrame EBPOIscan::get_results() {
-  return Rcpp::DataFrame::create(
-    Rcpp::Named("zone")     = m_zone_numbers,
-    Rcpp::Named("duration") = m_durations,
-    Rcpp::Named("score")    = m_scores,
-    Rcpp::Named("relrisk")  = m_relrisks);
+inline int EBPOIscan::draw_sample(arma::uword row, arma::uword col) {
+  return R::rpois(m_baselines.at(row, col));
 }
+
+// Storage functions -----------------------------------------------------------
 
 inline void EBPOIscan::store_all(int storage_index, double score, double q,
                                  int zone_nr, int duration) {
@@ -116,5 +117,39 @@ inline void EBPOIscan::store_max(int storage_index, double score, double q,
     m_durations[0]    = duration;
   }
 }
+
+inline void EBPOIscan::store_sim(int storage_index, double score, double q,
+                                 int zone_nr, int duration) {
+  if (score > sim_scores[m_mcsim_index]) {
+    sim_scores[m_mcsim_index]       = score;
+    sim_relrisks[m_mcsim_index]     = q;
+    sim_zone_numbers[m_mcsim_index] = zone_nr;
+    sim_durations[m_mcsim_index]    = duration;
+  }
+}
+
+inline void EBPOIscan::set_sim_store_fun() {
+  store = &EBPOIscan::store_sim;
+}
+
+// Retrieval functions ---------------------------------------------------------
+
+inline Rcpp::DataFrame EBPOIscan::get_scan() {
+  return Rcpp::DataFrame::create(
+    Rcpp::Named("zone")     = m_zone_numbers,
+    Rcpp::Named("duration") = m_durations,
+    Rcpp::Named("score")    = m_scores,
+    Rcpp::Named("relrisk")  = m_relrisks);
+}
+
+inline Rcpp::DataFrame EBPOIscan::get_mcsim() {
+  return Rcpp::DataFrame::create(
+    Rcpp::Named("zone")     = sim_zone_numbers,
+    Rcpp::Named("duration") = sim_durations,
+    Rcpp::Named("score")    = sim_scores,
+    Rcpp::Named("relrisk")  = sim_relrisks);
+}
+
+
 
 #endif

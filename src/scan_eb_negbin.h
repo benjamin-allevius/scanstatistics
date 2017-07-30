@@ -19,6 +19,7 @@
 //' @param num_zones int
 //' @param max_dur int
 //' @param store_everything boolean
+//' @param num_mcsim int
 //' @param score_hotspot boolean
 //' @return A data frame with five columns:
 //'    \describe{
@@ -32,16 +33,17 @@
 //' @export
 //' @keywords internal
 // [[Rcpp::export]]
-Rcpp::DataFrame scan_eb_negbin_cpp(const arma::umat& counts,
-                                   const arma::mat& baselines,
-                                   const arma::mat& overdisp,
-                                   const arma::uvec& zones,
-                                   const arma::uvec& zone_lengths,
-                                   const int num_locs,
-                                   const int num_zones,
-                                   const int max_dur,
-                                   const bool store_everything,
-                                   const bool score_hotspot);
+Rcpp::List scan_eb_negbin_cpp(const arma::umat& counts,
+                              const arma::mat& baselines,
+                              const arma::mat& overdisp,
+                              const arma::uvec& zones,
+                              const arma::uvec& zone_lengths,
+                              const int num_locs,
+                              const int num_zones,
+                              const int max_dur,
+                              const bool store_everything,
+                              const int num_mcsim,
+                              const bool score_hotspot);
 
 
 #endif

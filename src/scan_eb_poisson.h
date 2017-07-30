@@ -18,6 +18,7 @@
 //' @param num_zones int
 //' @param max_dur int
 //' @param store_everything boolean
+//' @param num_mcsim int
 //' @return A data frame with five columns:
 //'    \describe{
 //'      \item{zone}{The top-scoring zone (spatial component of MLC).}
@@ -30,14 +31,15 @@
 //' @export
 //' @keywords internal
 // [[Rcpp::export]]
-Rcpp::DataFrame scan_eb_poisson_cpp(const arma::umat& counts,
-                                    const arma::mat& baselines,
-                                    const arma::uvec& zones,
-                                    const arma::uvec& zone_lengths,
-                                    const int num_locs,
-                                    const int num_zones,
-                                    const int max_dur,
-                                    const bool store_everything);
+Rcpp::List scan_eb_poisson_cpp(const arma::umat& counts,
+                               const arma::mat& baselines,
+                               const arma::uvec& zones,
+                               const arma::uvec& zone_lengths,
+                               const int num_locs,
+                               const int num_zones,
+                               const int max_dur,
+                               const bool store_everything,
+                               const int num_mcsim);
 
 
 #endif

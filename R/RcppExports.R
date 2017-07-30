@@ -16,6 +16,7 @@
 #' @param num_zones int
 #' @param max_dur int
 #' @param store_everything boolean
+#' @param num_mcsim int
 #' @param score_hotspot boolean
 #' @return A data frame with five columns:
 #'    \describe{
@@ -28,8 +29,8 @@
 #'    }
 #' @export
 #' @keywords internal
-scan_eb_negbin_cpp <- function(counts, baselines, overdisp, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything, score_hotspot) {
-    .Call(`_scanstatistics_scan_eb_negbin_cpp`, counts, baselines, overdisp, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything, score_hotspot)
+scan_eb_negbin_cpp <- function(counts, baselines, overdisp, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything, num_mcsim, score_hotspot) {
+    .Call(`_scanstatistics_scan_eb_negbin_cpp`, counts, baselines, overdisp, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything, num_mcsim, score_hotspot)
 }
 
 #' Calculate the highest-value EB ZIP loglihood ratio statistic.
@@ -46,6 +47,7 @@ scan_eb_negbin_cpp <- function(counts, baselines, overdisp, zones, zone_lengths,
 #' @param num_zones int
 #' @param max_dur int
 #' @param store_everything boolean
+#' @param num_mcsim int
 #' @return A data frame with five columns:
 #'    \describe{
 #'      \item{zone}{The top-scoring zone (spatial component of MLC).}
@@ -57,8 +59,8 @@ scan_eb_negbin_cpp <- function(counts, baselines, overdisp, zones, zone_lengths,
 #'    }
 #' @export
 #' @keywords internal
-scan_eb_poisson_cpp <- function(counts, baselines, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything) {
-    .Call(`_scanstatistics_scan_eb_poisson_cpp`, counts, baselines, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything)
+scan_eb_poisson_cpp <- function(counts, baselines, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything, num_mcsim) {
+    .Call(`_scanstatistics_scan_eb_poisson_cpp`, counts, baselines, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything, num_mcsim)
 }
 
 #' Calculate the highest-value EB ZIP loglihood ratio statistic.
@@ -77,6 +79,7 @@ scan_eb_poisson_cpp <- function(counts, baselines, zones, zone_lengths, num_locs
 #' @param max_dur int
 #' @param rel_tol double
 #' @param store_everything boolean
+#' @param num_mcsim int
 #' @return A data frame with five columns:
 #'    \describe{
 #'      \item{zone}{The top-scoring zone (spatial component of MLC).}
@@ -88,8 +91,8 @@ scan_eb_poisson_cpp <- function(counts, baselines, zones, zone_lengths, num_locs
 #'    }
 #' @export
 #' @keywords internal
-scan_eb_zip_cpp <- function(counts, baselines, probs, zones, zone_lengths, num_locs, num_zones, max_dur, rel_tol, store_everything) {
-    .Call(`_scanstatistics_scan_eb_zip_cpp`, counts, baselines, probs, zones, zone_lengths, num_locs, num_zones, max_dur, rel_tol, store_everything)
+scan_eb_zip_cpp <- function(counts, baselines, probs, zones, zone_lengths, num_locs, num_zones, max_dur, rel_tol, store_everything, num_mcsim) {
+    .Call(`_scanstatistics_scan_eb_zip_cpp`, counts, baselines, probs, zones, zone_lengths, num_locs, num_zones, max_dur, rel_tol, store_everything, num_mcsim)
 }
 
 #' Calculate the highest-value EB ZIP loglihood ratio statistic.
@@ -100,13 +103,13 @@ scan_eb_zip_cpp <- function(counts, baselines, probs, zones, zone_lengths, num_l
 #' the number of iterations the EM algorithm performed.
 #' @param counts matrix
 #' @param baselines matrix
-#' @param total_count int
 #' @param zones list of integer vectors
 #' @param zone_lengths vector
 #' @param num_locs int
 #' @param num_zones int
 #' @param max_dur int
 #' @param store_everything boolean
+#' @param num_mcsim int
 #' @return A data frame with five columns:
 #'    \describe{
 #'      \item{zone}{The top-scoring zone (spatial component of MLC).}
@@ -118,38 +121,8 @@ scan_eb_zip_cpp <- function(counts, baselines, probs, zones, zone_lengths, num_l
 #'    }
 #' @export
 #' @keywords internal
-scan_pb_poisson_cpp <- function(counts, baselines, total_count, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything) {
-    .Call(`_scanstatistics_scan_pb_poisson_cpp`, counts, baselines, total_count, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything)
-}
-
-#' Calculate the highest-value PB ZIP loglihood ratio statistic.
-#'
-#' Calculate the population-based ZIP loglihood ratio statistic for each zone
-#' and duration, but only keep the zone and duration with the highest value
-#' (the MLC). The estimate of the relative risk is also calculated, along with
-#' the number of iterations the EM algorithm performed.
-#' @param counts matrix
-#' @param pop matrix
-#' @param zones list of integer vectors
-#' @param zone_lengths vector
-#' @param num_locs int
-#' @param num_zones int
-#' @param max_dur int
-#' @param rel_tol double
-#' @param store_everything boolean
-#' @return A data frame with five columns:
-#'    \describe{
-#'      \item{zone}{The top-scoring zone (spatial component of MLC).}
-#'      \item{duration}{The corresponding duration (time-length of MLC).}
-#'      \item{score}{The value of the loglihood ratio statistic (the scan
-#'                   statistic).}
-#'      \item{relrisk}{The estimated relative risk.}
-#'      \item{n_iter}{The number of iterations performed by the EM algorithm.}
-#'    }
-#' @export
-#' @keywords internal
-scan_pb_zip_cpp <- function(counts, pop, zones, zone_lengths, num_locs, num_zones, max_dur, rel_tol, store_everything) {
-    .Call(`_scanstatistics_scan_pb_zip_cpp`, counts, pop, zones, zone_lengths, num_locs, num_zones, max_dur, rel_tol, store_everything)
+scan_pb_poisson_cpp <- function(counts, baselines, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything, num_mcsim) {
+    .Call(`_scanstatistics_scan_pb_poisson_cpp`, counts, baselines, zones, zone_lengths, num_locs, num_zones, max_dur, store_everything, num_mcsim)
 }
 
 #' Get indices of zero elements in a vector.

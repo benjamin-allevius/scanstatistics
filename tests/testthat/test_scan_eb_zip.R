@@ -3,15 +3,15 @@ context("EB ZIP statistic tests")
 
 
 test_that("scan_eb_zip_cpp", {
-  
+
   # Helper functions
   zip_lpmf <- function(x, mu, p) {
     if (x == 0) return(log(p + (1-p) * exp(-mu)))
     return(log(1-p) + dpois(x, mu, log=TRUE))
   }
-  
+
   est_eb_zip_zeroindic <- function(mu, p, q) p / (p + (1 - p) * exp(-q * mu))
-  
+
   zip_loglihood <- function(y, mu, p, q) {
     loglihood = 0
     for (i in 1:length(y)) {
@@ -19,8 +19,8 @@ test_that("scan_eb_zip_cpp", {
     }
     return(loglihood)
   }
-  
-  
+
+
   # Single timepoint
   in1 <- list(
     counts = matrix(c(1, 0), nrow = 1),
@@ -30,32 +30,31 @@ test_that("scan_eb_zip_cpp", {
   in1$zones_flat =  unlist(in1$zones)
   in1$zone_lengths = unlist(lapply(in1$zones, length))
 
-  actual1 <- scan_eb_zip_cpp(in1$counts, 
-                             in1$baselines, 
+  actual1 <- scan_eb_zip_cpp(in1$counts,
+                             in1$baselines,
                              in1$probs,
-                             in1$zones_flat - 1, 
+                             in1$zones_flat - 1,
                              in1$zone_lengths,
                              ncol(in1$counts),
                              length(in1$zones),
                              nrow(in1$counts),
                              rel_tol = 1e-3,
-                             store_everything = TRUE)
-  actual1b <- scan_eb_zip_cpp(in1$counts, 
-                             in1$baselines, 
+                             store_everything = TRUE,
+                             num_mcsim = 0)$observed
+  actual1b <- scan_eb_zip_cpp(in1$counts,
+                             in1$baselines,
                              in1$probs,
-                             in1$zones_flat - 1, 
+                             in1$zones_flat - 1,
                              in1$zone_lengths,
                              ncol(in1$counts),
                              length(in1$zones),
                              nrow(in1$counts),
                              rel_tol = 1e-3,
-                             store_everything = FALSE)
-  
-  
-  
-  
+                             store_everything = FALSE,
+                             num_mcsim = 0)$observed
+
   expected1_score <- c(zip_lpmf(1, 1, 0.1) - zip_lpmf(1, 0.5, 0.1), 0, 0)
-  
+
   expect_equal(actual1$score, expected1_score)
   expect_equal(actual1$relrisk, c(2, 1, 1))
   expect_equal(actual1[which.max(actual1$score), ], actual1b)
@@ -75,29 +74,29 @@ test_that("scan_eb_zip_cpp", {
   in2$zones_flat =  unlist(in2$zones)
   in2$zone_lengths = unlist(lapply(in2$zones, length))
 
-  actual2 <- scan_eb_zip_cpp(in2$counts, 
-                             in2$baselines, 
+  actual2 <- scan_eb_zip_cpp(in2$counts,
+                             in2$baselines,
                              in2$probs,
-                             in2$zones_flat - 1, 
+                             in2$zones_flat - 1,
                              in2$zone_lengths,
                              ncol(in2$counts),
                              length(in2$zones),
                              nrow(in2$counts),
                              rel_tol = 1e-3,
-                             store_everything = TRUE)
-  actual2b <- scan_eb_zip_cpp(in2$counts, 
-                              in2$baselines, 
+                             store_everything = TRUE,
+                             num_mcsim = 0)$observed
+  actual2b <- scan_eb_zip_cpp(in2$counts,
+                              in2$baselines,
                               in2$probs,
-                              in2$zones_flat - 1, 
+                              in2$zones_flat - 1,
                               in2$zone_lengths,
                               ncol(in2$counts),
                               length(in2$zones),
                               nrow(in2$counts),
                               rel_tol = 1e-3,
-                              store_everything = FALSE)
-  
-  
-  
+                              store_everything = FALSE,
+                              num_mcsim = 0)$observed
+
   recursive_zic <- function(n, y, mu, p) {
     mu1 <- sum(mu[y != 0])
     mu0 <- mu[y == 0]

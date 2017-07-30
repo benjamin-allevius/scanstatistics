@@ -36,6 +36,15 @@ double poisson_loglihood(const arma::uvec &y,
   return loglihood;
 }
 
+// Negative binomial distribution ----------------------------------------------
+
+// Draw an observation from the negative binomial distribution parametrized by
+// mean \eqn{\mu} and overdispersion \eqn{\omega = 1 + \mu / \theta}.
+int rnbinom2(const double mu, const double omega) {
+  return (omega - 1.0 < 1e-9 ?
+          R::rpois(mu) :
+          R::rnbinom(mu / (omega - 1.0), 1.0 / omega));
+}
 
 // Zero-inflated Poisson distribution ------------------------------------------
 
@@ -78,5 +87,16 @@ double zip_loglihood(const arma::uvec &y,
     loglihood += zip_lpmf(y(i), q * mu(i), p(i));
   }
   return loglihood;
+}
+
+// Draw an observation from the ZIP distribution.
+//
+// Draw a sample (one observation) from the zero-inflated Poisson distribution.
+// @param mu Scalar; The Poisson mean parameter.
+// @param p Scalar; the structural zero probability.
+// @return An integer.
+// @keywords internal
+int rzip(const double mu, const double p) {
+  return (R::runif(0.0, 1.0) < p ? 0 : static_cast<int>(R::rpois(mu)));
 }
 

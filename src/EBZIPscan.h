@@ -5,7 +5,7 @@
 #include "ZIPutility.h"
 #include "scan_utility.h"
 
-class EBZIPscan : public USTscan<arma::umat> {
+class EBZIPscan : public USTscan<arma::umat, int> {
 
 public:
   EBZIPscan(const arma::umat& counts,
@@ -17,27 +17,34 @@ public:
             const int num_zones,
             const int max_dur,
             const double rel_tol,
-            const bool store_everything);
-  void calculate(const int storage_index,
-                 const int zone_nr,
-                 const int duration,
-                 const arma::uvec& current_zone,
-                 const arma::uvec& current_rows);
-  Rcpp::DataFrame get_results();
+            const bool store_everything,
+            const int num_mcsim);
+
+  Rcpp::DataFrame get_scan()  override;
+  Rcpp::DataFrame get_mcsim() override;
 
 private:
   arma::mat m_baselines;
   arma::mat m_probs;
   double    m_rel_tol;
 
-  // Components of returned list
-  arma::uvec m_zone_numbers;
-  arma::uvec m_durations;
-  arma::vec  m_scores;
+  // Values calculated on observed data
   arma::vec  m_relrisks;
   arma::uvec m_iterations;
 
+  // Values calculated on simulated data
+  arma::vec  sim_relrisks;
+  arma::uvec sim_iterations;
+
   // Functions
+  void calculate(const int storage_index,
+                 const int zone_nr,
+                 const int duration,
+                 const arma::uvec& current_zone,
+                 const arma::uvec& current_rows) override;
+  int draw_sample(arma::uword row, arma::uword col) override;
+  void set_sim_store_fun() override;
+
   using store_ptr = void (EBZIPscan::*)(int storage_index, double score,
                                         double q, int n_iterations,
                                         int zone_nr, int duration);
@@ -45,6 +52,8 @@ private:
   void store_max(int storage_index, double score, double q, int n_iterations,
                  int zone_nr, int duration);
   void store_all(int storage_index, double score, double q, int n_iterations,
+                 int zone_nr, int duration);
+  void store_sim(int storage_index, double score, double q, int n_iterations,
                  int zone_nr, int duration);
   double eb_zip_relrisk(const int y_sum, const arma::vec& mu,
                         const arma::vec& d);
@@ -62,31 +71,26 @@ inline EBZIPscan::EBZIPscan(const arma::umat& counts,
                             const int num_zones,
                             const int max_dur,
                             const double rel_tol,
-                            const bool store_everything)
-  : USTscan(counts, zones, zone_lengths, num_locs, num_zones, max_dur),
+                            const bool store_everything,
+                            const int num_mcsim)
+  : USTscan(counts, zones, zone_lengths, num_locs, num_zones, max_dur,
+            store_everything, num_mcsim),
     m_baselines(baselines),
     m_probs(probs),
     m_rel_tol(rel_tol) {
 
-  int out_length;
-  if (store_everything) {
-    out_length = m_num_zones * m_max_dur;
-    store = &EBZIPscan::store_all;
-  } else {
-    out_length = 1;
-    store = &EBZIPscan::store_max;
-  }
+  store = (m_store_everything ? &EBZIPscan::store_all : &EBZIPscan::store_max);
 
-  m_zone_numbers.set_size(out_length);
-  m_durations.set_size(out_length);
-  m_scores.set_size(out_length);
-  m_relrisks.set_size(out_length);
-  m_iterations.set_size(out_length);
+  // Reserve sizes for values calculated on observed data
+  m_relrisks.set_size(m_out_length);
+  m_iterations.set_size(m_out_length);
 
-  if (!store_everything) {
-    m_scores[0] = -1.0;
-  }
+  // Reserve sizes for values calculated on simulated
+  sim_relrisks.set_size(m_num_mcsim);
+  sim_iterations.set_size(m_num_mcsim);
 }
+
+// Workhorse functions ---------------------------------------------------------
 
 inline void EBZIPscan::calculate(const int storage_index,
                                  const int zone_nr,
@@ -136,14 +140,29 @@ inline void EBZIPscan::calculate(const int storage_index,
                  zone_nr + 1, duration + 1);
 }
 
-inline Rcpp::DataFrame EBZIPscan::get_results() {
-  return Rcpp::DataFrame::create(
-    Rcpp::Named("zone")     = m_zone_numbers,
-    Rcpp::Named("duration") = m_durations,
-    Rcpp::Named("score")    = m_scores,
-    Rcpp::Named("relrisk")  = m_relrisks,
-    Rcpp::Named("n_iter")   = m_iterations);
+// Estimate the relative risk for the ZIP distribution.
+//
+// Estimate the relative risk for the ZIP distribution.
+// @param y_sum A non-negative integer; the sum of the observed counts.
+// @param mu A vector of positive numbers; the expected values of the counts or
+//    the corresponding population.
+// @param d A vector of (estimates of) the structural zero indicators.
+// @return A scalar; the relative risk.
+// @keywords internal
+inline double EBZIPscan::eb_zip_relrisk(const int y_sum, const arma::vec& mu,
+                             const arma::vec& d) {
+  double denominator = 0.0;
+  for (int i = 0; i < mu.n_elem; ++i) {
+    denominator += mu[i] * (1.0 - d[i]);
+  }
+  return std::max(1.0, y_sum / denominator);
 }
+
+inline int EBZIPscan::draw_sample(arma::uword row, arma::uword col) {
+  return rzip(m_baselines.at(row, col), m_probs.at(row, col));
+}
+
+// Storage functions -----------------------------------------------------------
 
 inline void EBZIPscan::store_all(int storage_index, double score, double q,
                                  int n_iterations, int zone_nr, int duration) {
@@ -165,22 +184,39 @@ inline void EBZIPscan::store_max(int storage_index, double score, double q,
   }
 }
 
-// Estimate the relative risk for the ZIP distribution.
-//
-// Estimate the relative risk for the ZIP distribution.
-// @param y_sum A non-negative integer; the sum of the observed counts.
-// @param mu A vector of positive numbers; the expected values of the counts or
-//    the corresponding population.
-// @param d A vector of (estimates of) the structural zero indicators.
-// @return A scalar; the relative risk.
-// @keywords internal
-inline double EBZIPscan::eb_zip_relrisk(const int y_sum, const arma::vec& mu,
-                             const arma::vec& d) {
-  double denominator = 0.0;
-  for (int i = 0; i < mu.n_elem; ++i) {
-    denominator += mu[i] * (1.0 - d[i]);
+inline void EBZIPscan::store_sim(int storage_index, double score, double q,
+                                 int n_iterations, int zone_nr, int duration) {
+  if (score > sim_scores[m_mcsim_index]) {
+    sim_scores[m_mcsim_index]       = score;
+    sim_relrisks[m_mcsim_index]     = q;
+    sim_iterations[m_mcsim_index]   = n_iterations;
+    sim_zone_numbers[m_mcsim_index] = zone_nr;
+    sim_durations[m_mcsim_index]    = duration;
   }
-  return std::max(1.0, y_sum / denominator);
+}
+
+inline void EBZIPscan::set_sim_store_fun() {
+  store = &EBZIPscan::store_sim;
+}
+
+// Retrieval functions ---------------------------------------------------------
+
+inline Rcpp::DataFrame EBZIPscan::get_scan() {
+  return Rcpp::DataFrame::create(
+    Rcpp::Named("zone")     = m_zone_numbers,
+    Rcpp::Named("duration") = m_durations,
+    Rcpp::Named("score")    = m_scores,
+    Rcpp::Named("relrisk")  = m_relrisks,
+    Rcpp::Named("n_iter")   = m_iterations);
+}
+
+inline Rcpp::DataFrame EBZIPscan::get_mcsim() {
+  return Rcpp::DataFrame::create(
+    Rcpp::Named("zone")     = sim_zone_numbers,
+    Rcpp::Named("duration") = sim_durations,
+    Rcpp::Named("score")    = sim_scores,
+    Rcpp::Named("relrisk")  = sim_relrisks,
+    Rcpp::Named("n_iter")   = sim_iterations);
 }
 
 #endif

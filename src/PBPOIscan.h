@@ -2,38 +2,48 @@
 #define PBPOISCAN_H
 
 #include "USTscan.h"
+#include "scan_utility.h"
+#include <RcppArmadilloExtensions/rmultinom.h>
 
-class PBPOIscan : public USTscan<arma::umat> {
+class PBPOIscan : public USTscan<arma::umat, int> {
 
 public:
-  PBPOIscan(const arma::umat& counts, // counts = apply(obs_counts, 2, cumsum)
-            const arma::mat& baselines, // basel = apply(obs_basel, 2, cumsum)
-            const int total_count,
+  PBPOIscan(const arma::umat& counts,
+            const arma::mat& baselines,
             const arma::uvec& zones,
             const arma::uvec& zone_lengths,
             const int num_locs,
             const int num_zones,
             const int max_dur,
-            const bool store_everything);
+            const bool store_everything,
+            const int num_mcsim);
+
+  Rcpp::DataFrame get_scan()  override;
+  Rcpp::DataFrame get_mcsim() override;
+
+private:
+  arma::mat m_baselines;
+  arma::mat m_baselines_orig; // used for simulation
+  int m_total_count;
+
+  // Values calculated on observed data
+  arma::vec  m_relrisk_in;
+  arma::vec  m_relrisk_out;
+
+  // Values calculated on simulated data
+  arma::vec  sim_relrisk_in;
+  arma::vec  sim_relrisk_out;
+
+  // Functions
   void calculate(const int storage_index,
                  const int zone_nr,
                  const int duration,
                  const arma::uvec& current_zone,
-                 const arma::uvec& current_rows);
-  Rcpp::DataFrame get_results();
+                 const arma::uvec& current_rows) override;
+  void simulate_counts() override;
+  void set_sim_store_fun() override;
+  int draw_sample(arma::uword row, arma::uword col) override;
 
-private:
-  arma::mat m_baselines;
-  int m_total_count;
-
-  // Components of returned list
-  arma::uvec m_zone_numbers;
-  arma::uvec m_durations;
-  arma::vec  m_scores;
-  arma::vec  m_relrisk_in;
-  arma::vec  m_relrisk_out;
-
-  // Functions
   using store_ptr = void (PBPOIscan::*)(int storage_index, double score,
                                         double q_in, double q_out, int zone_nr,
                                         int duration);
@@ -42,6 +52,8 @@ private:
                  int zone_nr, int duration);
   void store_all(int storage_index, double score, double q_in, double q_out,
                  int zone_nr, int duration);
+  void store_sim(int storage_index, double score, double q_in, double q_out,
+                 int zone_nr, int duration);
 
 };
 
@@ -49,36 +61,33 @@ private:
 
 inline PBPOIscan::PBPOIscan(const arma::umat& counts,
                             const arma::mat& baselines,
-                            const int total_count,
                             const arma::uvec& zones,
                             const arma::uvec& zone_lengths,
                             const int num_locs,
                             const int num_zones,
                             const int max_dur,
-                            const bool store_everything)
-  : USTscan(counts, zones, zone_lengths, num_locs, num_zones, max_dur),
-    m_baselines(baselines),
-    m_total_count(total_count) {
+                            const bool store_everything,
+                            const int num_mcsim)
+  : USTscan(counts, zones, zone_lengths, num_locs, num_zones, max_dur,
+            store_everything, num_mcsim),
+    m_baselines_orig(baselines) {
 
-  int out_length;
-  if (store_everything) {
-    out_length = m_num_zones * m_max_dur;
-    store = &PBPOIscan::store_all;
-  } else {
-    out_length = 1;
-    store = &PBPOIscan::store_max;
-  }
+  m_total_count = arma::accu(counts);
+  m_counts = arma::cumsum(counts);
+  m_baselines = arma::cumsum(baselines);
 
-  m_zone_numbers.set_size(out_length);
-  m_durations.set_size(out_length);
-  m_scores.set_size(out_length);
-  m_relrisk_in.set_size(out_length);
-  m_relrisk_out.set_size(out_length);
+  store = (store_everything ? &PBPOIscan::store_all : &PBPOIscan::store_max);
 
-  if (!store_everything) {
-    m_scores[0] = -1.0;
-  }
+  // Reserve sizes for values calculated on observed data
+  m_relrisk_in.set_size(m_out_length);
+  m_relrisk_out.set_size(m_out_length);
+
+  // Reserve sizes for values calculated on simulated
+  sim_relrisk_in.set_size(m_num_mcsim);
+  sim_relrisk_out.set_size(m_num_mcsim);
 }
+
+// Workhorse functions ---------------------------------------------------------
 
 inline void PBPOIscan::calculate(const int storage_index,
                                  const int zone_nr,
@@ -106,14 +115,29 @@ inline void PBPOIscan::calculate(const int storage_index,
                  duration + 1);
 }
 
-inline Rcpp::DataFrame PBPOIscan::get_results() {
-  return Rcpp::DataFrame::create(
-    Rcpp::Named("zone")         = m_zone_numbers,
-    Rcpp::Named("duration")     = m_durations,
-    Rcpp::Named("score")        = m_scores,
-    Rcpp::Named("relrisk_in")   = m_relrisk_in,
-    Rcpp::Named("relrisk_out")  = m_relrisk_out);
+inline void PBPOIscan::simulate_counts() {
+  Rcpp::NumericVector probs(m_counts.n_cols * m_counts.n_rows);
+  probs = armaVec2rcppVec(arma::vectorise(m_baselines_orig)) / m_total_count;
+  // probs = Rcpp::as<Rcpp::NumericVector>(
+  //           Rcpp::wrap(arma::vectorise(m_baselines_orig))) / m_total_count;
+
+  arma::uvec vec_counts(m_counts.n_cols * m_counts.n_rows);
+  vec_counts = rcppIVec2armaVec(
+    Rcpp::RcppArmadillo::Rf_rmultinom(m_total_count, probs));
+  // vec_counts = Rcpp::as<arma::uvec>(
+  //   Rcpp::RcppArmadillo::Rf_rmultinom(m_total_count, probs));
+
+  for (arma::uword j = 0; j < m_counts.n_cols; ++j) {
+    m_counts.col(j) = arma::cumsum(
+      vec_counts.subvec(j * m_counts.n_rows, (j + 1) * m_counts.n_rows - 1));
+  }
 }
+
+inline int PBPOIscan::draw_sample(arma::uword row, arma::uword col) {
+  return 1;
+}
+
+// Storage functions -----------------------------------------------------------
 
 inline void PBPOIscan::store_all(int storage_index, double score, double q_in,
                                  double q_out, int zone_nr, int duration) {
@@ -133,6 +157,41 @@ inline void PBPOIscan::store_max(int storage_index, double score, double q_in,
     m_zone_numbers[0] = zone_nr;
     m_durations[0]    = duration;
   }
+}
+
+inline void PBPOIscan::store_sim(int storage_index, double score, double q_in,
+                                 double q_out, int zone_nr, int duration) {
+  if (score > sim_scores[m_mcsim_index]) {
+    sim_scores[m_mcsim_index]       = score;
+    sim_relrisk_in[m_mcsim_index]   = q_in;
+    sim_relrisk_out[m_mcsim_index]   = q_out;
+    sim_zone_numbers[m_mcsim_index] = zone_nr;
+    sim_durations[m_mcsim_index]    = duration;
+  }
+}
+
+inline void PBPOIscan::set_sim_store_fun() {
+  store = &PBPOIscan::store_sim;
+}
+
+// Retrieval functions ---------------------------------------------------------
+
+inline Rcpp::DataFrame PBPOIscan::get_scan() {
+  return Rcpp::DataFrame::create(
+    Rcpp::Named("zone")         = m_zone_numbers,
+    Rcpp::Named("duration")     = m_durations,
+    Rcpp::Named("score")        = m_scores,
+    Rcpp::Named("relrisk_in")   = m_relrisk_in,
+    Rcpp::Named("relrisk_out")  = m_relrisk_out);
+}
+
+inline Rcpp::DataFrame PBPOIscan::get_mcsim() {
+  return Rcpp::DataFrame::create(
+    Rcpp::Named("zone")         = sim_zone_numbers,
+    Rcpp::Named("duration")     = sim_durations,
+    Rcpp::Named("score")        = sim_scores,
+    Rcpp::Named("relrisk_in")   = sim_relrisk_in,
+    Rcpp::Named("relrisk_out")  = sim_relrisk_out);
 }
 
 #endif

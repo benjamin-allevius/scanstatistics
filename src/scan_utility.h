@@ -13,6 +13,17 @@
 //' @keywords internal
 //' @export
 // [[Rcpp::export]]
-std::vector<int> get_zero_indices(arma::uvec v);
+std::vector<int> get_zero_indices(const arma::uvec& v);
+
+// Convert an Rcpp NumericVector to an Armadillo vec.
+arma::vec RcppVec_to_armaVec(const Rcpp::NumericVector& v);
+
+// Convert an Armadillo vec to an Rcpp NumericVector
+Rcpp::NumericVector armaVec2rcppVec(const arma::vec& v);
+
+// Convert an Rcpp IntegerVector to an Armadillo uvec.
+arma::uvec rcppIVec2armaVec(const Rcpp::IntegerVector& v);
+
+// Comment: could not make template version of above 2 functions to work
 
 #endif
