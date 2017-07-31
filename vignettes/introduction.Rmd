@@ -23,7 +23,10 @@ data. The gist of the methodology, at least in this package, is this:
 2. Form a set of space-time _clusters_, each consisting of (1) a collection of 
    locations, and (2) an interval of time stretching from the present to some 
    number of time periods in the past.
-3. For each cluster, compute a statistic based on both the observed and the 
+3. For each cluster, compute a statistic based on both the observed and tfile:///media/bekj9674/suhome/Downloads/scanstatistics/data/NM_geo.rda
+file:///media/bekj9674/suhome/Downloads/scanstatistics/data/NM_map.rda
+file:///media/bekj9674/suhome/Downloads/scanstatistics/data/NM_popcas.rda
+he 
    expected responses. Report the clusters with the largest statistics.
    
 ## Main functions
@@ -60,7 +63,7 @@ data. The gist of the methodology, at least in this package, is this:
 
 - __`score_locations`__: Score each location by how likely it is to have an 
                          ongoing anomaly in it. This score is heuristically 
-                         motivated, not theoretically so.
+                         motivated.
 - __`top_clusters`__: Get the top $k$ space-time clusters, either overlapping or
                       non-overlapping in the spatial dimension.
                       
@@ -76,7 +79,7 @@ statistically significant. The data originally comes from the package _rsatscan_
 the _scanstatistics_ package.
 
 To get familiar with the counties of New Mexico, we begin by plotting them on a 
-map using the data table `NM_map` which comes with the _scanstatistics_ package:
+map using the data table `NM_map` supplied by the _scanstatistics_ package:
 ```{r, eval=FALSE}
 library(scanstatistics)
 library(ggplot2)
@@ -109,6 +112,14 @@ ggplot() +
   ggtitle("Counties of New Mexico")
 ```
 
+We can further obtain the yearly number of cases and the population for each
+country for the years 1973-1991 from the data table `NM_popcas` provided
+by the package:
+```{r, load_count_data}
+data(NM_popcas)
+head(NM_popcas)
+```
+
 It should be noted that Cibola county was split from Valencia county in 1981, 
 and cases in Cibola have been counted to Valencia in the data.
 
@@ -129,7 +140,7 @@ library(magrittr)
 
 data(NM_geo)
 
-zones <- NM_geo[, c("long", "lat"), with = FALSE] %>%
+zones <- NM_geo[, c("long", "lat")] %>%
   as.matrix %>%
   spDists(x = ., y = ., longlat = TRUE) %>%
   dist_to_knn(k = 15) %>%
@@ -137,16 +148,17 @@ zones <- NM_geo[, c("long", "lat"), with = FALSE] %>%
 ```
 
 ### A scan statistic for Poisson data
-The Poisson distribution is a natural first option when dealing with 
-(practically) unbounded count data. The _scanstatistics_ package provides the 
-function `scan_poisson`, which is an expectation-based[^1] scan statistic for 
-univariate Poisson-distributed data proposed by @Neill2005.
+The Poisson distribution is a natural first option when dealing with count data. 
+The _scanstatistics_ package provides the function `scan_poisson`, which is an 
+expectation-based[^1] scan statistic for univariate Poisson-distributed data 
+proposed by @Neill2005. It also provides the population-based scan statistic 
+[@Kulldorff2001].
 
 [^1]: Expectation-based scan statistics use past non-anomalous data to estimate 
 distribution parameters, and then compares observed cluster counts from the time 
 period of interest to these estimates. In contrast, _population-based_ scan 
-statistics compare counts in a cluster tothose outside, only using data from the 
-period of interest.
+statistics compare counts in a cluster to those outside, only using data from 
+the period of interest, and does so conditional on the observed total count.
 
 #### Theoretical motivation
 For the expectation-based Poisson scan statistic, the null hypothesis of no 
@@ -178,7 +190,21 @@ Calculating the scan statistic then involves three steps:
   corresponding window $W^*$ as the most likely cluster (MLC).
 
 #### Using the Poisson scan statistic
-The first argument to `scan_poisson` should be a __data table__ with columns
+The first argument to `scan_eb_poisson` should be a matrix of integers, with 
+columns representing locations and rows representing time intervals (ordered
+chronologically from the earliest interval in the first row to the most recent
+in the last). In this example we would like to detect a potential cluster of 
+brain cancer in the counties of New Mexico during the years 1986-1989, so we
+begin by retrieving the count and population data from that period and
+reshaping them to a matrix using the helper function `df_to_matrix`:
+```{r get_counts}
+library(dplyr)
+counts <- NM_popcas %>% 
+  filter(year >= 1986 & year < 1990) %>%
+  df_to_matrix(time_col = "year", location_col = "county", value_col = "count")
+```
+
+
 'location', 'duration', 'count' and 'mu'. The latter two columns contain the 
 observed counts and the estimated Poisson expected value parameters 
 respectively, and the table holds data for the period in which we want to detect 
