@@ -12,9 +12,6 @@ public:
             const arma::mat& overdisp,
             const arma::uvec& zones,
             const arma::uvec& zone_lengths,
-            const int num_locs,
-            const int num_zones,
-            const int max_dur,
             const bool store_everything,
             const int num_mcsim,
             const bool score_hotspot);
@@ -62,14 +59,10 @@ inline EBNBscan::EBNBscan(const arma::umat& counts,
                           const arma::mat& overdisp,
                           const arma::uvec& zones,
                           const arma::uvec& zone_lengths,
-                          const int num_locs,
-                          const int num_zones,
-                          const int max_dur,
                           const bool store_everything,
                           const int num_mcsim,
                           const bool score_hotspot)
-  : USTscan(counts, zones, zone_lengths, num_locs, num_zones, max_dur,
-            store_everything, num_mcsim),
+  : USTscan(counts, zones, zone_lengths, store_everything, num_mcsim),
     m_baselines(baselines),
     m_overdisp(overdisp) {
 

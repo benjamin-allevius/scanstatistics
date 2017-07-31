@@ -12,9 +12,6 @@ public:
             const arma::mat& baselines,
             const arma::uvec& zones,
             const arma::uvec& zone_lengths,
-            const int num_locs,
-            const int num_zones,
-            const int max_dur,
             const bool store_everything,
             const int num_mcsim);
 
@@ -63,13 +60,9 @@ inline PBPOIscan::PBPOIscan(const arma::umat& counts,
                             const arma::mat& baselines,
                             const arma::uvec& zones,
                             const arma::uvec& zone_lengths,
-                            const int num_locs,
-                            const int num_zones,
-                            const int max_dur,
                             const bool store_everything,
                             const int num_mcsim)
-  : USTscan(counts, zones, zone_lengths, num_locs, num_zones, max_dur,
-            store_everything, num_mcsim),
+  : USTscan(counts, zones, zone_lengths, store_everything, num_mcsim),
     m_baselines_orig(baselines) {
 
   m_total_count = arma::accu(counts);

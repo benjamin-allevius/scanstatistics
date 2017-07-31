@@ -10,9 +10,6 @@ public:
             const arma::mat& baselines,
             const arma::uvec& zones,
             const arma::uvec& zone_lengths,
-            const int num_locs,
-            const int num_zones,
-            const int max_dur,
             const bool store_everything,
             const int num_mcsim);
 
@@ -55,13 +52,9 @@ inline EBPOIscan::EBPOIscan(const arma::umat& counts,
                             const arma::mat& baselines,
                             const arma::uvec& zones,
                             const arma::uvec& zone_lengths,
-                            const int num_locs,
-                            const int num_zones,
-                            const int max_dur,
                             const bool store_everything,
                             const int num_mcsim)
-  : USTscan(counts, zones, zone_lengths, num_locs, num_zones, max_dur,
-            store_everything, num_mcsim),
+  : USTscan(counts, zones, zone_lengths, store_everything, num_mcsim),
     m_baselines(baselines) {
 
   store = (store_everything ? &EBPOIscan::store_all : &EBPOIscan::store_max);

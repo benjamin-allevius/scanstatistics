@@ -10,18 +10,17 @@
 //' and duration, but only keep the zone and duration with the highest value
 //' (the MLC). The estimate of the relative risk is also calculated, along with
 //' the number of iterations the EM algorithm performed.
-//' @param counts matrix
-//' @param baselines matrix
-//' @param overdisp matrix
-//' @param zones list of integer vectors
-//' @param zone_lengths vector
-//' @param num_locs int
-//' @param num_zones int
-//' @param max_dur int
+//' @param counts matrix (most recent timepoint in first row)
+//' @param baselines matrix (most recent timepoint in first row)
+//' @param overdisp matrix (most recent timepoint in first row)
+//' @param zones integer vector (all zones concatenated; locations indexed from
+//'    0 and up)
+//' @param zone_lengths integer vector
 //' @param store_everything boolean
 //' @param num_mcsim int
 //' @param score_hotspot boolean
-//' @return A data frame with five columns:
+//' @return A list with elements \code{observed} and \code{simulated}, each 
+//'    being a data frame with columns:
 //'    \describe{
 //'      \item{zone}{The top-scoring zone (spatial component of MLC).}
 //'      \item{duration}{The corresponding duration (time-length of MLC).}
@@ -38,9 +37,6 @@ Rcpp::List scan_eb_negbin_cpp(const arma::umat& counts,
                               const arma::mat& overdisp,
                               const arma::uvec& zones,
                               const arma::uvec& zone_lengths,
-                              const int num_locs,
-                              const int num_zones,
-                              const int max_dur,
                               const bool store_everything,
                               const int num_mcsim,
                               const bool score_hotspot);

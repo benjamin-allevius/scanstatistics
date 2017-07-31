@@ -4,25 +4,20 @@
 \alias{scan_eb_zip_cpp}
 \title{Calculate the highest-value EB ZIP loglihood ratio statistic.}
 \usage{
-scan_eb_zip_cpp(counts, baselines, probs, zones, zone_lengths, num_locs,
-  num_zones, max_dur, rel_tol, store_everything, num_mcsim)
+scan_eb_zip_cpp(counts, baselines, probs, zones, zone_lengths, rel_tol,
+  store_everything, num_mcsim)
 }
 \arguments{
-\item{counts}{matrix}
+\item{counts}{matrix (most recent timepoint in first row)}
 
-\item{baselines}{matrix}
+\item{baselines}{matrix (most recent timepoint in first row)}
 
-\item{probs}{matrix}
+\item{probs}{matrix (most recent timepoint in first row)}
 
-\item{zones}{list of integer vectors}
+\item{zones}{integer vector (all zones concatenated; locations indexed from
+0 and up)}
 
-\item{zone_lengths}{vector}
-
-\item{num_locs}{int}
-
-\item{num_zones}{int}
-
-\item{max_dur}{int}
+\item{zone_lengths}{integer vector}
 
 \item{rel_tol}{double}
 
@@ -31,7 +26,8 @@ scan_eb_zip_cpp(counts, baselines, probs, zones, zone_lengths, num_locs,
 \item{num_mcsim}{int}
 }
 \value{
-A data frame with five columns:
+A list with elements \code{observed} and \code{simulated}, each 
+   being a data frame with columns:
    \describe{
      \item{zone}{The top-scoring zone (spatial component of MLC).}
      \item{duration}{The corresponding duration (time-length of MLC).}

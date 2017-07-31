@@ -116,18 +116,12 @@ scan_eb_poisson <- function(counts,
   # Prepare zone arguments for C++ ---------------------------------------------
   zones_flat <- unlist(zones) - 1
   zone_lengths <- unlist(lapply(zones, length))
-  num_locs <- ncol(counts)
-  max_dur <- nrow(counts)
-  num_zones <- length(zones)
 
   # Run analysis on observed counts --------------------------------------------
   scan <- scan_eb_poisson_cpp(counts = counts, 
                               baselines = baselines,
                               zones = zones_flat, 
                               zone_lengths = zone_lengths,
-                              num_locs = num_locs, 
-                              num_zones = num_zones, 
-                              max_dur = max_dur, 
                               store_everything = !max_only,
                               num_mcsim = n_mcsim)
 

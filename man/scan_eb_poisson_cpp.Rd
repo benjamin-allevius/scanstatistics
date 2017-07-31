@@ -4,30 +4,26 @@
 \alias{scan_eb_poisson_cpp}
 \title{Calculate the highest-value EB ZIP loglihood ratio statistic.}
 \usage{
-scan_eb_poisson_cpp(counts, baselines, zones, zone_lengths, num_locs, num_zones,
-  max_dur, store_everything, num_mcsim)
+scan_eb_poisson_cpp(counts, baselines, zones, zone_lengths, store_everything,
+  num_mcsim)
 }
 \arguments{
-\item{counts}{matrix}
+\item{counts}{matrix (most recent timepoint in first row)}
 
-\item{baselines}{matrix}
+\item{baselines}{matrix (most recent timepoint in first row)}
 
-\item{zones}{list of integer vectors}
+\item{zones}{integer vector (all zones concatenated; locations indexed from
+0 and up)}
 
-\item{zone_lengths}{vector}
-
-\item{num_locs}{int}
-
-\item{num_zones}{int}
-
-\item{max_dur}{int}
+\item{zone_lengths}{integer vector}
 
 \item{store_everything}{boolean}
 
 \item{num_mcsim}{int}
 }
 \value{
-A data frame with five columns:
+A list with elements \code{observed} and \code{simulated}, each 
+   being a data frame with columns:
    \describe{
      \item{zone}{The top-scoring zone (spatial component of MLC).}
      \item{duration}{The corresponding duration (time-length of MLC).}
