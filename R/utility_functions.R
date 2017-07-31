@@ -167,6 +167,42 @@ flipud <- function(x) {
   x[rev(seq_len(nrow(x))), , drop = FALSE]
 }
 
+#' Convert a long data frame to a wide matrix.
+#' 
+#' Convert a long data frame to a wide matrix, with time along the row dimension
+#' and locations along the column dimension. Values in the matrix could be e.g.
+#' the observed counts or the population.
+#' @param df A data frame with at least 3 columns.
+#' @param time_col Integer or string that specifies the time column.
+#' @param location_col Integer or string that specifies the location column.
+#' @param value_col Integer or string that specifies the value column.
+#' @return A matrix with time on rows and locations on columns.
+#' @importFrom dplyr select
+#' @importFrom tidyr spread_
+#' @importFrom magrittr %>%
+#' @export
+df_to_matrix <- function(df, time_col = 1, location_col = 2, value_col = 3) {
+  a1 <- time_col; a2 <- location_col; a3 <- value_col
+  if (is.numeric(a1) && is.numeric(a2) && is.numeric(a3)) {
+    key_name <- names(df)[location_col]
+    val_name <- names(df)[value_col]
+  } else if (is.character(a1) && is.character(a2) && is.character(a3)) {
+    key_name = location_col
+    val_name = value_col
+  } else {
+    stop("Column arguments must either all be integer or character.")
+  }
+  x <- df %>%
+    as.data.frame %>%
+    select(c(time_col, location_col, value_col)) %>%
+    spread_(key_col = key_name, value_col = val_name)
+  times <- x[, 1]
+  x <- as.matrix(x[, -1])
+  attributes(x)$dimnames[[1]] <- times
+  return(x)
+}
+
+
 # Clean up when package is unloaded.
 .onUnload <- function (libpath) {
   library.dynam.unload("scanstatistics", libpath)
