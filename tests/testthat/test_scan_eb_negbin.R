@@ -33,9 +33,6 @@ test_that("scan_eb_negbin: 1 timepoint, hotspot", {
                                 in1$overdisp,
                                  in1$zones_flat - 1,
                                  in1$zone_lengths,
-                                 ncol(in1$counts),
-                                 length(in1$zones),
-                                 nrow(in1$counts),
                                  store_everything = TRUE,
                                 num_mcsim = 0,
                                 score_hotspot = TRUE)$observed # hotspot
@@ -44,9 +41,6 @@ test_that("scan_eb_negbin: 1 timepoint, hotspot", {
                                 in1$overdisp,
                                 in1$zones_flat - 1,
                                 in1$zone_lengths,
-                                ncol(in1$counts),
-                                length(in1$zones),
-                                nrow(in1$counts),
                                 store_everything = FALSE,
                                 num_mcsim = 0,
                                 score_hotspot = TRUE)$observed # hotspot
@@ -83,9 +77,6 @@ test_that("scan_eb_negbin: 3 timepoints, hotspot", {
                                 in2$overdisp,
                                 in2$zones_flat - 1,
                                 in2$zone_lengths,
-                                ncol(in2$counts),
-                                length(in2$zones),
-                                nrow(in2$counts),
                                 store_everything = TRUE,
                                 num_mcsim = 0,
                                 score_hotspot = TRUE)$observed # hotspot
@@ -95,9 +86,6 @@ test_that("scan_eb_negbin: 3 timepoints, hotspot", {
                                 in2$overdisp,
                                 in2$zones_flat - 1,
                                 in2$zone_lengths,
-                                ncol(in2$counts),
-                                length(in2$zones),
-                                nrow(in2$counts),
                                 store_everything = FALSE,
                                 num_mcsim = 0,
                                 score_hotspot = TRUE)$observed # hotspot
@@ -137,9 +125,6 @@ test_that("scan_eb_negbin: 1 timepoint, emerging", {
                                 in1$overdisp,
                                 in1$zones_flat - 1,
                                 in1$zone_lengths,
-                                ncol(in1$counts),
-                                length(in1$zones),
-                                nrow(in1$counts),
                                 store_everything = TRUE,
                                 num_mcsim = 0,
                                 score_hotspot = FALSE)$observed # emerging
@@ -148,9 +133,6 @@ test_that("scan_eb_negbin: 1 timepoint, emerging", {
                                  in1$overdisp,
                                  in1$zones_flat - 1,
                                  in1$zone_lengths,
-                                 ncol(in1$counts),
-                                 length(in1$zones),
-                                 nrow(in1$counts),
                                  store_everything = FALSE,
                                  num_mcsim = 0,
                                  score_hotspot = FALSE)$observed # emerging
@@ -188,9 +170,6 @@ test_that("scan_eb_negbin: 3 timepoints, emerging", {
                                 in2$overdisp,
                                 in2$zones_flat - 1,
                                 in2$zone_lengths,
-                                ncol(in2$counts),
-                                length(in2$zones),
-                                nrow(in2$counts),
                                 store_everything = TRUE,
                                 num_mcsim = 0,
                                 score_hotspot = FALSE)$observed # hotspot
@@ -200,9 +179,6 @@ test_that("scan_eb_negbin: 3 timepoints, emerging", {
                                  in2$overdisp,
                                  in2$zones_flat - 1,
                                  in2$zone_lengths,
-                                 ncol(in2$counts),
-                                 length(in2$zones),
-                                 nrow(in2$counts),
                                  store_everything = FALSE,
                                  num_mcsim = 0,
                                  score_hotspot = FALSE)$observed # hotspot
