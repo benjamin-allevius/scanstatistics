@@ -43,20 +43,19 @@ flipud <- function(x) {
 #' @importFrom magrittr %>%
 #' @export
 df_to_matrix <- function(df, time_col = 1, location_col = 2, value_col = 3) {
-  a1 <- time_col; a2 <- location_col; a3 <- value_col
-  if (is.numeric(a1) && is.numeric(a2) && is.numeric(a3)) {
-    key_name <- names(df)[location_col]
-    val_name <- names(df)[value_col]
-  } else if (is.character(a1) && is.character(a2) && is.character(a3)) {
-    key_name = location_col
-    val_name = value_col
-  } else {
-    stop("Column arguments must either all be integer or character.")
+  if (is.numeric(time_col)) {
+    time_col <- names(df)[time_col]
+  }
+  if (is.numeric(location_col)) {
+    location_col <- names(df)[location_col]
+  }
+  if (is.numeric(value_col)) {
+    value_col <- names(df)[value_col]
   }
   x <- df %>%
     as.data.frame %>%
-    select(c(time_col, location_col, value_col)) %>%
-    spread_(key_col = key_name, value_col = val_name)
+    select(time_col, location_col, value_col) %>%
+    spread_(key_col = location_col, value_col = value_col)
   times <- x[, 1]
   x <- as.matrix(x[, -1])
   attributes(x)$dimnames[[1]] <- times
