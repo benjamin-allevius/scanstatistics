@@ -29,7 +29,8 @@ Imports:
     Rcpp,
     reliaR,
     sets,
-    tibble
+    tibble,
+    tidyr
 Suggests:
     doParallel,
     foreach,
