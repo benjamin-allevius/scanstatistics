@@ -83,8 +83,6 @@ dist_to_knn <- function(x, k = min(10, nrow(x))) {
 #'    as locations. The first element of each row is the integer encoding the
 #'    location (and equal to the row number); the following elements are the 
 #'    \eqn{k-1} nearest neighbors in ascending order of distance.
-#' @inheritParams digest::digest
-#' @importFrom digest digest
 #' @importFrom plyr alply
 #' @importFrom magrittr %>%
 #' @return A list of integer vectors.
