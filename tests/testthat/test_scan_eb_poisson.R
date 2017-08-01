@@ -3,7 +3,7 @@ context("EB Poisson statistic tests")
 test_that("scan_eb_poisson", {
 
   # Helper functions -----------------------------------------------------------
-  poisson_lpmf <- function(y, mu) dpois(y, mu, log = TRUE)
+  poisson_lpmf <- function(y, mu) -mu + y * log(mu)
   poisson_loglihood <- function(y, mu, q) {
     llh <- 0
     for (i in 1:length(y)) {
@@ -49,14 +49,14 @@ test_that("scan_eb_poisson", {
   in2$zones_flat =  unlist(in2$zones)
   in2$zone_lengths = unlist(lapply(in2$zones, length))
 
-  actual2 <- scan_eb_poisson_cpp(apply(in2$counts, 2, cumsum),
-                                 apply(in2$baselines, 2, cumsum),
+  actual2 <- scan_eb_poisson_cpp(in2$counts,
+                                 in2$baselines,
                                  in2$zones_flat - 1,
                                  in2$zone_lengths,
                                  store_everything = TRUE,
                                  num_mcsim = 0)$observed
-  actual2b <- scan_eb_poisson_cpp(apply(in2$counts, 2, cumsum),
-                                 apply(in2$baselines, 2, cumsum),
+  actual2b <- scan_eb_poisson_cpp(in2$counts,
+                                 in2$baselines, 
                                  in2$zones_flat - 1,
                                  in2$zone_lengths,
                                  store_everything = FALSE,
@@ -75,6 +75,7 @@ test_that("scan_eb_poisson", {
                          sum(in2$counts[1:3, 2]) / sum(in2$baselines[1:3, 2]),
                          sum(in2$counts[1:3, 1:2]) / sum(in2$baselines[1:3, 1:2]))
   expected2_relrisk <- pmax(expected2_relrisk, 1)
+  relrisk_mat <- matrix(expected2_relrisk, nrow = 3, ncol = 3, byrow = TRUE)
 
   expected2_score <- c(
     # Duration = 1
