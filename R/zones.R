@@ -98,7 +98,8 @@ dist_to_knn <- function(x, k = min(10, nrow(x))) {
 #'                ncol = 5, byrow = TRUE)
 #' knn_zones(nn[, 1:3])
 knn_zones <- function(k_nearest) {
-  unname %>%
+  k_nearest %>%
+    unname %>%
     alply(.margins = 1, .fun = closest_subsets, .expand = F) %>%
     unlist(recursive = FALSE) %>%
     unname %>%
@@ -159,11 +160,14 @@ closest_subsets <- function(v) {
 #'                           nrow = 6, byrow = TRUE)
 #' flexible_zones(nn, A)
 flexible_zones <- function(k_nearest, adjacency_matrix) {
-  z <- k_nearest %>%
+  k_nearest %>%
+    unname %>%
     alply(.margins = 1, .fun = connected_neighbors, 
           adjacency_matrix = adjacency_matrix, .expand = F) %>%
     unlist(recursive = FALSE) %>%
-    remove_intlist_duplicates
+    unname %>%
+    unique %>%
+    lapply(unlist)
 }
 
 #' Find the connected sets for a location and its \eqn{k} nearest neighbors.
