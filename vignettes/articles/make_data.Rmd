@@ -185,7 +185,6 @@ get_NM_longlat <- function(seats) {
 
 NM_geo <- cbind(NM_geo, get_NM_longlat(NM_geo$seat))
 NM_geo <- merge(NM_geo, centroids, by = "county")
-NM_geo <- NM_geo[-which(county == "cibola"), ]
 
 ggplot() + 
   geom_polygon(data = NM_map,
