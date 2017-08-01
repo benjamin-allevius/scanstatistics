@@ -197,6 +197,10 @@ top_clusters <- function(x, zones, k = 5, overlapping = FALSE) {
       }
       i <- i + 1L
     }
-    return(x$table[row_idx[row_idx > 0], ])
+    res <- x$table[row_idx[row_idx > 0], ]
+    res$MC_pvalue <- mc_pvalue(res$score, x$replicate_statistics$score)
+    res$Gumbel_pvalue <- gumbel_pvalue(res$score, 
+                                       x$replicate_statistics$score)$pvalue
+    return(res)
   }
 }
