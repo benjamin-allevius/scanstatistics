@@ -23,14 +23,17 @@
 <link href="../pkgdown.css" rel="stylesheet">
 <script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-
+  
+  
 <!-- mathjax -->
-<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+<script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
 <!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -49,10 +52,28 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../reference/index.html">Reference</a>
+  <a href="..//index.html">
+    <span class="fa fa-home fa-lg"></span>
+     
+  </a>
 </li>
 <li>
-  <a href="../articles/index.html">Articles</a>
+  <a href="../reference/index.html">Reference</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/articles/make_data.html">Process data</a>
+    </li>
+    <li>
+      <a href="../articles/introduction.html">Introduction to scanstatistics</a>
+    </li>
+  </ul>
 </li>
 <li>
   <a href="../news/index.html">News</a>
@@ -88,13 +109,13 @@ data preparation functions, and the scan statistics themselves.</p>
         
     <h2 class="hasAnchor" id="data-preparation-functions"><a class="anchor" href="#data-preparation-functions"></a>Data preparation functions</h2>
 
-    <p></p>
+    
     <p>These functions prepare your data for use. In particular, it helps you 
 define the <em>zones</em> which will be considered by the scan statistics.</p>
     
     <h2 class="hasAnchor" id="scan-statistics"><a class="anchor" href="#scan-statistics"></a>Scan statistics</h2>
 
-    <p></p>
+    
     <p>These are the functions used for space-time anomaly detection. Scan statistic
 functions for univariate space-time data have a name that begins with 
 <code>scan_</code> and functions for multivariate space-time data have a name that
@@ -116,7 +137,7 @@ begins with <code>mscan_</code>.</p>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Benjamin Kjellson.</p>
+  <p>Developed by Benjamin Allévius.</p>
 </div>
 
 <div class="pkgdown">
