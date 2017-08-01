@@ -1,6 +1,6 @@
 ---
 title: "Introduction to scanstatistics"
-author: "Benjamin Kjellson"
+author: "Benjamin Allévius"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 bibliography: references.bib
@@ -10,7 +10,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, eval=FALSE, echo=FALSE}
+```{r, eval=TRUE, echo=FALSE}
 knitr::opts_chunk$set(fig.width=7.15, fig.height=5)
 ```
 
@@ -23,10 +23,7 @@ data. The gist of the methodology, at least in this package, is this:
 2. Form a set of space-time _clusters_, each consisting of (1) a collection of 
    locations, and (2) an interval of time stretching from the present to some 
    number of time periods in the past.
-3. For each cluster, compute a statistic based on both the observed and tfile:///media/bekj9674/suhome/Downloads/scanstatistics/data/NM_geo.rda
-file:///media/bekj9674/suhome/Downloads/scanstatistics/data/NM_map.rda
-file:///media/bekj9674/suhome/Downloads/scanstatistics/data/NM_popcas.rda
-he 
+3. For each cluster, compute a statistic based on both the observed and the 
    expected responses. Report the clusters with the largest statistics.
    
 ## Main functions
@@ -66,6 +63,10 @@ he
                          motivated.
 - __`top_clusters`__: Get the top $k$ space-time clusters, either overlapping or
                       non-overlapping in the spatial dimension.
+- __`df_to_matrix`__: Convert a data frame with data for each location and time
+                      point to a matrix with locations along the column 
+                      dimension and time along the row dimension, with the 
+                      selected data as values.
                       
 ## Example: Brain cancer in New Mexico
 To demonstrate the scan statistics in this package, we will use a dataset of the 
@@ -79,43 +80,30 @@ statistically significant. The data originally comes from the package _rsatscan_
 the _scanstatistics_ package.
 
 To get familiar with the counties of New Mexico, we begin by plotting them on a 
-map using the data table `NM_map` supplied by the _scanstatistics_ package:
-```{r, eval=FALSE}
+map using the data frames `NM_map` and `NM_geo` supplied by the _scanstatistics_ 
+package:
+```{r newmexico_map, eval=TRUE}
 library(scanstatistics)
 library(ggplot2)
 
 # Load map data
 data(NM_map)
-
-# Place the county names at the centroid of the counties. The following function
-# calculates the geographical centroids from the polygons in NM_map.
-# See: https://en.wikipedia.org/wiki/Centroid#Centroid_of_polygon
-polygon_centroid <- function(x0, y0) {
-  x1 <- c(x0[-1], x0[1])
-  y1 <- c(y0[-1], y0[1])
-  A <- sum(x0 * y1 - x1 * y0) / 2
-  Cx <- sum((x0 + x1) * (x0 * y1 - x1 * y0)) / (6 * A)
-  Cy <- sum((y0 + y1) * (x0 * y1 - x1 * y0)) / (6 * A)
-  data.frame(long = Cx, lat = Cy)
-}
-
-# Calculate geographic centroids for each county
-centroids <- NM_map[, polygon_centroid(long, lat), by = .(subregion)]
+data(NM_geo)
 
 # Plot map with labels at centroids
 ggplot() + 
   geom_polygon(data = NM_map,
                mapping = aes(x = long, y = lat, group = group),
                color = "grey", fill = "white") +
-  geom_text(data = centroids, 
-            mapping = aes(x = long, y = lat, label = subregion)) +
+  geom_text(data = NM_geo, 
+            mapping = aes(x = center_long, y = center_lat, label = county)) +
   ggtitle("Counties of New Mexico")
 ```
 
 We can further obtain the yearly number of cases and the population for each
 country for the years 1973-1991 from the data table `NM_popcas` provided
 by the package:
-```{r, load_count_data}
+```{r load_count_data}
 data(NM_popcas)
 head(NM_popcas)
 ```
@@ -123,36 +111,14 @@ head(NM_popcas)
 It should be noted that Cibola county was split from Valencia county in 1981, 
 and cases in Cibola have been counted to Valencia in the data.
 
-### Creating spatial zones
-The anomalies considered in the _scanstatistics_ package have both a temporal 
-and a spatial component. The spatial component, called a zone, consists of one 
-or more locations grouped together according to their similarity across 
-features. In this example, the locations are the counties of New Mexico and the
-features are the coordinates of the county seats. These are made available in 
-the data table `NM_geo`. Similarity will be measured using the geographical 
-distance between the seats of the counties, taking into account the curvature
-of the earth. A distance matrix is calculated using the `spDists` function from 
-the _sp_ package, which is then passed to `dist_to_knn` (with $k=15$ neighbors) 
-and on to `knn_zones`:
-```{r, eval=FALSE}
-library(sp)
-library(magrittr)
-
-data(NM_geo)
-
-zones <- NM_geo[, c("long", "lat")] %>%
-  as.matrix %>%
-  spDists(x = ., y = ., longlat = TRUE) %>%
-  dist_to_knn(k = 15) %>%
-  knn_zones
-```
-
 ### A scan statistic for Poisson data
 The Poisson distribution is a natural first option when dealing with count data. 
-The _scanstatistics_ package provides the function `scan_poisson`, which is an 
+The _scanstatistics_ package provides the two functions `scan_eb_poisson` and
+`scan_pb_poisson` with this distributional assumption. The first is an
 expectation-based[^1] scan statistic for univariate Poisson-distributed data 
-proposed by @Neill2005. It also provides the population-based scan statistic 
-[@Kulldorff2001].
+proposed by @Neill2005, and we focus on this one in the example below. 
+The second scan statistic is the population-based scan statistic proposed by
+@Kulldorff2001.
 
 [^1]: Expectation-based scan statistics use past non-anomalous data to estimate 
 distribution parameters, and then compares observed cluster counts from the time 
@@ -190,10 +156,12 @@ Calculating the scan statistic then involves three steps:
   corresponding window $W^*$ as the most likely cluster (MLC).
 
 #### Using the Poisson scan statistic
-The first argument to `scan_eb_poisson` should be a matrix of integers, with 
-columns representing locations and rows representing time intervals (ordered
-chronologically from the earliest interval in the first row to the most recent
-in the last). In this example we would like to detect a potential cluster of 
+The first argument to any of the scan statistics in this package should be a 
+matrix (or array) of observed counts, whether they be integer counts or 
+real-valued "counts". In such a matrix, the columns should represent locations 
+and the rows the time intervals, ordered chronologically from the earliest 
+interval in the first row to the most recent in the last. In this example we 
+would like to detect a potential cluster of 
 brain cancer in the counties of New Mexico during the years 1986-1989, so we
 begin by retrieving the count and population data from that period and
 reshaping them to a matrix using the helper function `df_to_matrix`:
@@ -204,85 +172,110 @@ counts <- NM_popcas %>%
   df_to_matrix(time_col = "year", location_col = "county", value_col = "count")
 ```
 
+#### Spatial zones
+The second argument to `scan_eb_poisson` should be a list of integer vectors,
+each such vector being a _zone_, which is the name for the spatial component of
+a potential outbreak cluster. Such a zone consists of one or more locations 
+grouped together according to their similarity across features, and each 
+location is numbered as the corresponding column index of the `counts` matrix 
+above (indexing starts at 1). 
 
-'location', 'duration', 'count' and 'mu'. The latter two columns contain the 
-observed counts and the estimated Poisson expected value parameters 
-respectively, and the table holds data for the period in which we want to detect 
-anomalies. Locations should be encoded as the integers 1, 2, ..., which means 
-that factor variables can be used for this purpose. The duration column counts 
-time backwards, so that a duration of 1 is the most recent time interval, 
-duration 2 is the second most recent, and so on. 
+In this example, the locations are the counties of New Mexico and the
+features are the coordinates of the county seats. These are made available in 
+the data table `NM_geo`. Similarity will be measured using the geographical 
+distance between the seats of the counties, taking into account the curvature
+of the earth. A distance matrix is calculated using the `spDists` function from 
+the _sp_ package, which is then passed to `dist_to_knn` (with $k=15$ neighbors) 
+and on to `knn_zones`:
+```{r get_zones, eval=TRUE}
+library(sp)
+library(magrittr)
 
-We will create such a table by subsetting the `NM_popcas` table, which holds the
-population and the number of brain cancer cases for each year between 
-1973-1991 and each county of New Mexico. Note that the population numbers are
+# Remove Cibola since cases have been counted towards Valencia. Ideally, this
+# should be accounted for when creating the zones.
+zones <- NM_geo %>%
+  filter(county != "cibola") %>%
+  select(seat_long, seat_lat) %>%
+  as.matrix %>%
+  spDists(x = ., y = ., longlat = TRUE) %>%
+  dist_to_knn(k = 15) %>%
+  knn_zones
+```
+
+#### Baselines
+The advantage of expectation-based scan statistics is that parameters such as 
+the expected value can be modelled and estimated from past data e.g. by some 
+form of regression. For the expectation-based Poisson scan statistic, we can use
+a (very simple) Poisson GLM to estimate the expected value of the count in each 
+county and year, accounting for the different populations in each region. 
+Similar to the `counts` argument, the expected values should be passed as a 
+matrix to the `scan_eb_poisson` function:
+
+```{r fit_baselines, eval=TRUE}
+mod <- glm(count ~ offset(log(population)) + 1 + I(year - 1985),
+           family = poisson(link = "log"),
+           data = NM_popcas %>% filter(year < 1986))
+
+ebp_baselines <- NM_popcas %>% 
+  filter(year >= 1986 & year < 1990) %>%
+  mutate(mu = predict(mod, newdata = ., type = "response")) %>%
+  df_to_matrix(value_col = "mu")
+```
+
+Note that the population numbers are
 (perhaps poorly) interpolated from the censuses conducted in 1973, 1982, and 
 1991.
-```{r, eval=FALSE}
-data(NM_popcas)
 
-tab <- NM_popcas[year >= 1986 & year < 1990, ]
-tab[, duration := max(year) - year + 1]
-tab[, location := county]
-```
-
-We still need to add the column 'mu', which should hold the predicted Poisson
-expected value parameter $\mu_{it}$ for each location $i$ and time interval $t$.
-In this example we would like to detect a potential cluster of brain cancer in 
-the counties of New Mexico during the years 1986-1989. Thus, we will use data 
-from the years prior to 1986 to estimate the Poisson parameter for all counties 
-in the years following. A simple generalized linear model (GLM) with a linear 
-time trend and an offset for county population size will suffice to demonstrate 
-the scan statistic. We fit such a model and create the needed column as follows:
-
-```{r, eval=FALSE}
-mod_poisson <- glm(count ~ offset(log(population)) + 1 + I(year - 1985), 
-                   data = NM_popcas[year < 1986, ], 
-                   family = poisson(link = "log"))
-
-# Add the expected value parameter column
-tab[, mu := predict(mod_poisson, tab, type = "response")]
-```
-
+#### Calculation
 We can now calculate the Poisson scan statistic. To give us more confidence 
-in our detection results, we will perform 99 Monte Carlo replications, by which 
+in our detection results, we will perform 999 Monte Carlo replications, by which 
 data is generated using the parameters from the null hypothesis and a new scan
-statistic calculated. This is then summarized in a $p$-value, calculated as
+statistic calculated. This is then summarized in a $P$-value, calculated as
 the proportion of times the replicated scan statistics exceeded the observed 
 one. The output of `scan_poisson` is an object of class "scanstatistic", which
 comes with the print method seen below.
 
-```{r, eval=FALSE}
+```{r run_ebp, eval=TRUE}
 set.seed(1)
-poisson_result <- scan_poisson(tab, zones, n_mcsim = 99)
+poisson_result <- scan_eb_poisson(counts = counts, 
+                                  zones = zones, 
+                                  baselines = ebp_baselines,
+                                  n_mcsim = 999)
 print(poisson_result)
 ```
 
 As we can see, the most likely cluster for an anomaly stretches from 1986-1989
 and involves the locations numbered 15 and 26, which correspond to the counties
-```{r, eval=FALSE, comment=NA}
+```{r show_MLC, eval=TRUE, comment=NA}
 counties <- as.character(NM_geo$county)
 counties[c(15, 26)]
 ```
 
 These are the same counties detected by @Kulldorff1998, though their analysis
 was retrospective rather than prospective as ours was. Ours was also data 
-dredging (adjective) as we used the same study period with hopes of detecting
+dredging as we used the same study period with hopes of detecting
 the same cluster.
 
 #### A heuristic score for locations
 We can score each county according to how likely it is to be part of a cluster
 in a heuristic fashion using the function `score_locations`, and visualize the
 results on a heatmap as follows:
-```{r, eval=FALSE}
+```{r county_scores, eval=TRUE}
 # Calculate scores and add column with county names
-county_scores <- score_locations(poisson_result)
-county_scores[, county := counties]
+county_scores <- score_locations(poisson_result, zones)
+county_scores %<>% mutate(county = factor(counties[-length(counties)], 
+                                          levels = levels(NM_geo$county)))
 
 # Create a table for plotting
-score_map_df <- merge(NM_map, county_scores, by = "county", all.x = TRUE)
-score_map_df[subregion == "cibola", 
-             relative_score := county_scores[county == "valencia", relative_score]]
+score_map_df <- merge(NM_map, county_scores, by = "county", all.x = TRUE) %>%
+  arrange(group, order)
+
+# As noted before, Cibola county counts have been attributed to Valencia county
+score_map_df[score_map_df$subregion == "cibola", ] %<>%
+  mutate(relative_score = score_map_df %>% 
+                          filter(subregion == "valencia") %>% 
+                          select(relative_score) %>% 
+                          .[[1]] %>% .[1])
 
 ggplot() + 
   geom_polygon(data = score_map_df,
@@ -291,165 +284,40 @@ ggplot() +
                color = "grey") +
   scale_fill_gradient(low = "#e5f5f9", high = "darkgreen",
                       guide = guide_colorbar(title = "Relative\nScore")) +
-  geom_text(data = centroids, 
-            mapping = aes(x = long, y = lat, label = subregion),
+  geom_text(data = NM_geo, 
+            mapping = aes(x = center_long, y = center_lat, label = county),
             alpha = 0.5) +
   ggtitle("County scores")
 ```
 
-As we can see, this does not match up entirely with the previous results as 
-Torrance was not part of the most likely cluster.
+A warning though: the `score_locations` function can be quite slow for large
+data sets. This might change in future versions of the package.
 
 #### Finding the top-scoring clusters
 Finally, if we want to know not just the most likely cluster, but say the five
 top-scoring space-time clusters, we can use the function `top_clusters`.
 The clusters returned can either be overlapping or non-overlapping in the 
 spatial dimension, according to our liking.
-```{r, eval=FALSE}
-top5 <- top_clusters(poisson_result, k = 5, overlapping = FALSE)
+```{r top_counties, eval=TRUE}
+top5 <- top_clusters(poisson_result, zones, k = 5, overlapping = FALSE)
 
 # Find the counties corresponding to the spatial zones of the 5 clusters.
-top_counties <- top5$zone %>%
+top5_counties <- top5$zone %>%
   purrr::map(get_zone, zones = zones) %>%
   purrr::map(function(x) counties[x])
 
 # Add the counties corresponding to the zones as a column
-top5[, counties := top_counties]
+top5 %<>% mutate(counties = top5_counties)
 ```
 
-To get $p$-values for these clusters, the values of the cluster-specific 
-statistics in the table above can be compared to the replicate scan statistics
-calculated earlier. These $p$-values will be conservative, since secondary 
+The `top_clusters` function includes Monte Carlo and Gumbel $P$-values for each
+cluster. These $P$-values are conservative, since secondary 
 clusters from the original data are compared to the most likely clusters from
 the replicate data sets.
-```{r, eval=FALSE}
-top5[, pvalue := mc_pvalue(statistic, poisson_result$replicated)]
 
-top5
-```
-
-### A scan statistic for negative binomial data
-For count data with overdispersion, the _scanstatistics_ package provides the 
-function `scan_negbin`, which is the expectation-based scan statistic invented 
-by @Tango2011. This scan statistic assumes that the data follows a negative 
-binomial distribution parametrized by its expected value $\mu$ and a parameter 
-$\theta$ such that a count $Y$ has variance 
-$\text{Var}(Y) = \mu + \mu^2 / \theta$. The parameters $\mu$ and $\theta$ may
-vary over both location and time.
-
-#### Theoretical motivation
-The negative binomial scan statistic comes in two versions, each with a 
-different assumption of how an anomaly with manifest in the data. The first 
-version makes the same assumption as the Poisson scan statistic in the previous
-section: an anomaly that occurs in a space-time window $W$ will have the effect
-of increasing the expected value of the counts in that window by a factor 
-$q_W>1$ in comparison to what was predicted. This factor $q_W$ is the same for 
-all locations in $W$ and constant over time. In the second version of the scan 
-statistic, the factor $q_W$ increases monotonically over time. The null and 
-alternative hypotheses are otherwise as for the Poisson scan statistic, except
-that the negative binomial distribution is used instead. Further, the scan 
-statistic is calculated using the score and Fisher information rather than a
-likelihood ratio.
-
-#### Using the negative binomial scan statistic
-Similar to `scan_poisson`, the first argument to `scan_negbin` should be a 
-__data table__ with columns 'location', 'duration', 'count', 'mu' and 'theta'.
-The second and third arguments specify the spatial zones and the number of Monte
-Carlo replications respectively. The fourth argument specifies the alternative
-hypothesis; the choices are `version = "ordinary"` (default) and 
-`version = "increasing"`, with the implications described above.
-
-To demonstrate the negative binomial scan statistic, we fit a negative binomial
-GLM to the data. It should be noted that this is purely for demonstrational 
-purposes: the negative binomial distribution does not fit this data well at all.
-So if you happen to know of a dataset more suitable, please let me know!
-
-```{r, eval=FALSE}
-suppressWarnings(
-mod_negbin <- MASS::glm.nb(count ~ offset(log(population)) + 1 + I(year - 1985), 
-                         data = NM_popcas[year < 1986, ],
-                         link = log)
-)
-
-# Add the parameters as columns
-tab[, mu := predict(mod_negbin, tab, type = "response")]
-tab[, theta := mod_negbin$theta]
-```
-
-We can now use `scan_negbin` to find the most likely cluster using the ordinary
-version of the scan statistic, again making 99 Monte Carlo replications to 
-obtain a $p$-value:
-
-```{r, eval=FALSE}
-set.seed(1)
-negbin_result1 <- scan_negbin(tab, zones, n_mcsim = 99, version = "ordinary")
-print(negbin_result1)
-```
-
-The ordinary version of the negative binomial scan statistic evidently finds the
-same cluster as the Poisson scan statistic. The increasing version does not,
-however:
-```{r, eval=FALSE}
-set.seed(1)
-negbin_result2 <- scan_negbin(tab, zones, n_mcsim = 99, version = "increasing")
-print(negbin_result2)
-```
-The cluster found here consists of Chaves county in the years 1988-1989, which 
-was one of the secondary clusters found by @Kulldorff1998. The results from the
-two negative binomial scans above could be further explored using the functions
-`score_locations` and `top_clusters`, just as for the Poisson scan statistic.
-Since these functions have already been demonstrated, we move on to a scan 
-statistic for data with an excess of zeros.
-
-### A scan statistic for zero-inflated Poisson data
-For zero-inflated count data, the _scanstatistics_ package provides the function 
-`scan_zip`, which an expectation-based scan statistic for zero-inflated Poisson
-(ZIP) data devised by @Kjellson2015. The ZIP distribution is parametrized by
-the expected value $\mu$ of the Poisson component and the probability $p$ of a
-structural zero.
-
-#### Theoretical motivation
-The ZIP scan statistic makes a similar assumtion regarding outbreaks as the 
-Poisson scan statistic does: an anomaly that occurs in a space-time window $W$ 
-will have the effect of increasing the Poisson expected value parameter of the 
-counts in that window by a factor $q_W>1$ in comparison to what was predicted. 
-This factor $q_W$ is the same for all locations in $W$ and constant over the 
-duration of the anomaly. For all windows $W$ considered, $q_W$ is estimated 
-using the EM algorithm and a likelihood ratio statistic is computed. The scan
-statistic is the maximum of these statistics over all windows $W$.
-
-#### Using the ZIP scan statistic
-Similar to `scan_poisson`, the first argument to `scan_zip` should be a 
-__data table__ with columns 'location', 'duration', 'count', 'mu' and 'p'.
-The second and third arguments specify the spatial zones and the number of Monte
-Carlo replications respectively. 
-
-To demonstrate the ZIP scan statistic, we fit a zero-inflated Poisson regression
-model to the data. Just as for the negative binomial distribution, it should be 
-noted that this is purely for demonstrational purposes: there are probably more
-suitable datasets out there, and if you happen to know of one, please let me 
-know!
-
-```{r, eval=FALSE}
-library(pscl, quietly = TRUE)
-mod_zip <- zeroinfl(count ~ offset(log(population)) + 1 + I(year - 1985),
-                    data = NM_popcas[year < 1986, ],
-                    dist = "poisson", link = "logit")
-
-# Add the parameters as columns
-tab[, mu := predict(mod_zip, tab, type = "count")]
-tab[, p := predict(mod_zip, tab, type = "zero")]
-```
-
-We can now use `scan_zip` to find the most likely cluster, again making 99 Monte 
-Carlo replications to obtain a $p$-value:
-
-```{r, eval=FALSE}
-set.seed(1)
-zip_result <- scan_zip(tab, zones, n_mcsim = 99)
-print(zip_result)
-```
-
-The zero-inflated Poisson statistic finds the same cluster as @Kulldorff1998.
+## Concluding remarks
+Other univariate scan statistics can be calculated practically in the same way
+as above, though the distribution parameters need to be adapted for each scan
+statistic. 
 
 # References
