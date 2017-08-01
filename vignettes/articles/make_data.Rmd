@@ -126,7 +126,7 @@ centroids %<>%
 NM_cas %<>% mutate(county = factorize_counties(county)) %>% as.data.table
 NM_pop %<>% mutate(county = factorize_counties(county))
 NM_map %<>% mutate(county = factorize_counties(subregion)) %>% as.data.table
-NM_pop %<>% mutate(year = year + 100) %>% as.data.table
+NM_pop %<>% mutate(year = year + 1900) %>% as.data.table
 ```
 
 Scan statistics aim to find _localized_ anomalies in the data, meaning that the 
@@ -266,5 +266,11 @@ ggplot(NM_popcas) + geom_line(aes(x = year, y = count, color = county)) +
   theme(legend.position = "none")
 ```
 
-The data tables `NM_popcas` and `NM_geo` are then saved as those available in the 
-_scanstatistics_ package.
+The data tables `NM_popcas`, `NM_geo` and `NM_map` are then saved as those 
+available in the _scanstatistics_ package, after converting them to data frames:
+
+```{r convert_tables}
+NM_popcas %<>% as.data.frame
+NM_geo %<>% as.data.frame
+NM_map %<>% as.data.frame
+```
