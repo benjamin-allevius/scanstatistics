@@ -98,10 +98,11 @@ dist_to_knn <- function(x, k = min(10, nrow(x))) {
 #'                ncol = 5, byrow = TRUE)
 #' knn_zones(nn[, 1:3])
 knn_zones <- function(k_nearest) {
-  k_nearest %>%
+  unname %>%
     alply(.margins = 1, .fun = closest_subsets, .expand = F) %>%
     unlist(recursive = FALSE) %>%
-    remove_intlist_duplicates
+    unname %>%
+    unique
 }
 
 
