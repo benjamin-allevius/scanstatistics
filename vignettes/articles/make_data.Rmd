@@ -89,6 +89,7 @@ present in the data.
 library(magrittr)
 library(stringr)
 library(plyr, warn.conflicts = FALSE)
+library(dplyr)
 
 # This function corrects inconsistencies in the county names
 format_counties <- function(x) {
