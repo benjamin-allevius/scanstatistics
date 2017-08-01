@@ -130,8 +130,8 @@ scan_eb_poisson <- function(counts,
   MLC <- scan$observed[1, ]
 
   # Get P-values
-  gumbel_pvalue <- NA
-  MC_pvalue <- NA
+  gumbel_pvalue <- NULL
+  MC_pvalue <- NULL
   if (n_mcsim > 0) {
     gumbel_pvalue <- gumbel_pvalue(MLC$score, scan$simulated$score, 
                                    method = "ML")$pvalue
@@ -140,19 +140,30 @@ scan_eb_poisson <- function(counts,
   
   MLC_counts <- counts[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
   MLC_basel <- baselines[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
-
-  list(MLC = list(zone_number = MLC$zone,
+  
+  MLC_out <- list(zone_number = MLC$zone,
                   locations = zones[[MLC$zone]],
                   duration = MLC$duration,
                   score = MLC$score,
                   relative_risk = MLC$relrisk,
                   observed = flipud(MLC_counts),
-                  baselines = flipud(MLC_basel)),
-       table = scan$observed,
-       replicate_statistics = scan$simulated,
-       MC_pvalue = MC_pvalue,
-       Gumbel_pvalue = gumbel_pvalue,
-       n_zones = length(zones),
-       n_locations = ncol(counts),
-       max_duration = nrow(counts))
+                  baselines = flipud(MLC_basel))
+
+  structure(
+    list(
+      # General
+      distribution = "Poisson",
+      type = "expectation-based",
+      setting = "univariate",
+      # Data
+      MLC = MLC_out,
+      table = scan$observed,
+      replicate_statistics = scan$simulated,
+      MC_pvalue = MC_pvalue,
+      Gumbel_pvalue = gumbel_pvalue,
+      n_zones = length(zones),
+      n_locations = ncol(counts),
+      max_duration = nrow(counts),
+      n_mcsim = n_mcsim),
+    class = "scanstatistic")
 }

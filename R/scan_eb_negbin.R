@@ -157,19 +157,30 @@ scan_eb_negbin <- function(counts,
   MLC_counts <- counts[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
   MLC_basel <- baselines[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
   MLC_thetas <- thetas[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
+  
+  MLC_out <- list(zone_number = MLC$zone,
+                    locations = zones[[MLC$zone]],
+                    duration = MLC$duration,
+                    score = MLC$score,
+                    observed = flipud(MLC_counts),
+                    baselines = flipud(MLC_basel),
+                    thetas = flipud(MLC_thetas))
 
-  list(MLC = list(zone_number = MLC$zone,
-                  locations = zones[[MLC$zone]],
-                  duration = MLC$duration,
-                  score = MLC$score,
-                  observed = flipud(MLC_counts),
-                  baselines = flipud(MLC_basel),
-                  thetas = flipud(MLC_thetas)),
-       table = scan$observed,
-       replicate_statistics = scan$simulated,
-       MC_pvalue = MC_pvalue,
-       Gumbel_pvalue = gumbel_pvalue,
-       n_zones = length(zones),
-       n_locations = ncol(counts),
-       max_duration = nrow(counts))
+  structure(
+    list(
+      # General
+      distribution = "negative binomial",
+      type = "expectation-based",
+      setting = "univariate",
+      # Data
+      MLC = MLC_out,
+      table = scan$observed,
+      replicate_statistics = scan$simulated,
+      MC_pvalue = MC_pvalue,
+      Gumbel_pvalue = gumbel_pvalue,
+      n_zones = length(zones),
+      n_locations = ncol(counts),
+      max_duration = nrow(counts),
+      n_mcsim = n_mcsim),
+    class = "scanstatistic")
 }

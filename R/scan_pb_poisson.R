@@ -136,20 +136,31 @@ scan_pb_poisson <- function(counts,
   MLC_basel <- baselines[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
   MLC_pop <- population[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
   
-  list(MLC = list(zone_number = MLC$zone,
-                  locations = zones[[MLC$zone]],
-                  duration = MLC$duration,
-                  score = MLC$score,
-                  relative_risk_in = MLC$relrisk_in,
-                  relative_risk_out = MLC$relrisk_out,
-                  observed = flipud(MLC_counts),
-                  population = flipud(MLC_pop),
-                  baselines = flipud(MLC_basel)),
-       table = scan$observed,
-       replicate_statistics = scan$simulated,
-       MC_pvalue = MC_pvalue,
-       Gumbel_pvalue = gumbel_pvalue,
-       n_zones = length(zones),
-       n_locations = ncol(counts),
-       max_duration = nrow(counts))
+  MLC_out <- list(zone_number = MLC$zone,
+                    locations = zones[[MLC$zone]],
+                    duration = MLC$duration,
+                    score = MLC$score,
+                    relative_risk_in = MLC$relrisk_in,
+                    relative_risk_out = MLC$relrisk_out,
+                    observed = flipud(MLC_counts),
+                    population = flipud(MLC_pop),
+                    baselines = flipud(MLC_basel))
+  
+  structure(
+    list(
+      # General
+      distribution = "Poisson",
+      type = "population-based",
+      setting = "univariate",
+      # Data
+      MLC = MLC_out,
+      table = scan$observed,
+      replicate_statistics = scan$simulated,
+      MC_pvalue = MC_pvalue,
+      Gumbel_pvalue = gumbel_pvalue,
+      n_zones = length(zones),
+      n_locations = ncol(counts),
+      max_duration = nrow(counts),
+      n_mcsim = n_mcsim),
+    class = "scanstatistic")
 }
