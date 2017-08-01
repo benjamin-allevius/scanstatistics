@@ -18,6 +18,7 @@ public:
 
 private:
   arma::mat m_baselines;
+  arma::mat m_baselines_orig; // used for simulation
 
   // Values calculated on observed data
   arma::vec m_relrisks;
@@ -31,9 +32,10 @@ private:
                  const int duration,
                  const arma::uvec& current_zone,
                  const arma::uvec& current_rows) override;
+  void simulate_counts() override;
   int draw_sample(arma::uword row, arma::uword col) override;
   void set_sim_store_fun() override;
-
+  
   using store_ptr = void (EBPOIscan::*)(int storage_index, double score,
                                         double q, int zone_nr, int duration);
   store_ptr store;
@@ -55,7 +57,10 @@ inline EBPOIscan::EBPOIscan(const arma::umat& counts,
                             const bool store_everything,
                             const int num_mcsim)
   : USTscan(counts, zones, zone_lengths, store_everything, num_mcsim),
-    m_baselines(baselines) {
+    m_baselines_orig(baselines) {
+  
+  m_counts = arma::cumsum(counts);
+  m_baselines = arma::cumsum(baselines);
 
   store = (store_everything ? &EBPOIscan::store_all : &EBPOIscan::store_max);
 
@@ -88,7 +93,16 @@ inline void EBPOIscan::calculate(const int storage_index,
 }
 
 inline int EBPOIscan::draw_sample(arma::uword row, arma::uword col) {
-  return R::rpois(m_baselines.at(row, col));
+  return R::rpois(m_baselines_orig.at(row, col));
+}
+
+inline void EBPOIscan::simulate_counts() {
+  for (arma::uword j = 0; j < m_counts.n_cols; ++j) {
+    for (arma::uword i = 0; i < m_counts.n_rows; ++i) {
+      m_counts.at(i, j) = draw_sample(i, j);
+    }
+  }
+  m_counts = arma::cumsum(m_counts);
 }
 
 // Storage functions -----------------------------------------------------------
