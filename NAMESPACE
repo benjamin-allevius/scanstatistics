@@ -2,7 +2,6 @@
 
 S3method(print,scanstatistic)
 export(coords_to_knn)
-export(create_table)
 export(df_to_matrix)
 export(dist_to_knn)
 export(flexible_zones)
