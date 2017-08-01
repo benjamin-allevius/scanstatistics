@@ -1,42 +1,8 @@
 # Functions in this file:
-#   extract_scanstatistic
-#   extract_mlc
 #   mc_pvalue
-#   scanstatistic_object
 #   print.scanstatistic
 #   score_locations
 #   top_clusters
-#   validate_colnames
-#   validate_values
-#   validate_zones
-#   validate_scan
-
-
-#' Extract value of scan statistic from per-window statistics.
-#' 
-#' This function extracts the value of the scan statistic, which is the maximum
-#' of the statistics calculated for each spatial or space-time window.
-#' @param table A \code{data.table} with a column \code{statistic}, which should
-#'    correspond to the statistic calculated for each spatial or space-time 
-#'    window (given as other columns).
-#' @return The maximum value of the column \code{statistic}.
-#' @keywords internal
-extract_scanstatistic <- function(table) {
-  table[, max(statistic)]
-}
-
-#' Extract the most likely cluster (MLC) and the value of the scans statistic.
-#' 
-#' This function extracts the most likely cluster, which is the spatial or 
-#' spatiotemporal window that corresponds to the scan statistic. It also returns
-#' the value of the scan statistc.
-#' @inheritParams extract_scanstatistic
-#' @return The row of the input table with the highest value of the column 
-#'    \code{statistic}.
-#' @keywords internal
-extract_mlc <- function(table) {
-  table[which.max(statistic), ]
-}
 
 #' Calculate the Monte Carlo \eqn{p}-value for a scan statistic.
 #' 
@@ -109,30 +75,6 @@ gumbel_pvalue <- function(observed, replicates, method = "ML") {
   return(list(pvalue = pvalue, 
               gumbel_mu = gumbel_mu, 
               gumbel_sigma = gumbel_sigma))
-}
-
-#' Creates an S3 object of class scanstatistic.
-#' @param observed A data table containing columns location, duration, 
-#'    statistic, and possibly others.
-#' @param simulated A numeric vector of replicated scan statistics.
-#' @param details A list containing details about the data and scan statistic.
-#' @keywords internal
-scanstatistic_object <- function(observed, simulated, details) {
-  statistic <- extract_scanstatistic(observed)
-  pval <- mc_pvalue(statistic, simulated)
-  mlc <- extract_mlc(observed)
-  
-  structure(list(observed = observed[order(-statistic), ],
-                 replicated = unlist(simulated),
-                 mlc = mlc,
-                 pvalue = pval,
-                 distribution = details$distribution,
-                 type = details$type,
-                 zones = details$zones,
-                 n_locations = length(details$table[, unique(location)]),
-                 n_zones = length(details$zones),
-                 max_duration = details$table[, max(duration)]),
-            class = "scanstatistic")
 }
 
 #' Print a scanstatistic object.
@@ -254,56 +196,4 @@ top_clusters <- function(x, zones, k = 5, overlapping = FALSE) {
     }
     return(x$table[row_idx[row_idx > 0], ])
   }
-}
-
-
-#' Check that the input table has the right columns. Raises error if not.
-#' @param table A data.table passed to a scan statistic function.
-#' @param col_names A character vector of column names required.
-#' @keywords internal
-validate_colnames <- function(table, col_names) {
-  test <- col_names %in% names(table)
-  missing_cols <- col_names[!test]
-  if (!all(test)) {
-    stop("Input table lacks column(s) ",
-         paste(paste0("'", missing_cols, "'"), collapse = ", "),
-         ".")
-  }
-}
-
-#' Check that the input table does not contain any missing values.
-#' @param table A data.table passed to a scan statistic function.
-#' @param col_names A character vector of column names; these columns in the
-#'    table must not have any missing values.
-#' @keywords internal
-validate_values <- function(table, col_names) {
-  if (any(is.na(table[, col_names, with = FALSE]))) {
-    stop("The columns ",
-         paste(paste0("'", col_names, "'"), collapse = ", "),
-         " of the input table must not contain any missing values.")
-  }
-}
-
-#' Check that the zones argument is a list of integer or factor vectors.
-#' @param zones Should be a list of integer or factor vectors.
-#' @keywords internal
-validate_zones <- function(zones) {
-  if (class(zones) != "list") {
-    stop("The argument 'zones' must be a list of integer or factor vectors.")
-  }
-  if (!all(vapply(zones, class, character(1)) %in% c("integer", "factor"))) {
-    stop("The argument 'zones' must be a list of integer or factor vectors.")
-  }
-}
-
-#' Check that input to scanstatistic function is valid.
-#' @param table A data.table passed to a scan statistic function.
-#' @param zones Should be a list of integer or factor vectors.
-#' @param col_names A character vector of column names; these columns in the
-#'    table must not have any missing values.
-#' @keywords internal
-validate_scan <- function(table, zones, col_names) {
-  validate_colnames(table, col_names)
-  validate_values(table, col_names)
-  validate_zones(zones)
 }
