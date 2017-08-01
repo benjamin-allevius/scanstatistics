@@ -18,69 +18,10 @@ NULL
 #' @importFrom Rcpp sourceCpp
 NULL
 
-# # Hack based on Hadley Wickhams comment: 
-# # http://stackoverflow.com/a/12429344/897506
-# globalVariables(c(
-# ## Variables used unquoted inside functions-------------------------------------
-#   "aggregate_baseline",
-#   "aggregate_count",
-#   "baseline",
-#   "count",
-#   "counts",
-#   "ddagger",
-#   "denom",
-#   "duration", 
-#   "duration_event_posterior",
-#   "duration_condposterior",
-#   "effect_logprob",
-#   "event",
-#   "event_posterior",
-#   "event_start_time",
-#   "included_streams",
-#   "llr",
-#   "location",
-#   "locsum",
-#   "loglikelihood",
-#   "mu",
-#   "num",
-#   "n_zones",
-#   "overdispersion",
-#   "p",
-#   "posterior_logprob",
-#   "posterior_prob",
-#   "priority",
-#   "prop",
-#   "relative_risk",
-#   "relative_score",
-#   "relrisk",
-#   "rs",
-#   "score",
-#   "statistic",
-#   "stream",
-#   "theta",
-#   "time",
-#   "timesum",
-#   "total_score",
-#   "totalsum",
-#   "V1",
-#   "variance",
-#   "W",
-#   "zone",  
-#   "zones_in_part",  
-# ## data.table functions---------------------------------------------------------
-#   ".",
-#   ".N",
-#   ".SD",
-#   ":=",
-#   "data.table",
-#   "is.data.table",
-#   "setkey",
-#   "setkeyv",
-# # ## foreach----------------------------------------------------------------------
-# #   "%dopar%",
-# #   "foreach",
-# ## misc ------------------------------------------------------------------------
-#   "offset",
-#   "setNames"),
-#   package = "scanstatistics",
-#   add = TRUE)
+# Hack based on Hadley Wickhams comment:
+# http://stackoverflow.com/a/12429344/897506
+globalVariables(c(
+## Variables used unquoted inside functions-------------------------------------
+  "score"),
+  package = "scanstatistics",
+  add = TRUE)
