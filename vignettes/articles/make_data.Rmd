@@ -1,6 +1,6 @@
 ---
 title: "Process data"
-author: "Benjamin Kjellson"
+author: "Benjamin Allévius"
 date: "`r Sys.Date()`"
 output: 
   markdowntemplates::skeleton:
@@ -36,11 +36,6 @@ data frames:
   package is not in the needed format, we will grab the coordinates from
   [this Wikipedia article](https://en.wikipedia.org/wiki/List_of_counties_in_New_Mexico) 
   instead, and replace this data frame.
-
-The `scanstatistics` package relies heavily on the _data.table_ [@datatable]
-package for its calculations, and the main argument to all `scan_` functions
-will be data tables. Therefore, we convert the data frames to data tables 
-straight away as we load it:
 
 ```{r, cache=TRUE}
 library(rsatscan)
@@ -121,10 +116,16 @@ factorize_counties <- function(x, fac = counties) {
 }
 
 # Fix inconsistencies and factorize counties in the data
-NM_cas %<>% mutate(county = factorize_counties(county))
+centroids %<>% 
+  mutate(county = format_counties(subregion),
+         county = factorize_counties(county),
+         center_long = long, center_lat = lat,
+         long = NULL, lat = NULL,
+         subregion = NULL)
+NM_cas %<>% mutate(county = factorize_counties(county)) %>% as.data.table
 NM_pop %<>% mutate(county = factorize_counties(county))
-NM_map %<>% mutate(county = factorize_counties(subregion))
-NM_pop[, year := year + 1900]
+NM_map %<>% mutate(county = factorize_counties(subregion)) %>% as.data.table
+NM_pop %<>% mutate(year = year + 100) %>% as.data.table
 ```
 
 Scan statistics aim to find _localized_ anomalies in the data, meaning that the 
@@ -139,31 +140,51 @@ which shows how to fetch data from a table on Wikipedia.
 
 ```{r, cache=TRUE}
 library(rvest)
+library(dplyr)
 
-# Grab the table from Wikipedia
+# Function to clean table entries
+clean_entry <- function(x) {
+  x %>%
+    gsub("\\d+♠", "",  .) %>% 
+    gsub("^[^\\(]+\\(", "", .) %>%
+    gsub("\\,", "", .) %>%
+    str_split(pattern = "[:blank:]") %>%
+    lapply(function(x) x[1]) %>%
+    unlist %>%
+    as.numeric
+    # gsub("\\ [:alpha:]+", "", .)
+    # gsub("\ km2\\)", "", .) %>%
+    # gsub("\ km²\\)", "", .)
+}
+
+# Grab the table from Wikipedia (as at 2017-08-01)
 seat_url <- "https://en.wikipedia.org/wiki/List_of_counties_in_New_Mexico"
 NM_geo <- seat_url %>%
-  read_html() %>%
-  html_nodes(xpath='//*[@id="mw-content-text"]/table[3]') %>%
-  html_table()
+  read_html %>%
+  rvest::html_nodes(xpath = '//*[@id="mw-content-text"]/div/table[3]') %>%
+  html_table %>%
+  .[[1]] %>%
+  select(County, `County seat[3]`, `Population[6]`, `Area[3][7]`) %>%
+  rename(county = County, 
+         seat = `County seat[3]`, 
+         population = `Population[6]`, 
+         `area(km2)` = `Area[3][7]`) %>%
+  mutate_at(.vars = c("population", "area(km2)"), .funs = clean_entry) %>%
+  mutate(county = gsub(" County", "", county)) %>%
+  mutate(county = factorize_counties(county, counties)) %>%
+  as.data.table
 
-NM_geo <- as.data.table(NM_geo[[1]][c(1, 3)])
-names(NM_geo) <- c("county", "seat")
-
-# Clean the table
-NM_geo %<>% 
-  mutate(county = sub(" County", "", county)) %>% 
-  mutate(county = factorize_counties(county, counties))
 
 # Get the coordinates for the New Mexico county seats using ggmap::geocode
 get_NM_longlat <- function(seats) {
   suppressMessages({
     res <- t(sapply(seats, function(x) t(ggmap::geocode(paste0(x, ", New Mexico")))))
   })
-  data.frame(long = res[, 1], lat = res[, 2])
+  data.frame(seat_long = res[, 1], seat_lat = res[, 2])
 }
 
 NM_geo <- cbind(NM_geo, get_NM_longlat(NM_geo$seat))
+NM_geo <- merge(NM_geo, centroids, by = "county")
 NM_geo <- NM_geo[-which(county == "cibola"), ]
 
 ggplot() + 
@@ -171,7 +192,7 @@ ggplot() +
                mapping = aes(x = long, y = lat, group = group),
                color = "white", fill = "grey") +
   geom_point(data = NM_geo, 
-             mapping = aes(x = long, y = lat)) +
+             mapping = aes(x = seat_long, y = seat_lat)) +
   ggtitle("County seats of New Mexico") +
   theme_bw()
 ```
