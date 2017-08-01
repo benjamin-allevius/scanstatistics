@@ -4,11 +4,11 @@
 \name{NM_geo}
 \alias{NM_geo}
 \title{Longitude and latitude of New Mexico county seats.}
-\format{A data table with 32 rows and 4 variables:
+\format{A data frame with 33 rows and 4 variables:
 \describe{
   \item{county}{The name of the county. Of class character.}
   \item{seat}{The name of the county seat, i.e. the administrative center or
-              seat of government. Of class factor with 32 levels.}
+              seat of government. Of class factor with 33 levels.}
   \item{long}{The longitude of the county seat. Of class numeric.}
   \item{lat}{The latitude of the county seat. Of class numeric.}
 }}

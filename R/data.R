@@ -3,11 +3,11 @@
 #' A dataset containing the longitude and latitude of the county seats of New
 #' Mexico, except for Cibola county.
 #'
-#' @format A data table with 32 rows and 4 variables:
+#' @format A data frame with 33 rows and 4 variables:
 #' \describe{
 #'   \item{county}{The name of the county. Of class character.}
 #'   \item{seat}{The name of the county seat, i.e. the administrative center or
-#'               seat of government. Of class factor with 32 levels.}
+#'               seat of government. Of class factor with 33 levels.}
 #'   \item{long}{The longitude of the county seat. Of class numeric.}
 #'   \item{lat}{The latitude of the county seat. Of class numeric.}
 #' }
@@ -22,7 +22,7 @@
 #' 1991. Interpolations were done using a quadratic function of time. Thus the
 #' year-to-year changes are overly smooth but match the census numbers in the 
 #' three years mentioned.
-#' @format A data table with 608 rows and 4 variables:
+#' @format A data frame with 608 rows and 4 variables:
 #' \describe{
 #'   \item{year}{The year the cases were recorded. Of class integer.}
 #'   \item{county}{The name of the county. Of class factor with 32 levels.}
@@ -36,7 +36,7 @@
 #' Data to plot the counties of New Mexico.
 #' 
 #' Map data for New Mexico. Was created using \code{ggplot2::map_data}.
-#' @format A data table with 867 rows and 7 variables:
+#' @format A data frame with 867 rows and 7 variables:
 #' \describe{
 #'   \item{long}{Longitude of county polygon corner. Of class numeric.}
 #'   \item{lat}{Latitude of county polygon corner. Of class numeric.}

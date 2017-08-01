@@ -4,7 +4,7 @@
 \name{NM_popcas}
 \alias{NM_popcas}
 \title{Population and brain cancer cases in New Mexico counties during 1973--1991.}
-\format{A data table with 608 rows and 4 variables:
+\format{A data frame with 608 rows and 4 variables:
 \describe{
   \item{year}{The year the cases were recorded. Of class integer.}
   \item{county}{The name of the county. Of class factor with 32 levels.}
