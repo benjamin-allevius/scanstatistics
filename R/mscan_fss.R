@@ -120,7 +120,7 @@
 #' n_tot <- n_loc * n_dur * n_streams
 #' 
 #' # Create locations and kNN matrix
-#' geo <- matrix(x = rnorm(n_loc), y = rnorm(n_loc))
+#' geo <- data.frame(x = rnorm(n_loc), y = rnorm(n_loc))
 #' knn_mat <- coords_to_knn(geo, k = 10)
 #' 
 #' # Generate baselines and possibly other distribution parameters
@@ -169,14 +169,18 @@ mscan_fss <- function(counts,
   args <- list(...)
   args$counts <- counts
   
+  distribution <- distribution[1]
+  method <- method[1]
+  algorithm <- algorithm[1]
+  
   # Define score and priority functions matching the distribution
-  if (distribution[1] == "poisson") {
+  if (distribution == "poisson") {
     priority_fun <- poisson_priority
     score_fun <- poisson_score
-  } else if (distribution[1] == "gaussian") {
+  } else if (distribution == "gaussian") {
     priority_fun <- gaussian_priority
     score_fun <- gaussian_score
-  } else if (distribution[1] == "exponential") {
+  } else if (distribution == "exponential") {
     priority_fun <- exponential_priority
     score_fun <- exponential_score
   } else if ( !methods::hasArg("score_fun") || 
