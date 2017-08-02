@@ -78,7 +78,7 @@
       <h1>Process data</h1>
                         <h4 class="author">Benjamin Allévius</h4>
             
-            <h4 class="date">2017-08-01</h4>
+            <h4 class="date">2017-08-02</h4>
           </div>
 
     
@@ -107,15 +107,27 @@
 <pre><code>## See http://www.satscan.org/ for free access</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(data.table)
 
-NM_pop &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/data.table/topics/as.data.table">as.data.table</a></span>(NMpop)
-NM_cas &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/data.table/topics/as.data.table">as.data.table</a></span>(NMcas)</code></pre></div>
+NM_pop &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/data.table/topics/as.data.table">as.data.table</a></span>(rsatscan::NMpop)
+NM_cas &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/data.table/topics/as.data.table">as.data.table</a></span>(rsatscan::NMcas)</code></pre></div>
 <p>To get more familiar with the counties of New Mexico, let’s plot them on a map:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(magrittr)
+<span class="kw">library</span>(dplyr)</code></pre></div>
+<pre><code>## 
+## Attaching package: 'dplyr'</code></pre>
+<pre><code>## The following objects are masked from 'package:data.table':
+## 
+##     between, first, last</code></pre>
+<pre><code>## The following objects are masked from 'package:stats':
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Grab polygon data for plotting</span>
+NM_map &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/map_data">map_data</a></span>(<span class="st">"county"</span>, <span class="st">"new mexico"</span>)
 
-<span class="co"># Grab polygon data for plotting</span>
-NM_map &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/data.table/topics/as.data.table">as.data.table</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/map_data">map_data</a></span>(<span class="st">"county"</span>, <span class="st">"new mexico"</span>))
-
-<span class="co"># Calculate geographical centroids from the polygons in NM_map</span>
+<span class="co"># Calculate geographical centroids from a polygon</span>
 <span class="co"># See: https://en.wikipedia.org/wiki/Centroid#Centroid_of_polygon</span>
 polygon_centroid &lt;-<span class="st"> </span>function(x0, y0) {
   x1 &lt;-<span class="st"> </span><span class="kw">c</span>(x0[-<span class="dv">1</span>], x0[<span class="dv">1</span>])
@@ -123,11 +135,18 @@ polygon_centroid &lt;-<span class="st"> </span>function(x0, y0) {
   A &lt;-<span class="st"> </span><span class="kw">sum</span>(x0 *<span class="st"> </span>y1 -<span class="st"> </span>x1 *<span class="st"> </span>y0) /<span class="st"> </span><span class="dv">2</span>
   Cx &lt;-<span class="st"> </span><span class="kw">sum</span>((x0 +<span class="st"> </span>x1) *<span class="st"> </span>(x0 *<span class="st"> </span>y1 -<span class="st"> </span>x1 *<span class="st"> </span>y0)) /<span class="st"> </span>(<span class="dv">6</span> *<span class="st"> </span>A)
   Cy &lt;-<span class="st"> </span><span class="kw">sum</span>((y0 +<span class="st"> </span>y1) *<span class="st"> </span>(x0 *<span class="st"> </span>y1 -<span class="st"> </span>x1 *<span class="st"> </span>y0)) /<span class="st"> </span>(<span class="dv">6</span> *<span class="st"> </span>A)
-  <span class="kw">data.frame</span>(<span class="dt">long =</span> Cx, <span class="dt">lat =</span> Cy)
+  <span class="kw">c</span>(<span class="dt">long =</span> Cx, <span class="dt">lat =</span> Cy)
 }
+pgc &lt;-<span class="st"> </span>function(df) <span class="kw">polygon_centroid</span>(<span class="kw">as.numeric</span>(df$long), <span class="kw">as.numeric</span>(df$lat))
+
+centroids &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">subregion =</span> <span class="kw"><a href="http://www.rdocumentation.org/packages/data.table/topics/duplicated">unique</a></span>(NM_map$subregion), <span class="dt">long =</span> <span class="ot">NA</span>, <span class="dt">lat =</span> <span class="ot">NA</span>)
 
 <span class="co"># Calculate geographic centroids for each county</span>
-centroids &lt;-<span class="st"> </span>NM_map[, <span class="kw">polygon_centroid</span>(long, lat), by =<span class="st"> </span>.(subregion)]
+for (i in <span class="dv">1</span>:<span class="kw">nrow</span>(centroids)) {
+  centroids[i, <span class="kw">c</span>(<span class="st">"long"</span>, <span class="st">"lat"</span>)] &lt;-<span class="st"> </span>NM_map %&gt;%
+<span class="st">    </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(subregion ==<span class="st"> </span>centroids$subregion[i]) %&gt;%
+<span class="st">    </span>pgc
+}
 
 <span class="co"># Plot map with labels at centroids</span>
 <span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>() +<span class="st"> </span>
@@ -138,28 +157,12 @@ centroids &lt;-<span class="st"> </span>NM_map[, <span class="kw">polygon_centro
             <span class="dt">mapping =</span> <span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x =</span> long, <span class="dt">y =</span> lat, <span class="dt">label =</span> subregion)) +
 <span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">ggtitle</a></span>(<span class="st">"Counties of New Mexico"</span>) +
 <span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>()</code></pre></div>
-<p><img src="make_data_files/figure-html/unnamed-chunk-2-1.png" width="672"></p>
+<p><img src="make_data_files/figure-html/plot_centroids-1.png" width="672"></p>
 <p>Before proceeding, we will make some changes to the data to ensure that the counties are named the same across all tables. The main functions of the scanstatistic package require locations to be encoded as integers. Thus we will make the county names into a factor variable, which are integer vectors with additional attributes. All levels of the factor should also be present in the data.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(magrittr)
-<span class="kw">library</span>(stringr)
-<span class="kw">library</span>(plyr, <span class="dt">warn.conflicts =</span> <span class="ot">FALSE</span>)
-<span class="kw">library</span>(dplyr)</code></pre></div>
-<pre><code>## 
-## Attaching package: 'dplyr'</code></pre>
-<pre><code>## The following objects are masked from 'package:plyr':
-## 
-##     arrange, count, desc, failwith, id, mutate, rename, summarise,
-##     summarize</code></pre>
-<pre><code>## The following objects are masked from 'package:data.table':
-## 
-##     between, first, last</code></pre>
-<pre><code>## The following objects are masked from 'package:stats':
-## 
-##     filter, lag</code></pre>
-<pre><code>## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># This function corrects inconsistencies in the county names</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(stringr)
+<span class="co"># library(plyr, warn.conflicts = FALSE)</span>
+
+<span class="co"># This function corrects inconsistencies in the county names</span>
 format_counties &lt;-<span class="st"> </span>function(x) {
   x %&gt;%
 <span class="st">    </span>tolower %&gt;%
@@ -186,21 +189,19 @@ factorize_counties &lt;-<span class="st"> </span>function(x, <span class="dt">fa
 
 <span class="co"># Fix inconsistencies and factorize counties in the data</span>
 centroids %&lt;&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/plyr/topics/mutate">mutate</a></span>(<span class="dt">county =</span> <span class="kw">format_counties</span>(subregion),
+<span class="st">  </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">county =</span> <span class="kw">format_counties</span>(subregion),
          <span class="dt">county =</span> <span class="kw">factorize_counties</span>(county),
          <span class="dt">center_long =</span> long, <span class="dt">center_lat =</span> lat,
          <span class="dt">long =</span> <span class="ot">NULL</span>, <span class="dt">lat =</span> <span class="ot">NULL</span>,
          <span class="dt">subregion =</span> <span class="ot">NULL</span>)
-NM_cas %&lt;&gt;%<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/plyr/topics/mutate">mutate</a></span>(<span class="dt">county =</span> <span class="kw">factorize_counties</span>(county)) %&gt;%<span class="st"> </span>as.data.table
-NM_pop %&lt;&gt;%<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/plyr/topics/mutate">mutate</a></span>(<span class="dt">county =</span> <span class="kw">factorize_counties</span>(county))
-NM_map %&lt;&gt;%<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/plyr/topics/mutate">mutate</a></span>(<span class="dt">county =</span> <span class="kw">factorize_counties</span>(subregion)) %&gt;%<span class="st"> </span>as.data.table
-NM_pop %&lt;&gt;%<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/plyr/topics/mutate">mutate</a></span>(<span class="dt">year =</span> year +<span class="st"> </span><span class="dv">1900</span>) %&gt;%<span class="st"> </span>as.data.table</code></pre></div>
+NM_cas %&lt;&gt;%<span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">county =</span> <span class="kw">factorize_counties</span>(county)) %&gt;%<span class="st"> </span>as.data.table
+NM_pop %&lt;&gt;%<span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">county =</span> <span class="kw">factorize_counties</span>(county))
+NM_map %&lt;&gt;%<span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">county =</span> <span class="kw">factorize_counties</span>(subregion)) %&gt;%<span class="st"> </span>as.data.table
+NM_pop %&lt;&gt;%<span class="st"> </span><span class="kw"><a href="http://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">year =</span> year +<span class="st"> </span><span class="dv">1900</span>) %&gt;%<span class="st"> </span>as.data.table</code></pre></div>
 <p>Scan statistics aim to find <em>localized</em> anomalies in the data, meaning that the locations and timepoints involved in the anomaly are close together in some way. In this example, we will measure the spatial similarity using the spherical distance between the county seats. In other circumstances, we might use the geographic centroids (calculated above), or another distance measure. So let’s grab the coordinates of the county seats from Wikipedia and plot them. Kudos to Cory Nissen for <a href="http://blog.corynissen.com/2015/01/using-rvest-to-scrape-html-table.html">this blogpost</a>, which shows how to fetch data from a table on Wikipedia.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rvest)</code></pre></div>
 <pre><code>## Loading required package: xml2</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
-
-<span class="co"># Function to clean table entries</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Function to clean table entries</span>
 clean_entry &lt;-<span class="st"> </span>function(x) {
   x %&gt;%
 <span class="st">    </span><span class="kw">gsub</span>(<span class="st">"</span><span class="ch">\\</span><span class="st">d+♠"</span>, <span class="st">""</span>,  .) %&gt;%<span class="st"> </span>
@@ -252,7 +253,7 @@ NM_geo &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocum
              <span class="dt">mapping =</span> <span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x =</span> seat_long, <span class="dt">y =</span> seat_lat)) +
 <span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/labs">ggtitle</a></span>(<span class="st">"County seats of New Mexico"</span>) +
 <span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggtheme">theme_bw</a></span>()</code></pre></div>
-<p><img src="make_data_files/figure-html/unnamed-chunk-4-1.png" width="672"></p>
+<p><img src="make_data_files/figure-html/grab_seat_coords-1.png" width="672"></p>
 <p>For the scan statistic functions in this package to work, locations and timepoints with zero counts must be filled in as such, and not left out. Thus, we will add the needed zeros to the case data. We will only consider the total number of cancer cases in each county and year, so we also take the oppotunity to aggregate the case counts over each age group and sex:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Aggregate population and cases over sex and age group</span>
 NM_cas &lt;-<span class="st"> </span>NM_cas[, .(<span class="dt">count =</span> <span class="kw">sum</span>(cases)), by =<span class="st"> </span>.(year, county)]
@@ -290,7 +291,7 @@ for (s in counties) {
 
 <span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/ggplot">ggplot</a></span>(NM_popcas) +<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/geom_path">geom_line</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/aes">aes</a></span>(<span class="dt">x =</span> year, <span class="dt">y =</span> count, <span class="dt">color =</span> county)) +
 <span class="st">  </span><span class="kw"><a href="http://www.rdocumentation.org/packages/ggplot2/topics/theme">theme</a></span>(<span class="dt">legend.position =</span> <span class="st">"none"</span>)</code></pre></div>
-<p><img src="make_data_files/figure-html/unnamed-chunk-7-1.png" width="672"></p>
+<p><img src="make_data_files/figure-html/plot_evolution-1.png" width="672"></p>
 <p>The data tables <code>NM_popcas</code>, <code>NM_geo</code> and <code>NM_map</code> are then saved as those available in the <em>scanstatistics</em> package, after converting them to data frames:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">NM_popcas %&lt;&gt;%<span class="st"> </span>as.data.frame
 NM_geo %&lt;&gt;%<span class="st"> </span>as.data.frame

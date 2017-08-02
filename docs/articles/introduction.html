@@ -78,7 +78,7 @@
       <h1>Introduction to scanstatistics</h1>
                         <h4 class="author">Benjamin Allévius</h4>
             
-            <h4 class="date">2017-08-01</h4>
+            <h4 class="date">2017-08-02</h4>
           </div>
 
     
@@ -166,12 +166,12 @@
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(NM_popcas)
 <span class="kw">head</span>(NM_popcas)</code></pre></div>
 <pre><code>##   year     county population count
-## 1 1973 bernalillo   353813.0    16
-## 2 1974 bernalillo   357520.1    16
-## 3 1975 bernalillo   368166.2    16
-## 4 1976 bernalillo   378483.2    16
-## 5 1977 bernalillo   388471.2    15
-## 6 1978 bernalillo   398130.2    18</code></pre>
+## 1 1973 bernalillo     353813    16
+## 2 1974 bernalillo     357520    16
+## 3 1975 bernalillo     368166    16
+## 4 1976 bernalillo     378483    16
+## 5 1977 bernalillo     388471    15
+## 6 1978 bernalillo     398130    18</code></pre>
 <p>It should be noted that Cibola county was split from Valencia county in 1981, and cases in Cibola have been counted to Valencia in the data.</p>
 <div id="a-scan-statistic-for-poisson-data" class="section level3">
 <h3 class="hasAnchor">
@@ -323,6 +323,11 @@ top5 %&lt;&gt;%<span class="st"> </span><span class="kw"><a href="http://dplyr.t
 <a href="#concluding-remarks" class="anchor"></a>Concluding remarks</h2>
 <p>Other univariate scan statistics can be calculated practically in the same way as above, though the distribution parameters need to be adapted for each scan statistic.</p>
 </div>
+<div id="feedback" class="section level1">
+<h1 class="hasAnchor">
+<a href="#feedback" class="anchor"></a>Feedback</h1>
+<p>If you think this package lacks some functionality, or that something needs better documentation, I happily accept feedback either here at GitHub or via email at <a href="mailto:benjak@math.su.se">benjak@math.su.se</a>. I’m also very interested in applying the methods in this package (current and future) to new problems, so if you know of any suitable public datasets, please tell me! A dataset with a multivariate response (e.g. multiple counter variables) would be of particular interest for some of the scan statistics that will appear in future versions of the package.</p>
+</div>
 <div id="references" class="section level1 unnumbered">
 <h1 class="hasAnchor">
 <a href="#references" class="anchor"></a>References</h1>
@@ -356,6 +361,7 @@ top5 %&lt;&gt;%<span class="st"> </span><span class="kw"><a href="http://dplyr.t
       <li><a href="#main-functions">Main functions</a></li>
       <li><a href="#example-brain-cancer-in-new-mexico">Example: Brain cancer in New Mexico</a></li>
       <li><a href="#concluding-remarks">Concluding remarks</a></li>
+      <li><a href="#feedback">Feedback</a></li>
       <li><a href="#references">References</a></li>
       </ul>
 </div>

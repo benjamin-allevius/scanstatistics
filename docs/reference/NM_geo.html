@@ -110,12 +110,17 @@ Mexico, except for Cibola county.</p>
         
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p>A data frame with 33 rows and 4 variables:</p><dl class='dl-horizontal'>
-  <dt>county</dt><dd><p>The name of the county. Of class character.</p></dd>
-  <dt>seat</dt><dd><p>The name of the county seat, i.e. the administrative center or
-              seat of government. Of class factor with 33 levels.</p></dd>
-  <dt>long</dt><dd><p>The longitude of the county seat. Of class numeric.</p></dd>
-  <dt>lat</dt><dd><p>The latitude of the county seat. Of class numeric.</p></dd>
+    <p>A data frame with 33 rows and 7 variables:</p><dl class='dl-horizontal'>
+  <dt>county</dt><dd><p>Factor; the counties of New Mexico (no spaces).</p></dd>
+  <dt>seat</dt><dd><p>Character; the name of the county seat, i.e. the administrative 
+              center or seat of government.</p></dd>
+  <dt>area(km2)</dt><dd><p>Numeric; the area in square kilometers of each county.</p></dd>
+  <dt>seat_long</dt><dd><p>Numeric; the longitude of the county seat.</p></dd>
+  <dt>seat_lat</dt><dd><p>Numeric; the latitude of the county seat.</p></dd>
+  <dt>center_long</dt><dd><p>Numeric; the longitude of the geographical center of
+                     the county.</p></dd>
+  <dt>center_lat</dt><dd><p>Numeric; the latitude of the geographical center of the 
+                    county.</p></dd>
 </dl>
     
     <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
