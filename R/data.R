@@ -3,7 +3,7 @@
 #' A dataset containing the longitude and latitude of the county seats of New
 #' Mexico, except for Cibola county.
 #'
-#' @format A data frame with 33 rows and 8 variables:
+#' @format A data frame with 33 rows and 7 variables:
 #' \describe{
 #'   \item{county}{Factor; the counties of New Mexico (no spaces).}
 #'   \item{seat}{Character; the name of the county seat, i.e. the administrative 

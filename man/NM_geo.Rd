@@ -4,7 +4,7 @@
 \name{NM_geo}
 \alias{NM_geo}
 \title{Longitude and latitude of New Mexico county seats.}
-\format{A data frame with 33 rows and 8 variables:
+\format{A data frame with 33 rows and 7 variables:
 \describe{
   \item{county}{Factor; the counties of New Mexico (no spaces).}
   \item{seat}{Character; the name of the county seat, i.e. the administrative 
