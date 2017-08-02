@@ -37,23 +37,25 @@ data frames:
   [this Wikipedia article](https://en.wikipedia.org/wiki/List_of_counties_in_New_Mexico) 
   instead, and replace this data frame.
 
-```{r, cache=TRUE}
+```{r load_popcas_data, cache=FALSE}
 library(rsatscan)
 library(data.table)
 
-NM_pop <- as.data.table(NMpop)
-NM_cas <- as.data.table(NMcas)
+NM_pop <- as.data.table(rsatscan::NMpop)
+NM_cas <- as.data.table(rsatscan::NMcas)
 ```
 
 To get more familiar with the counties of New Mexico, let's plot them on a map:
 
-```{r, cache=TRUE}
+```{r plot_centroids, cache=FALSE}
 library(ggplot2)
+library(magrittr)
+library(dplyr)
 
 # Grab polygon data for plotting
-NM_map <- as.data.table(map_data("county", "new mexico"))
+NM_map <- map_data("county", "new mexico")
 
-# Calculate geographical centroids from the polygons in NM_map
+# Calculate geographical centroids from a polygon
 # See: https://en.wikipedia.org/wiki/Centroid#Centroid_of_polygon
 polygon_centroid <- function(x0, y0) {
   x1 <- c(x0[-1], x0[1])
@@ -61,11 +63,18 @@ polygon_centroid <- function(x0, y0) {
   A <- sum(x0 * y1 - x1 * y0) / 2
   Cx <- sum((x0 + x1) * (x0 * y1 - x1 * y0)) / (6 * A)
   Cy <- sum((y0 + y1) * (x0 * y1 - x1 * y0)) / (6 * A)
-  data.frame(long = Cx, lat = Cy)
+  c(long = Cx, lat = Cy)
 }
+pgc <- function(df) polygon_centroid(as.numeric(df$long), as.numeric(df$lat))
+
+centroids <- data.frame(subregion = unique(NM_map$subregion), long = NA, lat = NA)
 
 # Calculate geographic centroids for each county
-centroids <- NM_map[, polygon_centroid(long, lat), by = .(subregion)]
+for (i in 1:nrow(centroids)) {
+  centroids[i, c("long", "lat")] <- NM_map %>%
+    filter(subregion == centroids$subregion[i]) %>%
+    pgc
+}
 
 # Plot map with labels at centroids
 ggplot() + 
@@ -85,11 +94,9 @@ Thus we will make the county names into a factor variable, which are integer
 vectors with additional attributes. All levels of the factor should also be
 present in the data.
 
-```{r, cache=TRUE}
-library(magrittr)
+```{r format_counties, cache=FALSE}
 library(stringr)
-library(plyr, warn.conflicts = FALSE)
-library(dplyr)
+# library(plyr, warn.conflicts = FALSE)
 
 # This function corrects inconsistencies in the county names
 format_counties <- function(x) {
@@ -139,9 +146,8 @@ Kudos to Cory Nissen for
 [this blogpost](http://blog.corynissen.com/2015/01/using-rvest-to-scrape-html-table.html), 
 which shows how to fetch data from a table on Wikipedia.
 
-```{r, cache=TRUE}
+```{r grab_seat_coords, cache=FALSE}
 library(rvest)
-library(dplyr)
 
 # Function to clean table entries
 clean_entry <- function(x) {
@@ -202,7 +208,7 @@ timepoints with zero counts must be filled in as such, and not left out.
 Thus, we will add the needed zeros to the case data. We will only consider the 
 total number of cancer cases in each county and year, so we also take the 
 oppotunity to aggregate the case counts over each age group and sex:
-```{r, cache=TRUE}
+```{r merge_data, cache=FALSE}
 # Aggregate population and cases over sex and age group
 NM_cas <- NM_cas[, .(count = sum(cases)), by = .(year, county)]
 NM_pop <- NM_pop[, .(population = sum(population)), by = .(year, county)]
@@ -242,7 +248,7 @@ sex, and then aggregate over the latter two categories in the hope that this
 would cancel out the errors made in each interpolation. However, this seems to
 lead to some unreasonable year-to-year population changes for some of the 
 counties.
-```{r, cache=TRUE}
+```{r predict_pop, cache=FALSE}
 NM_pop[, population := as.numeric(population)]
 
 # Interpolate county populations
@@ -258,7 +264,7 @@ for (s in counties) {
 
 Finally, we join the population and case tables and plot how the number of
 cases evolve in each county over the years:
-```{r, cache=TRUE}
+```{r plot_evolution, cache=FALSE}
 NM_popcas <- merge(NM_pop, NM_cas)
 setkeyv(NM_popcas, c("county", "year"))
 
