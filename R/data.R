@@ -3,13 +3,18 @@
 #' A dataset containing the longitude and latitude of the county seats of New
 #' Mexico, except for Cibola county.
 #'
-#' @format A data frame with 33 rows and 4 variables:
+#' @format A data frame with 33 rows and 8 variables:
 #' \describe{
-#'   \item{county}{The name of the county. Of class character.}
-#'   \item{seat}{The name of the county seat, i.e. the administrative center or
-#'               seat of government. Of class factor with 33 levels.}
-#'   \item{long}{The longitude of the county seat. Of class numeric.}
-#'   \item{lat}{The latitude of the county seat. Of class numeric.}
+#'   \item{county}{Factor; the counties of New Mexico (no spaces).}
+#'   \item{seat}{Character; the name of the county seat, i.e. the administrative 
+#'               center or seat of government.}
+#'   \item{area(km2)}{Numeric; the area in square kilometers of each county.}
+#'   \item{seat_long}{Numeric; the longitude of the county seat.}
+#'   \item{seat_lat}{Numeric; the latitude of the county seat.}
+#'   \item{center_long}{Numeric; the longitude of the geographical center of
+#'                      the county.}
+#'   \item{center_lat}{Numeric; the latitude of the geographical center of the 
+#'                     county.}
 #' }
 #' @source \url{https://en.wikipedia.org/wiki/List_of_counties_in_New_Mexico}
 "NM_geo"
@@ -24,12 +29,11 @@
 #' three years mentioned.
 #' @format A data frame with 608 rows and 4 variables:
 #' \describe{
-#'   \item{year}{The year the cases were recorded. Of class integer.}
-#'   \item{county}{The name of the county. Of class factor with 32 levels.}
-#'   \item{population}{The population in that county and year. Of class 
-#'                     numeric.}
-#'   \item{count}{The number of brain cancer cases in that county and year. Of
-#'                class integer.}
+#'   \item{year}{Integer; the year the cases were recorded.}
+#'   \item{county}{Character; the name of the county (no spaces).}
+#'   \item{population}{Integer; the population in that county and year.}
+#'   \item{count}{Integer; the number of brain cancer cases in that county and 
+#'                year.}
 #' }
 "NM_popcas" 
 
@@ -38,13 +42,12 @@
 #' Map data for New Mexico. Was created using \code{ggplot2::map_data}.
 #' @format A data frame with 867 rows and 7 variables:
 #' \describe{
-#'   \item{long}{Longitude of county polygon corner. Of class numeric.}
-#'   \item{lat}{Latitude of county polygon corner. Of class numeric.}
-#'   \item{group}{Grouping by county. Of class numeric.}
-#'   \item{order}{Order of the polygon corners. Of class integer.}
-#'   \item{region}{Region is "new mexico" for all rows. Of class character.}
-#'   \item{subregion}{The county name (with spaces). Of class character.}
-#'   \item{county}{The county name (no spaces). Of class factor with 33 levels,
-#'                 the county Cibola places last.}
+#'   \item{long}{Numeric; longitude of county polygon corner.}
+#'   \item{lat}{Numeric; latitude of county polygon corner.}
+#'   \item{group}{Numeric; grouping by county.}
+#'   \item{order}{Numeric; order of the polygon corners.}
+#'   \item{region}{Character; region is "new mexico" for all rows.}
+#'   \item{subregion}{Character; the county name (with spaces).}
+#'   \item{county}{Factor; the county name (no spaces).}
 #' }
 "NM_map" 

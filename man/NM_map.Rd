@@ -6,14 +6,13 @@
 \title{Data to plot the counties of New Mexico.}
 \format{A data frame with 867 rows and 7 variables:
 \describe{
-  \item{long}{Longitude of county polygon corner. Of class numeric.}
-  \item{lat}{Latitude of county polygon corner. Of class numeric.}
-  \item{group}{Grouping by county. Of class numeric.}
-  \item{order}{Order of the polygon corners. Of class integer.}
-  \item{region}{Region is "new mexico" for all rows. Of class character.}
-  \item{subregion}{The county name (with spaces). Of class character.}
-  \item{county}{The county name (no spaces). Of class factor with 33 levels,
-                the county Cibola places last.}
+  \item{long}{Numeric; longitude of county polygon corner.}
+  \item{lat}{Numeric; latitude of county polygon corner.}
+  \item{group}{Numeric; grouping by county.}
+  \item{order}{Numeric; order of the polygon corners.}
+  \item{region}{Character; region is "new mexico" for all rows.}
+  \item{subregion}{Character; the county name (with spaces).}
+  \item{county}{Factor; the county name (no spaces).}
 }}
 \usage{
 NM_map
