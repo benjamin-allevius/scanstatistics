@@ -111,15 +111,12 @@ inline void PBPOIscan::calculate(const int storage_index,
 inline void PBPOIscan::simulate_counts() {
   Rcpp::NumericVector probs(m_counts.n_cols * m_counts.n_rows);
   probs = armaVec2rcppVec(arma::vectorise(m_baselines_orig)) / m_total_count;
-  // probs = Rcpp::as<Rcpp::NumericVector>(
-  //           Rcpp::wrap(arma::vectorise(m_baselines_orig))) / m_total_count;
 
   arma::uvec vec_counts(m_counts.n_cols * m_counts.n_rows);
   vec_counts = rcppIVec2armaVec(
     Rcpp::RcppArmadillo::Rf_rmultinom(m_total_count, probs));
-  // vec_counts = Rcpp::as<arma::uvec>(
-  //   Rcpp::RcppArmadillo::Rf_rmultinom(m_total_count, probs));
 
+  // Columns of m_counts should be cumulative sums
   for (arma::uword j = 0; j < m_counts.n_cols; ++j) {
     m_counts.col(j) = arma::cumsum(
       vec_counts.subvec(j * m_counts.n_rows, (j + 1) * m_counts.n_rows - 1));
