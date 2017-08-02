@@ -99,6 +99,11 @@ prioritize_and_execute <- function(.f, A, prioritized_locations, ...) {
   apply_rowwise(reorder_rows(A, prioritized_locations), .f, ...)
 }
 
+#' Get either a location or stream subset.
+#' @param lst A list.
+#' @param d Integer; either 2 (locations) or 3 (streams).
+#' @return A list.
+#' @keywords internal
 get_subset <- function(lst, subset, d = 3) {
   dims <- dim(lst[[1]])
   loc_subset <- seq_len(dims[2])
@@ -122,6 +127,7 @@ get_subset <- function(lst, subset, d = 3) {
 #' @param d An integer; the array dimension to sum over.
 #' @return A list containing matrices. This list has the same names as the input
 #'    list.
+#' @keywords internal
 sum_over_subset <- function(lst, subset, d = 3) {
   lapply(get_subset(lst, subset, d), function(x) apply(x, (1:3)[-d], sum))
 }
@@ -138,6 +144,7 @@ sum_over_subset <- function(lst, subset, d = 3) {
 #' @param A A numeric or integer matrix.
 #' @param priority_indices An integer matrix as output by 
 #'    \code{\link{prioritize_cols}}.
+#' @keywords internal
 sum_reorder_sum <- function(A, priority_indices) {
   t(apply(reorder_rows(apply(A, 2, cumsum), priority_indices), 1, cumsum))
 }

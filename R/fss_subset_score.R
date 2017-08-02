@@ -328,7 +328,7 @@ subset_aggregation_FF <- function(args,
 #'    subset scan for multivariate event detection}. Statistics in Medicine 
 #'    32 (13), pp. 2185-2208.
 #' @importFrom stats rbinom runif
-#' @export
+#' @keywords internal
 #' @examples 
 #' \dontrun{
 #' # Set simulation parameters (small)
