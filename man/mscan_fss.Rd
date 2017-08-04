@@ -139,7 +139,7 @@ n_streams <- 2
 n_tot <- n_loc * n_dur * n_streams
 
 # Create locations and kNN matrix
-geo <- matrix(x = rnorm(n_loc), y = rnorm(n_loc))
+geo <- data.frame(x = rnorm(n_loc), y = rnorm(n_loc))
 knn_mat <- coords_to_knn(geo, k = 10)
 
 # Generate baselines and possibly other distribution parameters
