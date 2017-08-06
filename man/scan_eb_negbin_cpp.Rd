@@ -2,28 +2,28 @@
 % Please edit documentation in R/RcppExports.R
 \name{scan_eb_negbin_cpp}
 \alias{scan_eb_negbin_cpp}
-\title{Calculate the highest-value EB Negbin loglihood ratio statistic.}
+\title{Calculate the expectation-based negative binomial scan statistic.}
 \usage{
 scan_eb_negbin_cpp(counts, baselines, overdisp, zones, zone_lengths,
   store_everything, num_mcsim, score_hotspot)
 }
 \arguments{
-\item{counts}{matrix (most recent timepoint in first row)}
+\item{counts}{Integer matrix (most recent timepoint in first row)}
 
-\item{baselines}{matrix (most recent timepoint in first row)}
+\item{baselines}{Matrix (most recent timepoint in first row)}
 
-\item{overdisp}{matrix (most recent timepoint in first row)}
+\item{overdisp}{Matrix (most recent timepoint in first row)}
 
-\item{zones}{integer vector (all zones concatenated; locations indexed from
+\item{zones}{Integer vector (all zones concatenated; locations indexed from
 0 and up)}
 
-\item{zone_lengths}{integer vector}
+\item{zone_lengths}{Integer vector}
 
-\item{store_everything}{boolean}
+\item{store_everything}{Boolean}
 
-\item{num_mcsim}{int}
+\item{num_mcsim}{Integer}
 
-\item{score_hotspot}{boolean}
+\item{score_hotspot}{Boolean}
 }
 \value{
 A list with elements \code{observed} and \code{simulated}, each 
@@ -38,9 +38,7 @@ A list with elements \code{observed} and \code{simulated}, each
    }
 }
 \description{
-Calculate the expectation-based ZIP loglihood ratio statistic for each zone
-and duration, but only keep the zone and duration with the highest value
-(the MLC). The estimate of the relative risk is also calculated, along with
-the number of iterations the EM algorithm performed.
+Calculate the expectation-based negative binomial scan statistic and Monte
+Carlo replicates.
 }
 \keyword{internal}

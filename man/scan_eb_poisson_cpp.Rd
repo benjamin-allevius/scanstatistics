@@ -2,24 +2,25 @@
 % Please edit documentation in R/RcppExports.R
 \name{scan_eb_poisson_cpp}
 \alias{scan_eb_poisson_cpp}
-\title{Calculate the highest-value EB ZIP loglihood ratio statistic.}
+\title{Calculate the expecation-based Poisson scan statistic.}
 \usage{
 scan_eb_poisson_cpp(counts, baselines, zones, zone_lengths, store_everything,
   num_mcsim)
 }
 \arguments{
-\item{counts}{matrix (most recent timepoint in first row)}
+\item{counts}{An integer matrix (most recent timepoint in first row).}
 
-\item{baselines}{matrix (most recent timepoint in first row)}
+\item{baselines}{A matrix with positive entries (most recent timepoint in 
+first row).}
 
-\item{zones}{integer vector (all zones concatenated; locations indexed from
-0 and up)}
+\item{zones}{An integer vector (all zones concatenated; locations indexed 
+from 0 and up).}
 
-\item{zone_lengths}{integer vector}
+\item{zone_lengths}{An integer vector.}
 
-\item{store_everything}{boolean}
+\item{store_everything}{A boolean.}
 
-\item{num_mcsim}{int}
+\item{num_mcsim}{An integer.}
 }
 \value{
 A list with elements \code{observed} and \code{simulated}, each 
@@ -34,9 +35,7 @@ A list with elements \code{observed} and \code{simulated}, each
    }
 }
 \description{
-Calculate the expectation-based ZIP loglihood ratio statistic for each zone
-and duration, but only keep the zone and duration with the highest value
-(the MLC). The estimate of the relative risk is also calculated, along with
-the number of iterations the EM algorithm performed.
+Calculate the expectation-based Poisson scan statistic and Monte Carlo 
+replicates.
 }
 \keyword{internal}

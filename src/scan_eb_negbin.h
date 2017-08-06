@@ -4,21 +4,19 @@
 #include "RcppArmadillo.h"
 // [[depends(RcppArmadillo)]]
 
-//' Calculate the highest-value EB Negbin loglihood ratio statistic.
+//' Calculate the expectation-based negative binomial scan statistic.
 //'
-//' Calculate the expectation-based ZIP loglihood ratio statistic for each zone
-//' and duration, but only keep the zone and duration with the highest value
-//' (the MLC). The estimate of the relative risk is also calculated, along with
-//' the number of iterations the EM algorithm performed.
-//' @param counts matrix (most recent timepoint in first row)
-//' @param baselines matrix (most recent timepoint in first row)
-//' @param overdisp matrix (most recent timepoint in first row)
-//' @param zones integer vector (all zones concatenated; locations indexed from
+//' Calculate the expectation-based negative binomial scan statistic and Monte
+//' Carlo replicates.
+//' @param counts Integer matrix (most recent timepoint in first row)
+//' @param baselines Matrix (most recent timepoint in first row)
+//' @param overdisp Matrix (most recent timepoint in first row)
+//' @param zones Integer vector (all zones concatenated; locations indexed from
 //'    0 and up)
-//' @param zone_lengths integer vector
-//' @param store_everything boolean
-//' @param num_mcsim int
-//' @param score_hotspot boolean
+//' @param zone_lengths Integer vector
+//' @param store_everything Boolean
+//' @param num_mcsim Integer
+//' @param score_hotspot Boolean
 //' @return A list with elements \code{observed} and \code{simulated}, each 
 //'    being a data frame with columns:
 //'    \describe{
