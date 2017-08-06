@@ -4,13 +4,11 @@
 #include "RcppArmadillo.h"
 // [[depends(RcppArmadillo)]]
 
-//' Calculate the highest-value EB ZIP loglihood ratio statistic.
+//' Calculate the population-based Poisson scan statistic.
 //'
-//' Calculate the expectation-based ZIP loglihood ratio statistic for each zone
-//' and duration, but only keep the zone and duration with the highest value
-//' (the MLC). The estimate of the relative risk is also calculated, along with
-//' the number of iterations the EM algorithm performed.
-//' @param counts matrix (most recent timepoint in first row)
+//' Calculate the population-based Poisson scan statistic and Monte Carlo 
+//' replicates.
+//' @param counts integer matrix (most recent timepoint in first row)
 //' @param baselines matrix (most recent timepoint in first row)
 //' @param zones integer vector (all zones concatenated; locations indexed from
 //'    0 and up)
