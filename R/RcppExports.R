@@ -166,3 +166,13 @@ shuffle_time_counts <- function(v) {
     .Call(`_scanstatistics_shuffle_time_counts`, v)
 }
 
+#' Permute the entries of the matrix, preserving row and column marginals.
+#' 
+#' Permute the entries of the matrix, preserving row and column marginals.
+#' @param A An integer matrix.
+#' @return An integer matrix.
+#' @keywords internal
+permute_matrix <- function(A) {
+    .Call(`_scanstatistics_permute_matrix`, A)
+}
+
