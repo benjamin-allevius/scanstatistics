@@ -35,7 +35,6 @@ Rcpp::IntegerVector uvec2IntegerVector(const arma::uvec& v);
 // Functions for permuting the counts in an integer matrix while preserving the
 // row and column marginal sums.
 // integer matrix --> expand_matrix --> permute one column --> contract matrix
-
 // [[Rcpp::export]]
 arma::umat expand_matrix(const arma::umat& A);
 
@@ -46,5 +45,13 @@ arma::umat contract_matrix(const arma::umat& A, arma::uword nr, arma::uword nc);
 // [[Rcpp::export]]
 arma::uvec shuffle_time_counts(const arma::uvec& v);
 
+//' Permute the entries of the matrix, preserving row and column marginals.
+//' 
+//' Permute the entries of the matrix, preserving row and column marginals.
+//' @param A An integer matrix.
+//' @return An integer matrix.
+//' @keywords internal
+// [[Rcpp::export]]
+arma::umat permute_matrix(const arma::umat& A);
 
 #endif

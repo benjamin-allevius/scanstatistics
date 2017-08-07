@@ -76,3 +76,8 @@ arma::uvec shuffle_time_counts(const arma::uvec& v) {
   return res;
 }
 
+arma::umat permute_matrix(const arma::umat& A) {
+ arma::umat x = expand_matrix(A);
+  x.col(0) = shuffle_time_counts(x.col(0));
+  return contract_matrix(x, A.n_rows, A.n_cols);
+}
