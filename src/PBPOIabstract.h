@@ -86,7 +86,8 @@ inline void PBPOIabstract::calculate(const int storage_index,
                                      const int duration,
                                      const arma::uvec& current_zone,
                                      const arma::uvec& current_rows) {
-  double C, B, risk_in, risk_out, term2, score;
+  arma::uword C;
+  double B, risk_in, risk_out, term2, score;
 
   arma::uvec row_idx = current_rows.tail(1);
 
@@ -98,10 +99,10 @@ inline void PBPOIabstract::calculate(const int storage_index,
   risk_out = (m_total_count > B ?
              (m_total_count - C) / (m_total_count - B) :
              1.0);
-  term2 = (std::abs(m_total_count - C) < 1e-16 ?
-          0.0 : (m_total_count - C) * std::log(risk_out));
 
-  score = C > B ? C * std::log(risk_in) + term2 : 0.0;
+  score = C > B ? 
+          C * std::log(risk_in) + (m_total_count - C) * std::log(risk_out) : 
+          R_NegInf;
 
   (this->*store)(storage_index, score, risk_in, risk_out, zone_nr + 1,
                  duration + 1);
