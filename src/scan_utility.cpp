@@ -8,7 +8,6 @@ std::vector<arma::uword> get_zero_indices(const arma::uvec& v) {
   return zero_idx;
 }
 
-
 // Rcpp vector to armadillo vectors --------------------------------------------
 
 arma::vec NumericVector2vec(const Rcpp::NumericVector& v) {

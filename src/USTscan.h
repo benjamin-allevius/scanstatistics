@@ -94,7 +94,6 @@ inline USTscan<T, t>::USTscan(const T& counts,
   }
 }
 
-
 template <class T, class t>
 inline void USTscan<T, t>::run_scan() {
   arma::uword i = 0; // Storage index
