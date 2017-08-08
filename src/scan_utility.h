@@ -13,7 +13,7 @@
 //' @keywords internal
 //' @export
 // [[Rcpp::export]]
-std::vector<int> get_zero_indices(const arma::uvec& v);
+std::vector<arma::uword> get_zero_indices(const arma::uvec& v);
 
 // Rcpp vector to armadillo vectors --------------------------------------------
 

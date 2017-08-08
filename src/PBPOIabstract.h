@@ -3,7 +3,7 @@
 
 #include "USTscan.h"
 
-class PBPOIabstract : public USTscan<arma::umat, int> {
+class PBPOIabstract : public USTscan<arma::umat, arma::uword> {
 
 public:
   PBPOIabstract(const arma::umat& counts,
@@ -11,7 +11,7 @@ public:
                 const arma::uvec& zones,
                 const arma::uvec& zone_lengths,
                 const bool store_everything,
-                const int num_mcsim);
+                const arma::uword num_mcsim);
 
   Rcpp::DataFrame get_scan()  override;
   Rcpp::DataFrame get_mcsim() override;
@@ -19,7 +19,7 @@ public:
 protected:
   arma::mat m_baselines;
   arma::mat m_baselines_orig; // used for simulation
-  int m_total_count;
+  arma::uword m_total_count;
 
   // Values calculated on observed data
   arma::vec  m_relrisk_in;
@@ -30,25 +30,25 @@ protected:
   arma::vec  sim_relrisk_out;
 
   // Functions
-  void calculate(const int storage_index,
-                 const int zone_nr,
-                 const int duration,
+  void calculate(const arma::uword storage_index,
+                 const arma::uword zone_nr,
+                 const arma::uword duration,
                  const arma::uvec& current_zone,
                  const arma::uvec& current_rows) override;
   virtual void simulate_counts() override = 0;
   void set_sim_store_fun() override;
-  int draw_sample(arma::uword row, arma::uword col) override;
+  arma::uword draw_sample(arma::uword row, arma::uword col) override;
 
-  using store_ptr = void (PBPOIabstract::*)(int storage_index, double score,
+  using store_ptr = void (PBPOIabstract::*)(arma::uword storage_index, double score,
                                             double q_in, double q_out, 
-                                            int zone_nr, int duration);
+                                            arma::uword zone_nr, arma::uword duration);
   store_ptr store;
-  void store_max(int storage_index, double score, double q_in, double q_out,
-                 int zone_nr, int duration);
-  void store_all(int storage_index, double score, double q_in, double q_out,
-                 int zone_nr, int duration);
-  void store_sim(int storage_index, double score, double q_in, double q_out,
-                 int zone_nr, int duration);
+  void store_max(arma::uword storage_index, double score, double q_in, double q_out,
+                 arma::uword zone_nr, arma::uword duration);
+  void store_all(arma::uword storage_index, double score, double q_in, double q_out,
+                 arma::uword zone_nr, arma::uword duration);
+  void store_sim(arma::uword storage_index, double score, double q_in, double q_out,
+                 arma::uword zone_nr, arma::uword duration);
 
 };
 
@@ -59,7 +59,7 @@ inline PBPOIabstract::PBPOIabstract(const arma::umat& counts,
                                     const arma::uvec& zones,
                                     const arma::uvec& zone_lengths,
                                     const bool store_everything,
-                                    const int num_mcsim)
+                                    const arma::uword num_mcsim)
   : USTscan(counts, zones, zone_lengths, store_everything, num_mcsim),
     m_baselines_orig(baselines) {
 
@@ -81,9 +81,9 @@ inline PBPOIabstract::PBPOIabstract(const arma::umat& counts,
 
 // Workhorse functions ---------------------------------------------------------
 
-inline void PBPOIabstract::calculate(const int storage_index,
-                                     const int zone_nr,
-                                     const int duration,
+inline void PBPOIabstract::calculate(const arma::uword storage_index,
+                                     const arma::uword zone_nr,
+                                     const arma::uword duration,
                                      const arma::uvec& current_zone,
                                      const arma::uvec& current_rows) {
   arma::uword C;
@@ -99,23 +99,22 @@ inline void PBPOIabstract::calculate(const int storage_index,
   risk_out = (m_total_count > B ?
              (m_total_count - C) / (m_total_count - B) :
              1.0);
+  term2 = m_total_count > C ? (m_total_count - C) * std::log(risk_out) : 0.0;
 
-  score = C > B ? 
-          C * std::log(risk_in) + (m_total_count - C) * std::log(risk_out) : 
-          R_NegInf;
+  score = C > B ? C * std::log(risk_in) + term2 : R_NegInf;
 
   (this->*store)(storage_index, score, risk_in, risk_out, zone_nr + 1,
                  duration + 1);
 }
 
-inline int PBPOIabstract::draw_sample(arma::uword row, arma::uword col) {
+inline arma::uword PBPOIabstract::draw_sample(arma::uword row, arma::uword col) {
   return 1;
 }
 
 // Storage functions -----------------------------------------------------------
 
-inline void PBPOIabstract::store_all(int storage_index, double score, double q_in,
-                                     double q_out, int zone_nr, int duration) {
+inline void PBPOIabstract::store_all(arma::uword storage_index, double score, double q_in,
+                                     double q_out, arma::uword zone_nr, arma::uword duration) {
   m_scores[storage_index]       = score;
   m_relrisk_in[storage_index]   = q_in;
   m_relrisk_out[storage_index]  = q_out;
@@ -123,8 +122,8 @@ inline void PBPOIabstract::store_all(int storage_index, double score, double q_i
   m_durations[storage_index]    = duration;
 }
 
-inline void PBPOIabstract::store_max(int storage_index, double score, double q_in,
-                                     double q_out, int zone_nr, int duration) {
+inline void PBPOIabstract::store_max(arma::uword storage_index, double score, double q_in,
+                                     double q_out, arma::uword zone_nr, arma::uword duration) {
   if (score > m_scores[0]) {
     m_scores[0]       = score;
     m_relrisk_in[0]   = q_in;
@@ -134,8 +133,8 @@ inline void PBPOIabstract::store_max(int storage_index, double score, double q_i
   }
 }
 
-inline void PBPOIabstract::store_sim(int storage_index, double score, double q_in,
-                                     double q_out, int zone_nr, int duration) {
+inline void PBPOIabstract::store_sim(arma::uword storage_index, double score, double q_in,
+                                     double q_out, arma::uword zone_nr, arma::uword duration) {
   if (score > sim_scores[m_mcsim_index]) {
     sim_scores[m_mcsim_index]       = score;
     sim_relrisk_in[m_mcsim_index]   = q_in;

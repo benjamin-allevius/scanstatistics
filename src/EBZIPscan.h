@@ -5,7 +5,7 @@
 #include "ZIPutility.h"
 #include "scan_utility.h"
 
-class EBZIPscan : public USTscan<arma::umat, int> {
+class EBZIPscan : public USTscan<arma::umat, arma::uword> {
 
 public:
   EBZIPscan(const arma::umat& counts,
@@ -15,7 +15,7 @@ public:
             const arma::uvec& zone_lengths,
             const double rel_tol,
             const bool store_everything,
-            const int num_mcsim);
+            const arma::uword num_mcsim);
 
   Rcpp::DataFrame get_scan()  override;
   Rcpp::DataFrame get_mcsim() override;
@@ -34,25 +34,25 @@ private:
   arma::uvec sim_iterations;
 
   // Functions
-  void calculate(const int storage_index,
-                 const int zone_nr,
-                 const int duration,
+  void calculate(const arma::uword storage_index,
+                 const arma::uword zone_nr,
+                 const arma::uword duration,
                  const arma::uvec& current_zone,
                  const arma::uvec& current_rows) override;
-  int draw_sample(arma::uword row, arma::uword col) override;
+  arma::uword draw_sample(arma::uword row, arma::uword col) override;
   void set_sim_store_fun() override;
 
-  using store_ptr = void (EBZIPscan::*)(int storage_index, double score,
-                                        double q, int n_iterations,
-                                        int zone_nr, int duration);
+  using store_ptr = void (EBZIPscan::*)(arma::uword storage_index, double score,
+                                        double q, arma::uword n_iterations,
+                                        arma::uword zone_nr, arma::uword duration);
   store_ptr store;
-  void store_max(int storage_index, double score, double q, int n_iterations,
-                 int zone_nr, int duration);
-  void store_all(int storage_index, double score, double q, int n_iterations,
-                 int zone_nr, int duration);
-  void store_sim(int storage_index, double score, double q, int n_iterations,
-                 int zone_nr, int duration);
-  double eb_zip_relrisk(const int y_sum, const arma::vec& mu,
+  void store_max(arma::uword storage_index, double score, double q, arma::uword n_iterations,
+                 arma::uword zone_nr, arma::uword duration);
+  void store_all(arma::uword storage_index, double score, double q, arma::uword n_iterations,
+                 arma::uword zone_nr, arma::uword duration);
+  void store_sim(arma::uword storage_index, double score, double q, arma::uword n_iterations,
+                 arma::uword zone_nr, arma::uword duration);
+  double eb_zip_relrisk(const arma::uword y_sum, const arma::vec& mu,
                         const arma::vec& d);
 
 };
@@ -66,7 +66,7 @@ inline EBZIPscan::EBZIPscan(const arma::umat& counts,
                             const arma::uvec& zone_lengths,
                             const double rel_tol,
                             const bool store_everything,
-                            const int num_mcsim)
+                            const arma::uword num_mcsim)
   : USTscan(counts, zones, zone_lengths, store_everything, num_mcsim),
     m_baselines(baselines),
     m_probs(probs),
@@ -85,9 +85,9 @@ inline EBZIPscan::EBZIPscan(const arma::umat& counts,
 
 // Workhorse functions ---------------------------------------------------------
 
-inline void EBZIPscan::calculate(const int storage_index,
-                                 const int zone_nr,
-                                 const int duration,
+inline void EBZIPscan::calculate(const arma::uword storage_index,
+                                 const arma::uword zone_nr,
+                                 const arma::uword duration,
                                  const arma::uvec& current_zone,
                                  const arma::uvec& current_rows) {
   // Extract counts and parameters as vectors
@@ -107,12 +107,12 @@ inline void EBZIPscan::calculate(const int storage_index,
 
   // Store indices of zero counts; only loop through these when estimating
   // structural zero indicators. Also compute the sum of all counts.
-  std::vector<int> zero_idx = get_zero_indices(y);
-  int y_sum = arma::accu(y);
+  std::vector<arma::uword> zero_idx = get_zero_indices(y);
+  arma::uword y_sum = arma::accu(y);
 
   // Run EM algorithm
   double diff = 2.0 * m_rel_tol;
-  int n_iterations = 0;
+  arma::uword n_iterations = 0;
   while (diff > m_rel_tol) {
     n_iterations += 1;
 
@@ -142,23 +142,23 @@ inline void EBZIPscan::calculate(const int storage_index,
 // @param d A vector of (estimates of) the structural zero indicators.
 // @return A scalar; the relative risk.
 // @keywords internal
-inline double EBZIPscan::eb_zip_relrisk(const int y_sum, const arma::vec& mu,
+inline double EBZIPscan::eb_zip_relrisk(const arma::uword y_sum, const arma::vec& mu,
                              const arma::vec& d) {
   double denominator = 0.0;
-  for (int i = 0; i < mu.n_elem; ++i) {
+  for (arma::uword i = 0; i < mu.n_elem; ++i) {
     denominator += mu[i] * (1.0 - d[i]);
   }
   return std::max(1.0, y_sum / denominator);
 }
 
-inline int EBZIPscan::draw_sample(arma::uword row, arma::uword col) {
+inline arma::uword EBZIPscan::draw_sample(arma::uword row, arma::uword col) {
   return rzip(m_baselines.at(row, col), m_probs.at(row, col));
 }
 
 // Storage functions -----------------------------------------------------------
 
-inline void EBZIPscan::store_all(int storage_index, double score, double q,
-                                 int n_iterations, int zone_nr, int duration) {
+inline void EBZIPscan::store_all(arma::uword storage_index, double score, double q,
+                                 arma::uword n_iterations, arma::uword zone_nr, arma::uword duration) {
   m_scores[storage_index]       = score;
   m_relrisks[storage_index]     = q;
   m_iterations[storage_index]   = n_iterations;
@@ -166,8 +166,8 @@ inline void EBZIPscan::store_all(int storage_index, double score, double q,
   m_durations[storage_index]    = duration;
 }
 
-inline void EBZIPscan::store_max(int storage_index, double score, double q,
-                                 int n_iterations, int zone_nr, int duration) {
+inline void EBZIPscan::store_max(arma::uword storage_index, double score, double q,
+                                 arma::uword n_iterations, arma::uword zone_nr, arma::uword duration) {
   if (score > m_scores[0]) {
     m_scores[0]       = score;
     m_relrisks[0]     = q;
@@ -177,8 +177,8 @@ inline void EBZIPscan::store_max(int storage_index, double score, double q,
   }
 }
 
-inline void EBZIPscan::store_sim(int storage_index, double score, double q,
-                                 int n_iterations, int zone_nr, int duration) {
+inline void EBZIPscan::store_sim(arma::uword storage_index, double score, double q,
+                                 arma::uword n_iterations, arma::uword zone_nr, arma::uword duration) {
   if (score > sim_scores[m_mcsim_index]) {
     sim_scores[m_mcsim_index]       = score;
     sim_relrisks[m_mcsim_index]     = q;

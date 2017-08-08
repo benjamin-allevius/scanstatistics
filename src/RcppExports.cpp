@@ -7,7 +7,7 @@
 using namespace Rcpp;
 
 // scan_eb_negbin_cpp
-Rcpp::List scan_eb_negbin_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::mat& overdisp, const arma::uvec& zones, const arma::uvec& zone_lengths, const bool store_everything, const int num_mcsim, const bool score_hotspot);
+Rcpp::List scan_eb_negbin_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::mat& overdisp, const arma::uvec& zones, const arma::uvec& zone_lengths, const bool store_everything, const arma::uword num_mcsim, const bool score_hotspot);
 RcppExport SEXP _scanstatistics_scan_eb_negbin_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP overdispSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP store_everythingSEXP, SEXP num_mcsimSEXP, SEXP score_hotspotSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -18,14 +18,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::uvec& >::type zones(zonesSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type zone_lengths(zone_lengthsSEXP);
     Rcpp::traits::input_parameter< const bool >::type store_everything(store_everythingSEXP);
-    Rcpp::traits::input_parameter< const int >::type num_mcsim(num_mcsimSEXP);
+    Rcpp::traits::input_parameter< const arma::uword >::type num_mcsim(num_mcsimSEXP);
     Rcpp::traits::input_parameter< const bool >::type score_hotspot(score_hotspotSEXP);
     rcpp_result_gen = Rcpp::wrap(scan_eb_negbin_cpp(counts, baselines, overdisp, zones, zone_lengths, store_everything, num_mcsim, score_hotspot));
     return rcpp_result_gen;
 END_RCPP
 }
 // scan_eb_poisson_cpp
-Rcpp::List scan_eb_poisson_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::uvec& zones, const arma::uvec& zone_lengths, const bool store_everything, const int num_mcsim);
+Rcpp::List scan_eb_poisson_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::uvec& zones, const arma::uvec& zone_lengths, const bool store_everything, const arma::uword num_mcsim);
 RcppExport SEXP _scanstatistics_scan_eb_poisson_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP store_everythingSEXP, SEXP num_mcsimSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -35,13 +35,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::uvec& >::type zones(zonesSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type zone_lengths(zone_lengthsSEXP);
     Rcpp::traits::input_parameter< const bool >::type store_everything(store_everythingSEXP);
-    Rcpp::traits::input_parameter< const int >::type num_mcsim(num_mcsimSEXP);
+    Rcpp::traits::input_parameter< const arma::uword >::type num_mcsim(num_mcsimSEXP);
     rcpp_result_gen = Rcpp::wrap(scan_eb_poisson_cpp(counts, baselines, zones, zone_lengths, store_everything, num_mcsim));
     return rcpp_result_gen;
 END_RCPP
 }
 // scan_eb_zip_cpp
-Rcpp::List scan_eb_zip_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::mat& probs, const arma::uvec& zones, const arma::uvec& zone_lengths, const double rel_tol, const bool store_everything, const int num_mcsim);
+Rcpp::List scan_eb_zip_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::mat& probs, const arma::uvec& zones, const arma::uvec& zone_lengths, const double rel_tol, const bool store_everything, const arma::uword num_mcsim);
 RcppExport SEXP _scanstatistics_scan_eb_zip_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP probsSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP rel_tolSEXP, SEXP store_everythingSEXP, SEXP num_mcsimSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -53,13 +53,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::uvec& >::type zone_lengths(zone_lengthsSEXP);
     Rcpp::traits::input_parameter< const double >::type rel_tol(rel_tolSEXP);
     Rcpp::traits::input_parameter< const bool >::type store_everything(store_everythingSEXP);
-    Rcpp::traits::input_parameter< const int >::type num_mcsim(num_mcsimSEXP);
+    Rcpp::traits::input_parameter< const arma::uword >::type num_mcsim(num_mcsimSEXP);
     rcpp_result_gen = Rcpp::wrap(scan_eb_zip_cpp(counts, baselines, probs, zones, zone_lengths, rel_tol, store_everything, num_mcsim));
     return rcpp_result_gen;
 END_RCPP
 }
 // scan_pb_perm_cpp
-Rcpp::List scan_pb_perm_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::uvec& zones, const arma::uvec& zone_lengths, const bool store_everything, const int num_mcsim);
+Rcpp::List scan_pb_perm_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::uvec& zones, const arma::uvec& zone_lengths, const bool store_everything, const arma::uword num_mcsim);
 RcppExport SEXP _scanstatistics_scan_pb_perm_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP store_everythingSEXP, SEXP num_mcsimSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -69,13 +69,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::uvec& >::type zones(zonesSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type zone_lengths(zone_lengthsSEXP);
     Rcpp::traits::input_parameter< const bool >::type store_everything(store_everythingSEXP);
-    Rcpp::traits::input_parameter< const int >::type num_mcsim(num_mcsimSEXP);
+    Rcpp::traits::input_parameter< const arma::uword >::type num_mcsim(num_mcsimSEXP);
     rcpp_result_gen = Rcpp::wrap(scan_pb_perm_cpp(counts, baselines, zones, zone_lengths, store_everything, num_mcsim));
     return rcpp_result_gen;
 END_RCPP
 }
 // scan_pb_poisson_cpp
-Rcpp::List scan_pb_poisson_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::uvec& zones, const arma::uvec& zone_lengths, const bool store_everything, const int num_mcsim);
+Rcpp::List scan_pb_poisson_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::uvec& zones, const arma::uvec& zone_lengths, const bool store_everything, const arma::uword num_mcsim);
 RcppExport SEXP _scanstatistics_scan_pb_poisson_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP store_everythingSEXP, SEXP num_mcsimSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -85,13 +85,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::uvec& >::type zones(zonesSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type zone_lengths(zone_lengthsSEXP);
     Rcpp::traits::input_parameter< const bool >::type store_everything(store_everythingSEXP);
-    Rcpp::traits::input_parameter< const int >::type num_mcsim(num_mcsimSEXP);
+    Rcpp::traits::input_parameter< const arma::uword >::type num_mcsim(num_mcsimSEXP);
     rcpp_result_gen = Rcpp::wrap(scan_pb_poisson_cpp(counts, baselines, zones, zone_lengths, store_everything, num_mcsim));
     return rcpp_result_gen;
 END_RCPP
 }
 // get_zero_indices
-std::vector<int> get_zero_indices(const arma::uvec& v);
+std::vector<arma::uword> get_zero_indices(const arma::uvec& v);
 RcppExport SEXP _scanstatistics_get_zero_indices(SEXP vSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

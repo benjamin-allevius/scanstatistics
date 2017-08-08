@@ -15,7 +15,7 @@ public:
           const arma::uvec& m_zones,
           const arma::uvec& m_zone_lengths,
           const bool store_everything,
-          const int num_mcsim);
+          const arma::uword num_mcsim);
   void run_scan();
   virtual void run_mcsim();
 
@@ -23,13 +23,13 @@ public:
   virtual Rcpp::DataFrame get_mcsim() = 0;
 
 protected:
-  int        m_num_locs;
-  int        m_num_zones;
-  int        m_max_dur;
-  int        m_num_mcsim;
+  arma::uword        m_num_locs;
+  arma::uword        m_num_zones;
+  arma::uword        m_max_dur;
+  arma::uword        m_num_mcsim;
   bool       m_store_everything;
-  int        m_mcsim_index;
-  int        m_out_length;
+  arma::uword        m_mcsim_index;
+  arma::uword        m_out_length;
   T          m_counts;
   arma::uvec m_zones;
   arma::uvec m_zone_lengths;
@@ -44,9 +44,9 @@ protected:
   arma::uvec sim_durations;
   arma::vec  sim_scores;
 
-  virtual void calculate(const int storage_index,
-                         const int zone_nr,
-                         const int duration,
+  virtual void calculate(const arma::uword storage_index,
+                         const arma::uword zone_nr,
+                         const arma::uword duration,
                          const arma::uvec& current_zone,
                          const arma::uvec& current_rows) = 0;
 
@@ -55,7 +55,7 @@ protected:
   virtual void set_sim_store_fun() = 0;
 
   arma::uvec zone_complement(const arma::uvec& zone);
-  arma::uvec duration_complement(const int d);
+  arma::uvec duration_complement(const arma::uword d);
 
 };
 
@@ -66,7 +66,7 @@ inline USTscan<T, t>::USTscan(const T& counts,
                               const arma::uvec& zones,
                               const arma::uvec& zone_lengths,
                               const bool store_everything,
-                              const int num_mcsim)
+                              const arma::uword num_mcsim)
   : m_counts(counts),
     m_num_locs(counts.n_cols),
     m_num_zones(zone_lengths.n_elem),
@@ -97,17 +97,17 @@ inline USTscan<T, t>::USTscan(const T& counts,
 
 template <class T, class t>
 inline void USTscan<T, t>::run_scan() {
-  int i = 0; // Storage index
-  for (int d = 0; d < m_max_dur; ++d) {
+  arma::uword i = 0; // Storage index
+  for (arma::uword d = 0; d < m_max_dur; ++d) {
 
     arma::uvec row_idx (d + 1); // d+1 latest time periods
-    for (int k = 0; k <= d; ++k) row_idx[k] = k;
+    for (arma::uword k = 0; k <= d; ++k) row_idx[k] = k;
 
     // Indices for extracting the current zone
-    int zone_start = 0;
-    int zone_end = 0;
+    arma::uword zone_start = 0;
+    arma::uword zone_end = 0;
 
-    for (int z = 0; z < m_num_zones; ++z) {
+    for (arma::uword z = 0; z < m_num_zones; ++z) {
 
       // Extract zone
       zone_end = zone_start + m_zone_lengths[z] - 1;

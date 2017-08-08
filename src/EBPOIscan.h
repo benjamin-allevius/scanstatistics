@@ -3,7 +3,7 @@
 
 #include "USTscan.h"
 
-class EBPOIscan : public USTscan<arma::umat, int> {
+class EBPOIscan : public USTscan<arma::umat, arma::uword> {
 
 public:
   EBPOIscan(const arma::umat& counts,
@@ -11,7 +11,7 @@ public:
             const arma::uvec& zones,
             const arma::uvec& zone_lengths,
             const bool store_everything,
-            const int num_mcsim);
+            const arma::uword num_mcsim);
 
   Rcpp::DataFrame get_scan()  override;
   Rcpp::DataFrame get_mcsim() override;
@@ -27,24 +27,24 @@ private:
   arma::vec sim_relrisks;
 
   // Functions
-  void calculate(const int storage_index,
-                 const int zone_nr,
-                 const int duration,
+  void calculate(const arma::uword storage_index,
+                 const arma::uword zone_nr,
+                 const arma::uword duration,
                  const arma::uvec& current_zone,
                  const arma::uvec& current_rows) override;
   void simulate_counts() override;
-  int draw_sample(arma::uword row, arma::uword col) override;
+  arma::uword draw_sample(arma::uword row, arma::uword col) override;
   void set_sim_store_fun() override;
   
-  using store_ptr = void (EBPOIscan::*)(int storage_index, double score,
-                                        double q, int zone_nr, int duration);
+  using store_ptr = void (EBPOIscan::*)(arma::uword storage_index, double score,
+                                        double q, arma::uword zone_nr, arma::uword duration);
   store_ptr store;
-  void store_max(int storage_index, double score, double q, int zone_nr,
-                 int duration);
-  void store_all(int storage_index, double score, double q, int zone_nr,
-                 int duration);
-  void store_sim(int storage_index, double score, double q, int zone_nr,
-                 int duration);
+  void store_max(arma::uword storage_index, double score, double q, arma::uword zone_nr,
+                 arma::uword duration);
+  void store_all(arma::uword storage_index, double score, double q, arma::uword zone_nr,
+                 arma::uword duration);
+  void store_sim(arma::uword storage_index, double score, double q, arma::uword zone_nr,
+                 arma::uword duration);
 
 };
 
@@ -55,7 +55,7 @@ inline EBPOIscan::EBPOIscan(const arma::umat& counts,
                             const arma::uvec& zones,
                             const arma::uvec& zone_lengths,
                             const bool store_everything,
-                            const int num_mcsim)
+                            const arma::uword num_mcsim)
   : USTscan(counts, zones, zone_lengths, store_everything, num_mcsim),
     m_baselines_orig(baselines) {
   
@@ -74,9 +74,9 @@ inline EBPOIscan::EBPOIscan(const arma::umat& counts,
 
 // Workhorse functions ---------------------------------------------------------
 
-inline void EBPOIscan::calculate(const int storage_index,
-                                 const int zone_nr,
-                                 const int duration,
+inline void EBPOIscan::calculate(const arma::uword storage_index,
+                                 const arma::uword zone_nr,
+                                 const arma::uword duration,
                                  const arma::uvec& current_zone,
                                  const arma::uvec& current_rows) {
 
@@ -92,7 +92,7 @@ inline void EBPOIscan::calculate(const int storage_index,
    duration + 1);
 }
 
-inline int EBPOIscan::draw_sample(arma::uword row, arma::uword col) {
+inline arma::uword EBPOIscan::draw_sample(arma::uword row, arma::uword col) {
   return R::rpois(m_baselines_orig.at(row, col));
 }
 
@@ -107,16 +107,16 @@ inline void EBPOIscan::simulate_counts() {
 
 // Storage functions -----------------------------------------------------------
 
-inline void EBPOIscan::store_all(int storage_index, double score, double q,
-                                 int zone_nr, int duration) {
+inline void EBPOIscan::store_all(arma::uword storage_index, double score, double q,
+                                 arma::uword zone_nr, arma::uword duration) {
   m_scores[storage_index]       = score;
   m_relrisks[storage_index]     = q;
   m_zone_numbers[storage_index] = zone_nr;
   m_durations[storage_index]    = duration;
 }
 
-inline void EBPOIscan::store_max(int storage_index, double score, double q,
-                                 int zone_nr, int duration) {
+inline void EBPOIscan::store_max(arma::uword storage_index, double score, double q,
+                                 arma::uword zone_nr, arma::uword duration) {
   if (score > m_scores[0]) {
     m_scores[0]       = score;
     m_relrisks[0]     = q;
@@ -125,8 +125,8 @@ inline void EBPOIscan::store_max(int storage_index, double score, double q,
   }
 }
 
-inline void EBPOIscan::store_sim(int storage_index, double score, double q,
-                                 int zone_nr, int duration) {
+inline void EBPOIscan::store_sim(arma::uword storage_index, double score, double q,
+                                 arma::uword zone_nr, arma::uword duration) {
   if (score > sim_scores[m_mcsim_index]) {
     sim_scores[m_mcsim_index]       = score;
     sim_relrisks[m_mcsim_index]     = q;

@@ -4,7 +4,7 @@
 #include "USTscan.h"
 #include "scan_utility.h"
 
-class EBNBscan : public USTscan<arma::umat, int> {
+class EBNBscan : public USTscan<arma::umat, arma::uword> {
 
 public:
   EBNBscan(const arma::umat& counts,
@@ -13,7 +13,7 @@ public:
             const arma::uvec& zones,
             const arma::uvec& zone_lengths,
             const bool store_everything,
-            const int num_mcsim,
+            const arma::uword num_mcsim,
             const bool score_hotspot);
 
   Rcpp::DataFrame get_scan()  override;
@@ -24,31 +24,31 @@ private:
   arma::mat m_overdisp;
 
   // Functions
-  void calculate(const int storage_index,
-                 const int zone_nr,
-                 const int duration,
+  void calculate(const arma::uword storage_index,
+                 const arma::uword zone_nr,
+                 const arma::uword duration,
                  const arma::uvec& current_zone,
                  const arma::uvec& current_rows) override;
 
-  int draw_sample(arma::uword row, arma::uword col) override;
+  arma::uword draw_sample(arma::uword row, arma::uword col) override;
   void set_sim_store_fun() override;
 
-  using store_ptr = void (EBNBscan::*)(int storage_index, double score,
-                                       int zone_nr, int duration);
+  using store_ptr = void (EBNBscan::*)(arma::uword storage_index, double score,
+                                       arma::uword zone_nr, arma::uword duration);
   store_ptr store;
-  void store_max(int storage_index, double score, int zone_nr, int duration);
-  void store_all(int storage_index, double score, int zone_nr, int duration);
-  void store_sim(int storage_index, double score, int zone_nr, int duration);
+  void store_max(arma::uword storage_index, double score, arma::uword zone_nr, arma::uword duration);
+  void store_all(arma::uword storage_index, double score, arma::uword zone_nr, arma::uword duration);
+  void store_sim(arma::uword storage_index, double score, arma::uword zone_nr, arma::uword duration);
 
   using score_ptr = double (EBNBscan::*)(const arma::uvec& y,
                                          const arma::vec& mu,
                                          const arma::vec& omega,
-                                         const int d);
+                                         const arma::uword d);
   score_ptr score_fun;
   double score_emerge(const arma::uvec& y, const arma::vec& mu,
-                      const arma::vec& omega, const int d);
+                      const arma::vec& omega, const arma::uword d);
   double score_hotspot(const arma::uvec& y, const arma::vec& mu,
-                       const arma::vec& omega, const int d);
+                       const arma::vec& omega, const arma::uword d);
 
 };
 
@@ -60,7 +60,7 @@ inline EBNBscan::EBNBscan(const arma::umat& counts,
                           const arma::uvec& zones,
                           const arma::uvec& zone_lengths,
                           const bool store_everything,
-                          const int num_mcsim,
+                          const arma::uword num_mcsim,
                           const bool score_hotspot)
   : USTscan(counts, zones, zone_lengths, store_everything, num_mcsim),
     m_baselines(baselines),
@@ -74,9 +74,9 @@ inline EBNBscan::EBNBscan(const arma::umat& counts,
 
 // Workhorse functions ---------------------------------------------------------
 
-inline void EBNBscan::calculate(const int storage_index,
-                                const int zone_nr,
-                                const int duration,
+inline void EBNBscan::calculate(const arma::uword storage_index,
+                                const arma::uword zone_nr,
+                                const arma::uword duration,
                                 const arma::uvec& current_zone,
                                 const arma::uvec& current_rows) {
   // Extract counts and parameters as vectors
@@ -92,17 +92,17 @@ inline void EBNBscan::calculate(const int storage_index,
 }
 
 inline double EBNBscan::score_hotspot(const arma::uvec& y, const arma::vec& mu,
-                                      const arma::vec& omega, const int d) {
+                                      const arma::vec& omega, const arma::uword d) {
   return arma::accu((y - mu) / omega) / arma::accu(mu / omega);
 }
 
 inline double EBNBscan::score_emerge(const arma::uvec& y, const arma::vec& mu,
-                                     const arma::vec& omega, const int d) {
+                                     const arma::vec& omega, const arma::uword d) {
   double num = 0.0;
   double den = 0.0;
-  int idx = 0;
-  for (int i = 0; i < y.n_elem / (d + 1); ++i) {
-    for (int t = 0; t < d + 1; ++idx, ++t) {
+  arma::uword idx = 0;
+  for (arma::uword i = 0; i < y.n_elem / (d + 1); ++i) {
+    for (arma::uword t = 0; t < d + 1; ++idx, ++t) {
       num += (y[idx] - mu[idx]) * (d + 1.0 - t) / omega[idx];
       den += mu[idx] * std::pow(d + 1.0 - t, 2) / omega[idx];
     }
@@ -110,22 +110,22 @@ inline double EBNBscan::score_emerge(const arma::uvec& y, const arma::vec& mu,
   return num / den;
 }
 
-inline int EBNBscan::draw_sample(arma::uword row, arma::uword col) {
+inline arma::uword EBNBscan::draw_sample(arma::uword row, arma::uword col) {
   return rnbinom2(m_baselines.at(row, col), m_overdisp.at(row, col));
 }
 
 
 // Storage functions -----------------------------------------------------------
 
-inline void EBNBscan::store_all(int storage_index, double score, int zone_nr,
-                                int duration) {
+inline void EBNBscan::store_all(arma::uword storage_index, double score, arma::uword zone_nr,
+                                arma::uword duration) {
   m_scores[storage_index]       = score;
   m_zone_numbers[storage_index] = zone_nr;
   m_durations[storage_index]    = duration;
 }
 
-inline void EBNBscan::store_max(int storage_index, double score, int zone_nr,
-                                int duration) {
+inline void EBNBscan::store_max(arma::uword storage_index, double score, arma::uword zone_nr,
+                                arma::uword duration) {
   if (score > m_scores[0]) {
     m_scores[0]       = score;
     m_zone_numbers[0] = zone_nr;
@@ -133,8 +133,8 @@ inline void EBNBscan::store_max(int storage_index, double score, int zone_nr,
   }
 }
 
-inline void EBNBscan::store_sim(int storage_index, double score, int zone_nr,
-                                int duration) {
+inline void EBNBscan::store_sim(arma::uword storage_index, double score, arma::uword zone_nr,
+                                arma::uword duration) {
   if (score > sim_scores[m_mcsim_index]) {
     sim_scores[m_mcsim_index]       = score;
     sim_zone_numbers[m_mcsim_index] = zone_nr;

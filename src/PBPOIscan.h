@@ -13,7 +13,7 @@ public:
             const arma::uvec& zones,
             const arma::uvec& zone_lengths,
             const bool store_everything,
-            const int num_mcsim);
+            const arma::uword num_mcsim);
 
 private:
   void simulate_counts() override;
@@ -27,7 +27,7 @@ inline PBPOIscan::PBPOIscan(const arma::umat& counts,
                             const arma::uvec& zones,
                             const arma::uvec& zone_lengths,
                             const bool store_everything,
-                            const int num_mcsim)
+                            const arma::uword num_mcsim)
   : PBPOIabstract(counts, baselines, zones, zone_lengths, store_everything, 
                   num_mcsim) {}
 

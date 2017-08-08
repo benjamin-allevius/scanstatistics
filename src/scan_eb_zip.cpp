@@ -8,7 +8,7 @@ Rcpp::List scan_eb_zip_cpp(const arma::umat& counts,
                            const arma::uvec& zone_lengths,
                            const double rel_tol,
                            const bool store_everything,
-                           const int num_mcsim) {
+                           const arma::uword num_mcsim) {
 
   EBZIPscan ob {counts, baselines, probs, zones, zone_lengths, rel_tol, 
                 store_everything, num_mcsim};

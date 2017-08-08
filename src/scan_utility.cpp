@@ -1,8 +1,8 @@
 #include "scan_utility.h"
 
-std::vector<int> get_zero_indices(const arma::uvec& v) {
-  std::vector<int> zero_idx;
-  for (int i = 0; i < v.n_elem; ++i) {
+std::vector<arma::uword> get_zero_indices(const arma::uvec& v) {
+  std::vector<arma::uword> zero_idx;
+  for (arma::uword i = 0; i < v.n_elem; ++i) {
     if (v[i] == 0) zero_idx.push_back(i);
   }
   return zero_idx;
@@ -13,13 +13,13 @@ std::vector<int> get_zero_indices(const arma::uvec& v) {
 
 arma::vec NumericVector2vec(const Rcpp::NumericVector& v) {
   arma::vec x(v.size());
-  for (int i = 0; i < v.size(); ++i) x.at(i) = v.at(i);
+  for (arma::uword i = 0; i < v.size(); ++i) x.at(i) = v.at(i);
   return x;
 }
 
 arma::uvec IntegerVector2uvec(const Rcpp::IntegerVector& v) {
   arma::uvec x(v.size());
-  for (int i = 0; i < v.size(); ++i) x.at(i) = v.at(i);
+  for (arma::uword i = 0; i < v.size(); ++i) x.at(i) = v.at(i);
   return x;
 }
 
@@ -27,13 +27,13 @@ arma::uvec IntegerVector2uvec(const Rcpp::IntegerVector& v) {
 
 Rcpp::NumericVector vec2NumericVector(const arma::vec& v) {
   Rcpp::NumericVector x(v.size());
-  for (int i = 0; i < v.size(); ++i) x.at(i) = v.at(i);
+  for (arma::uword i = 0; i < v.size(); ++i) x.at(i) = v.at(i);
   return x;
 }
 
 Rcpp::IntegerVector uvec2IntegerVector(const arma::uvec& v) {
   Rcpp::IntegerVector x(v.size());
-  for (int i = 0; i < v.size(); ++i) x.at(i) = v.at(i);
+  for (arma::uword i = 0; i < v.size(); ++i) x.at(i) = v.at(i);
   return x;
 }
 
@@ -66,7 +66,7 @@ arma::umat contract_matrix(const arma::umat& A,
 // Permute column 0 using Fisher-Yates algorithm
 arma::uvec shuffle_time_counts(const arma::uvec& v) {
   arma::uvec res(v);
-  arma::uword k = 0;
+  arma::sword k = 0;
   for (arma::uword i = res.n_elem - 1; k < res.n_elem; --i, ++k) {
     arma::uword j = static_cast<arma::uword>(R::runif(0, static_cast<double>(i)));
     arma::uword tmp = res.at(i);

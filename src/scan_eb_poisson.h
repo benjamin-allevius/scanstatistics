@@ -34,7 +34,7 @@ Rcpp::List scan_eb_poisson_cpp(const arma::umat& counts,
                                const arma::uvec& zones,
                                const arma::uvec& zone_lengths,
                                const bool store_everything,
-                               const int num_mcsim);
+                               const arma::uword num_mcsim);
 
 
 #endif
