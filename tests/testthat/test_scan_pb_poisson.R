@@ -1,5 +1,22 @@
 context("PB Poisson statistic tests")
 
+pb_rrin <- function(C,B) sum(C) / sum(B)
+pb_rrout <- function(C,B,N) {
+  C <- sum(C); B <- sum(B) 
+  ifelse(B < N, (N - C) / (N-B), 1)
+}
+
+pb_score <- function(C, B, N) {
+  C <- sum(C)
+  B <- sum(B)
+  risk_in <- C / B
+  risk_out <- ifelse(N > B, (N - C) / (N - B), 1)
+  term2 <- ifelse(N > C, (N-C)*log(risk_out), 0)
+  ifelse(C > B, C * log(risk_in) + term2, -Inf)
+}
+
+
+
 test_that("scan_pb_poisson_cpp", {
   # Single timepoint
   in1 <- list(
@@ -9,6 +26,20 @@ test_that("scan_pb_poisson_cpp", {
   in1$N = sum(in1$counts)
   in1$zones_flat =  unlist(in1$zones)
   in1$zone_lengths = unlist(lapply(in1$zones, length))
+  
+  ex1_score <- rep(NA, length(in1$zones) * nrow(in1$counts))
+  ex1_relrisk_in <- ex1_score
+  ex1_relrisk_out <- ex1_score
+  idx <- 1
+  for (j in 1:nrow(in1$counts)) {
+    for (z in in1$zones) {
+      ex1_score[idx] <- pb_score(in1$counts[1:j, z], in1$baselines[1:j, z], in1$N)
+      ex1_relrisk_in[idx] <- pb_rrin(in1$counts[1:j, z], in1$baselines[1:j, z])
+      ex1_relrisk_out[idx] <- pb_rrout(in1$counts[1:j, z], in1$baselines[1:j, z], in1$N)
+      idx <- idx + 1
+    }
+  }
+  
 
   actual1 <- scan_pb_poisson_cpp(in1$counts,
                                  in1$baselines,
@@ -22,10 +53,9 @@ test_that("scan_pb_poisson_cpp", {
                                  in1$zone_lengths,
                                  store_everything = FALSE,
                                  num_mcsim = 0)$observed
-  expected1_score <- c(log(1 / 0.5), 0, 0)
-  expect_equal(actual1$score, expected1_score)
-  expect_equal(actual1$relrisk_in, c(2, 0, 1))
-  expect_equal(actual1$relrisk_out, c(0, 2, 1))
+  expect_equal(actual1$score, ex1_score)
+  expect_equal(actual1$relrisk_in, ex1_relrisk_in)
+  expect_equal(actual1$relrisk_out, ex1_relrisk_out)
   expect_equal(c(actual1[which.max(actual1$score), ]), c(actual1b))
 
   # 3 timepoints
@@ -40,7 +70,20 @@ test_that("scan_pb_poisson_cpp", {
   in2$zones_flat =  unlist(in2$zones)
   in2$zone_lengths = unlist(lapply(in2$zones, length))
   in2$N <- sum(in2$counts)
-
+  
+  ex2_score <- rep(NA, length(in2$zones) * nrow(in2$counts))
+  ex2_relrisk_in <- ex2_score
+  ex2_relrisk_out <- ex2_score
+  idx <- 1
+  for (j in 1:nrow(in2$counts)) {
+    for (z in in2$zones) {
+      ex2_score[idx] <- pb_score(in2$counts[1:j, z], in2$baselines[1:j, z], in2$N)
+      ex2_relrisk_in[idx] <- pb_rrin(in2$counts[1:j, z], in2$baselines[1:j, z])
+      ex2_relrisk_out[idx] <- pb_rrout(in2$counts[1:j, z], in2$baselines[1:j, z], in2$N)
+      idx <- idx + 1
+    }
+  }
+  
   actual2 <- scan_pb_poisson_cpp(in2$counts,
                                  in2$baselines,
                                  in2$zones_flat - 1,
@@ -54,24 +97,9 @@ test_that("scan_pb_poisson_cpp", {
                                  store_everything = FALSE,
                                  num_mcsim = 0)$observed
 
-  expected2_relrisk_in <- c(1/2, 0, 1/3,
-                            1/2, 1/6, 4/12,
-                            3 / 12, 21 / 12, 1)
-  expected2_relrisk_out <- c(23 / 22, 24 / 23, 23 / 21,
-                             21 / 18, 23 / 18, 20 / 12,
-                             21 / 12, 3 / 12, 1)
-
-  f <- function(c, b) {
-    term2 <- ifelse(in2$N > b, (in2$N - c) * log((in2$N - c) / (in2$N - b)), 0)
-    ifelse(c > b, c * log(c/b) + term2, 0)
-  }
-  expected2_score <- c(f(1, 2), f(0, 1), f(1, 3),
-                       f(3, 6), f(1, 6), f(4, 12),
-                       f(3, 12), f(21, 12), f(24, 24))
-
-  expect_equal(actual2$score, expected2_score)
-  expect_equal(actual2$relrisk_in, expected2_relrisk_in)
-  expect_equal(actual2$relrisk_out, expected2_relrisk_out)
+  expect_equal(actual2$score, ex2_score)
+  expect_equal(actual2$relrisk_in, ex2_relrisk_in)
+  expect_equal(actual2$relrisk_out, ex2_relrisk_out)
   expect_equal(c(actual2[which.max(actual2$score), ]), c(actual2b))
 })
 
