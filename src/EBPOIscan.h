@@ -86,7 +86,7 @@ inline void EBPOIscan::calculate(const arma::uword storage_index,
   double C = arma::accu(m_counts.submat(row_idx, current_zone));
   double B = arma::accu(m_baselines.submat(row_idx, current_zone));
 
-  double score = (C > B ? C * (log(C) - log(B)) + B - C : 0.0);
+  double score = C > B ? C * log(C / B) + B - C : 0.0;
 
   (this->*store)(storage_index, score, std::max(1.0, C / B), zone_nr + 1,
    duration + 1);
