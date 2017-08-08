@@ -101,7 +101,7 @@ inline void PBPOIabstract::calculate(const arma::uword storage_index,
              1.0);
   term2 = m_total_count > C ? (m_total_count - C) * std::log(risk_out) : 0.0;
 
-  score = C > B ? C * std::log(risk_in) + term2 : R_NegInf;
+  score = C > B ? C * std::log(risk_in) + term2 : 0.0;
 
   (this->*store)(storage_index, score, risk_in, risk_out, zone_nr + 1,
                  duration + 1);

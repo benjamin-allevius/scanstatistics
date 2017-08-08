@@ -12,7 +12,7 @@ pb_score <- function(C, B, N) {
   risk_in <- C / B
   risk_out <- ifelse(N > B, (N - C) / (N - B), 1)
   term2 <- ifelse(N > C, (N-C)*log(risk_out), 0)
-  ifelse(C > B, C * log(risk_in) + term2, -Inf)
+  ifelse(C > B, C * log(risk_in) + term2, 0)
 }
 
 
