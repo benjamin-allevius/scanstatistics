@@ -62,6 +62,10 @@ df_to_matrix <- function(df, time_col = 1, location_col = 2, value_col = 3) {
   return(x)
 }
 
+run_analysis <- function(scanstat, args) {
+  
+}
+
 
 # Clean up when package is unloaded.
 .onUnload <- function (libpath) {
