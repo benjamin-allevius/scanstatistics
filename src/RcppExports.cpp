@@ -101,41 +101,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// expand_matrix
-arma::umat expand_matrix(const arma::umat& A);
-RcppExport SEXP _scanstatistics_expand_matrix(SEXP ASEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::umat& >::type A(ASEXP);
-    rcpp_result_gen = Rcpp::wrap(expand_matrix(A));
-    return rcpp_result_gen;
-END_RCPP
-}
-// contract_matrix
-arma::umat contract_matrix(const arma::umat& A, arma::uword nr, arma::uword nc);
-RcppExport SEXP _scanstatistics_contract_matrix(SEXP ASEXP, SEXP nrSEXP, SEXP ncSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::umat& >::type A(ASEXP);
-    Rcpp::traits::input_parameter< arma::uword >::type nr(nrSEXP);
-    Rcpp::traits::input_parameter< arma::uword >::type nc(ncSEXP);
-    rcpp_result_gen = Rcpp::wrap(contract_matrix(A, nr, nc));
-    return rcpp_result_gen;
-END_RCPP
-}
-// shuffle_time_counts
-arma::uvec shuffle_time_counts(const arma::uvec& v);
-RcppExport SEXP _scanstatistics_shuffle_time_counts(SEXP vSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::uvec& >::type v(vSEXP);
-    rcpp_result_gen = Rcpp::wrap(shuffle_time_counts(v));
-    return rcpp_result_gen;
-END_RCPP
-}
 // permute_matrix
 arma::umat permute_matrix(const arma::umat& A);
 RcppExport SEXP _scanstatistics_permute_matrix(SEXP ASEXP) {
@@ -155,9 +120,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_scanstatistics_scan_pb_perm_cpp", (DL_FUNC) &_scanstatistics_scan_pb_perm_cpp, 6},
     {"_scanstatistics_scan_pb_poisson_cpp", (DL_FUNC) &_scanstatistics_scan_pb_poisson_cpp, 6},
     {"_scanstatistics_get_zero_indices", (DL_FUNC) &_scanstatistics_get_zero_indices, 1},
-    {"_scanstatistics_expand_matrix", (DL_FUNC) &_scanstatistics_expand_matrix, 1},
-    {"_scanstatistics_contract_matrix", (DL_FUNC) &_scanstatistics_contract_matrix, 3},
-    {"_scanstatistics_shuffle_time_counts", (DL_FUNC) &_scanstatistics_shuffle_time_counts, 1},
     {"_scanstatistics_permute_matrix", (DL_FUNC) &_scanstatistics_permute_matrix, 1},
     {NULL, NULL, 0}
 };

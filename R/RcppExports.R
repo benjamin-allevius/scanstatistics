@@ -154,18 +154,6 @@ get_zero_indices <- function(v) {
     .Call(`_scanstatistics_get_zero_indices`, v)
 }
 
-expand_matrix <- function(A) {
-    .Call(`_scanstatistics_expand_matrix`, A)
-}
-
-contract_matrix <- function(A, nr, nc) {
-    .Call(`_scanstatistics_contract_matrix`, A, nr, nc)
-}
-
-shuffle_time_counts <- function(v) {
-    .Call(`_scanstatistics_shuffle_time_counts`, v)
-}
-
 #' Permute the entries of the matrix, preserving row and column marginals.
 #' 
 #' Permute the entries of the matrix, preserving row and column marginals.
