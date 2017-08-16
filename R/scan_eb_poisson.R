@@ -13,6 +13,7 @@
 #'      \item A data frame with columns "time", "location", "count", "baseline". 
 #'            Alternatively, the column "baseline" can be replaced by a column
 #'            "population". The baselines are the expected values of the counts.
+#'    }
 #' @param zones A list of integer vectors. Each vector corresponds to a single
 #'    zone; its elements are the numbers of the locations in that zone.
 #' @param baselines Optional. A matrix of the same dimensions as \code{counts}. 
@@ -33,27 +34,28 @@
 #'    statistic for each zone and duration is returned. If \code{TRUE}, only the
 #'    largest such statistic (i.e. the scan statistic) is returned, along with
 #'    the corresponding zone and duration.
-#' @return A list with the following components:
+#' @return A list which, in addition to the information about the type of scan
+#'    statistic, has the following components:
 #'    \describe{
 #'      \item{MLC}{A list containing the number of the zone of the most likely
 #'            cluster (MLC), the locations in that zone, the duration of the 
-#'            MLC, the calculated score, the relative risk, and matrices of the 
-#'            observed counts and baselines for each location and time point in 
-#'            the MLC.}
-#'      \item{table}{A data frame containing, for each combination of zone and
-#'            duration investigated, the zone number, duration, score, relative 
-#'            risk. The table is sorted by score with the top-scoring location 
-#'            on top.If \code{max_only = TRUE}, only contains a single row 
-#'            corresponding to the MLC.}
-#'      \item{replicate_statistics}{A data frame of the Monte Carlo replicates 
-#'            of the scan statistic (if any ), and the corresponding zones and
-#'            durations.}
+#'            MLC, the calculated score, and the relative risk. In order, the 
+#'            elements of this list are named  \code{zone_number, locations, 
+#'            duration, score, relative_risk}.}
+#'      \item{observed}{A data frame containing, for each combination of zone 
+#'            and duration investigated, the zone number, duration, score, 
+#'            relative risk. The table is sorted by score with the top-scoring 
+#'            location on top. If \code{max_only = TRUE}, only contains a single 
+#'            row corresponding to the MLC.}
+#'      \item{replicates}{A data frame of the Monte Carlo replicates of the scan 
+#'            statistic (if any ), and the corresponding zones and durations.}
 #'      \item{MC_pvalue}{The Monte Carlo \eqn{P}-value.}
 #'      \item{Gumbel_pvalue}{A \eqn{P}-value obtained by fitting a Gumbel 
 #'            distribution to the replicate scan statistics.}
 #'      \item{n_zones}{The number of zones scanned.}
 #'      \item{n_locations}{The number of locations.}
 #'      \item{max_duration}{The maximum duration considered.}
+#'      \item{n_mcsim}{The number of Monte Carlo replicates made.}
 #'    }
 #' @references 
 #'    Neill, D. B., Moore, A. W., Sabhnani, M. and Daniel, K. (2005). 
@@ -106,7 +108,7 @@ scan_eb_poisson <- function(counts,
       stop("For data frame counts, either population or baseline must be ",
            "specified.")
     }
-    
+    counts %<>% arrange(location, -time)
     # Create matrices ----------------------------------------------------------
     if ("baseline" %notin% names(counts)) {
       baselines <- NULL
@@ -152,52 +154,28 @@ scan_eb_poisson <- function(counts,
 
 
   # Run analysis on observed counts --------------------------------------------
-  scan <- scan_eb_poisson_cpp(counts = counts, 
-                              baselines = baselines,
-                              zones = zones_flat, 
-                              zone_lengths = zone_lengths,
-                              store_everything = !max_only,
-                              num_mcsim = n_mcsim)
-
-  # Extract the most likely cluster (MLC)
-  scan$observed %<>% arrange(-score)
-  MLC <- scan$observed[1, ]
-
-  # Get P-values
-  gumbel_pvalue <- NULL
-  MC_pvalue <- NULL
-  if (n_mcsim > 0) {
-    gumbel_pvalue <- gumbel_pvalue(MLC$score, scan$simulated$score, 
-                                   method = "ML")$pvalue
-    MC_pvalue <- mc_pvalue(MLC$score, scan$simulated$score)
-  }
+  scan <- run_scan(scan_eb_poisson_cpp, args)
   
-  MLC_counts <- counts[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
-  MLC_basel <- baselines[seq_len(MLC$duration), zones[[MLC$zone]], drop = FALSE]
+  MLC_row <- scan$observed[1, ]
   
-  MLC_out <- list(zone_number = MLC$zone,
-                  locations = zones[[MLC$zone]],
-                  duration = MLC$duration,
-                  score = MLC$score,
-                  relative_risk = MLC$relrisk,
-                  observed = flipud(MLC_counts),
-                  baselines = flipud(MLC_basel))
+  MLC_out <- list(zone_number = MLC_row$zone,
+                  locations = zones[[MLC_row$zone]],
+                  duration = MLC_row$duration,
+                  score = MLC_row$score,
+                  relative_risk = MLC_row$relrisk)
 
   structure(
-    list(
-      # General
-      distribution = "Poisson",
-      type = "expectation-based",
-      setting = "univariate",
-      # Data
-      MLC = MLC_out,
-      table = scan$observed,
-      replicate_statistics = scan$simulated,
-      MC_pvalue = MC_pvalue,
-      Gumbel_pvalue = gumbel_pvalue,
-      n_zones = length(zones),
-      n_locations = ncol(counts),
-      max_duration = nrow(counts),
-      n_mcsim = n_mcsim),
+    c(list(# General
+           distribution = "Poisson",
+           type = "expectation-based",
+           setting = "univariate"),
+      # MLC + analysis
+      list(MLC = MLC_out),
+      scan,
+      # Configuration
+      list(n_zones = length(zones),
+           n_locations = ncol(counts),
+           max_duration = nrow(counts),
+           n_mcsim = n_mcsim)),
     class = "scanstatistic")
 }

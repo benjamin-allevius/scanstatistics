@@ -8,23 +8,30 @@ scan_eb_negbin(counts, zones, baselines, thetas = 1, type = c("hotspot",
   "emerging"), n_mcsim = 0, max_only = FALSE)
 }
 \arguments{
-\item{counts}{A matrix of observed counts. Rows indicate time and are ordered
-from least recent (row 1) to most recent (row \code{nrow(counts)}).
-Columns indicate locations, numbered from 1 and up.}
+\item{counts}{Either:
+\itemize{
+  \item A matrix of observed counts. Rows indicate time and are ordered
+        from least recent (row 1) to most recent (row 
+        \code{nrow(counts)}). Columns indicate locations, numbered from 1 
+        and up.
+  \item A data frame with columns "time", "location", "count", "baseline",
+        "theta". See the description of the optional arguments 
+        \code{baselines} and \code{thetas} below to see their definition.
+}}
 
 \item{zones}{A list of integer vectors. Each vector corresponds to a single
 zone; its elements are the numbers of the locations in that zone.}
 
-\item{baselines}{A matrix of the same dimensions as \code{counts}. Holds the
-expected value parameter for each observed count. These parameters are
-typically estimated from past data using e.g. GLM.}
+\item{baselines}{Optional. A matrix of the same dimensions as \code{counts}. 
+Holds the expected value parameter for each observed count. These 
+parameters are typically estimated from past data using e.g. GLM.}
 
-\item{thetas}{A matrix of the same dimensions as \code{counts}, or a scalar.
-Holds the dispersion parameter of the distribution, which is such that if
-\eqn{\mu} is the expected value, the variance is \eqn{\mu+\mu^2/\theta}.
-These parameters are typically estimated from past data using e.g. GLM.
-If a scalar is supplied, the dispersion parameter is assumed to be the
-same for all locations and time points.}
+\item{thetas}{Optional. A matrix of the same dimensions as \code{counts}, or 
+a scalar. Holds the dispersion parameter of the distribution, which is 
+such that if \eqn{\mu} is the expected value, the variance is 
+\eqn{\mu+\mu^2/\theta}. These parameters are typically estimated from past 
+data using e.g. GLM. If a scalar is supplied, the dispersion parameter is 
+assumed to be the same for all locations and time points.}
 
 \item{type}{A string, either "hotspot" or "emerging". If "hotspot", the
 relative risk is assumed to be fixed over time. If "emerging", the
@@ -39,27 +46,28 @@ such statistic (i.e. the scan statistic) is returned, along with the
 corresponding zone and duration.}
 }
 \value{
-A list with the following components:
+A list which, in addition to the information about the type of scan
+   statistic, has the following components:
    \describe{
      \item{MLC}{A list containing the number of the zone of the most likely
-           cluster (MLC), the locations in that zone, the duration of the
-           MLC, the calculated score, and matrices of the observed counts,
-           baselines and dispersion parameters for each location and time
-           point in the MLC.}
-     \item{table}{A data frame containing, for each combination of zone and
-           duration investigated, the zone number, duration, and score.
-           The table is sorted by score with the top-scoring location on top.
-           If \code{max_only = TRUE}, only contains a single row
+           cluster (MLC), the locations in that zone, the duration of the 
+           MLC, and the calculated score. In order, the 
+           elements of this list are named  \code{zone_number, locations, 
+           duration, score}.}
+     \item{observed}{A data frame containing, for each combination of zone 
+           and duration investigated, the zone number, duration, and score. 
+           The table is sorted by score with the top-scoring location on top. 
+           If \code{max_only = TRUE}, only contains a single row 
            corresponding to the MLC.}
-     \item{replicate_statistics}{A data frame of the Monte Carlo replicates 
-           of the scan statistic (if any) and the corresponding zones and 
-           durations.}
+     \item{replicates}{A data frame of the Monte Carlo replicates of the scan 
+           statistic (if any ), and the corresponding zones and durations.}
      \item{MC_pvalue}{The Monte Carlo \eqn{P}-value.}
-     \item{Gumbel_pvalue}{A \eqn{P}-value obtained by fitting a Gumbel
+     \item{Gumbel_pvalue}{A \eqn{P}-value obtained by fitting a Gumbel 
            distribution to the replicate scan statistics.}
      \item{n_zones}{The number of zones scanned.}
      \item{n_locations}{The number of locations.}
      \item{max_duration}{The maximum duration considered.}
+     \item{n_mcsim}{The number of Monte Carlo replicates made.}
    }
 }
 \description{
