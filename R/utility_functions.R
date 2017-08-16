@@ -62,8 +62,74 @@ df_to_matrix <- function(df, time_col = 1, location_col = 2, value_col = 3) {
   return(x)
 }
 
-run_analysis <- function(scanstat, args) {
+#' Convert a matrix to a data frame.
+#' 
+#' Convert a matrix to a data frame with columns time, location, and one more
+#' containing the elements of the input matrix.
+#' @param mat A matrix.
+#' @param name The name of the third column in the output matrix.
+#' @param locations If not \code{NULL}, a vector with the names of the 
+#'    locations.
+#' @param times If not \code{NULL}, a vector with the time points. If 
+#'    \code{NULL}, the matrix is assumed to be ordered with the most recent
+#'    time point equal to 1 in the first row.
+#' @return A matrix with columns \code{time, location, name}, where \code{name}
+#'    is specified in the input.
+#' @keywords internal
+matrix_to_df <- function(mat, name, locations = NULL, times = NULL) {
+  if (!is.null(locations) && length(locations) != ncol(mat)) {
+    stop("The number of locations must be equal to col(mat)")
+  }
+  if (!is.null(times) && length(times) != nrow(mat)) {
+    stop("The number of times must be equal to nrow(mat)")
+  }
+  if (is.null(locations)) {
+    locations <- seq_len(ncol(mat))
+  }
+  if (is.null(times)) {
+    times <- seq_len(nrow(mat))
+  }
   
+  df <- data.frame(time = rep(times, ncol(mat)),
+                   location = rep(locations, each = nrow(mat)),
+                   V1 = as.vector(mat))
+  names(df)[3] <- name
+  return(df)
+}
+
+#' Run a scan statistic analysis.
+#' 
+#' Run a scan statistic analysis with the given scan statistic and arguments.
+#' @param scanstat A scan statistic function.
+#' @param args A named list of arguments to be passed to \code{scanstat}.
+#' @return A list with components
+#'    \describe{
+#'      \item{observed}{The table of observed statistics.}
+#'      \item{simulated}{The table of simulated statistics.}
+#'      \item{MC_pvalue}{The Monte Carlo P-value of the scan statistic.}
+#'      \item{Gumbel_pvalue}{The Gumbel P-value of the scan statistic.}
+#'    }
+#' @keywords internal
+run_scan <- function(scanstat, args) {
+  scan <- do.call(scanstat, args)
+  
+  # Extract the most likely cluster (MLC)
+  scan$observed %<>% arrange(-score)
+  MLC <- scan$observed[1, ]
+  
+  # Get P-values
+  gumbel_pvalue <- NULL
+  MC_pvalue <- NULL
+  if (nrow(scan$simulated) > 0) {
+    gumbel_pvalue <- gumbel_pvalue(MLC$score, scan$simulated$score, 
+                                   method = "ML")$pvalue
+    MC_pvalue <- mc_pvalue(MLC$score, scan$simulated$score)
+  }
+  
+  return(list(observed = scan$observed,
+              replicates = scan$simulated,
+              MC_pvalue = MC_pvalue,
+              Gumbel_pvalue = gumbel_pvalue))
 }
 
 
