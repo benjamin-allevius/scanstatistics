@@ -39,6 +39,7 @@ protected:
                          const arma::uword duration,
                          const arma::uvec& current_zone,
                          const arma::uvec& current_rows) = 0;
+  virtual void post_process() {}
 
 };
 
@@ -96,6 +97,7 @@ inline void USTscanbase<T, t>::run_scan() {
       ++i;
     }
   }
+  post_process();
 }
 
 // Frequentist Univariate Space-Time scan statistic ============================
