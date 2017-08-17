@@ -140,7 +140,7 @@ score_locations <- function(x, zones) {
   res <- tibble(location = seq_len(x$n_locations),
                 score = 0,
                 n_zones = 0)
-  z_scores <- x$table %>% 
+  z_scores <- x$observed %>% 
     group_by(zone) %>% 
     summarise(score = sum(score)) %>%
     arrange(zone)
@@ -181,15 +181,15 @@ score_locations <- function(x, zones) {
 #' }
 top_clusters <- function(x, zones, k = 5, overlapping = FALSE) {
   if (overlapping) {
-    return(x$table[seq_len(k), ])
+    return(x$observed[seq_len(k), ])
   } else {
     row_idx <- c(1L, integer(k - 1))
     seen_locations <- zones[[1]]
     n_added <- 1L
     i <- 2L
-    while (n_added < k && i <= nrow(x$table)) {
-      zone <- x$table[i, ]$zone
-      if (zone != x$table[i-1, ]$zone && 
+    while (n_added < k && i <= nrow(x$observed)) {
+      zone <- x$observed[i, ]$zone
+      if (zone != x$observed[i-1, ]$zone && 
             length(intersect(seen_locations, zones[[zone]])) == 0) {
         seen_locations <- c(seen_locations, zones[[zone]])
         n_added <- n_added + 1L
@@ -197,10 +197,10 @@ top_clusters <- function(x, zones, k = 5, overlapping = FALSE) {
       }
       i <- i + 1L
     }
-    res <- x$table[row_idx[row_idx > 0], ]
+    res <- x$observed[row_idx[row_idx > 0], ]
     res$MC_pvalue <- mc_pvalue(res$score, x$replicate_statistics$score)
     res$Gumbel_pvalue <- gumbel_pvalue(res$score, 
-                                       x$replicate_statistics$score)$pvalue
+                                       x$replicates$score)$pvalue
     return(res)
   }
 }
