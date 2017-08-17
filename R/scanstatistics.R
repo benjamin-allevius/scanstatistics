@@ -22,7 +22,9 @@ NULL
 # http://stackoverflow.com/a/12429344/897506
 globalVariables(c(
 ## Variables used unquoted inside functions-------------------------------------
+  "location",
   "score",
+  "time",
   "zone"),
   package = "scanstatistics",
   add = TRUE)
