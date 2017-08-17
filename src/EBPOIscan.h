@@ -37,14 +37,15 @@ private:
   void set_sim_store_fun() override;
   
   using store_ptr = void (EBPOIscan::*)(arma::uword storage_index, double score,
-                                        double q, arma::uword zone_nr, arma::uword duration);
+                                        double q, arma::uword zone_nr, 
+                                        arma::uword duration);
   store_ptr store;
-  void store_max(arma::uword storage_index, double score, double q, arma::uword zone_nr,
-                 arma::uword duration);
-  void store_all(arma::uword storage_index, double score, double q, arma::uword zone_nr,
-                 arma::uword duration);
-  void store_sim(arma::uword storage_index, double score, double q, arma::uword zone_nr,
-                 arma::uword duration);
+  void store_max(arma::uword storage_index, double score, double q, 
+                 arma::uword zone_nr, arma::uword duration);
+  void store_all(arma::uword storage_index, double score, double q,
+                 arma::uword zone_nr, arma::uword duration);
+  void store_sim(arma::uword storage_index, double score, double q, 
+                 arma::uword zone_nr, arma::uword duration);
 
 };
 
@@ -107,16 +108,18 @@ inline void EBPOIscan::simulate_counts() {
 
 // Storage functions -----------------------------------------------------------
 
-inline void EBPOIscan::store_all(arma::uword storage_index, double score, double q,
-                                 arma::uword zone_nr, arma::uword duration) {
+inline void EBPOIscan::store_all(arma::uword storage_index, double score, 
+                                 double q, arma::uword zone_nr, 
+                                 arma::uword duration) {
   m_scores[storage_index]       = score;
   m_relrisks[storage_index]     = q;
   m_zone_numbers[storage_index] = zone_nr;
   m_durations[storage_index]    = duration;
 }
 
-inline void EBPOIscan::store_max(arma::uword storage_index, double score, double q,
-                                 arma::uword zone_nr, arma::uword duration) {
+inline void EBPOIscan::store_max(arma::uword storage_index, double score, 
+                                 double q, arma::uword zone_nr, 
+                                 arma::uword duration) {
   if (score > m_scores[0]) {
     m_scores[0]       = score;
     m_relrisks[0]     = q;
@@ -125,8 +128,9 @@ inline void EBPOIscan::store_max(arma::uword storage_index, double score, double
   }
 }
 
-inline void EBPOIscan::store_sim(arma::uword storage_index, double score, double q,
-                                 arma::uword zone_nr, arma::uword duration) {
+inline void EBPOIscan::store_sim(arma::uword storage_index, double score, 
+                                 double q, arma::uword zone_nr, 
+                                 arma::uword duration) {
   if (score > sim_scores[m_mcsim_index]) {
     sim_scores[m_mcsim_index]       = score;
     sim_relrisks[m_mcsim_index]     = q;
