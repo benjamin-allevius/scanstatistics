@@ -4,22 +4,30 @@
 \alias{scan_pb_poisson}
 \title{Calculate the population-based Poisson scan statistic.}
 \usage{
-scan_pb_poisson(counts, zones, population, n_mcsim = 0, max_only = FALSE)
+scan_pb_poisson(counts, zones, population = NULL, n_mcsim = 0,
+  max_only = FALSE)
 }
 \arguments{
-\item{counts}{A matrix of observed counts. Rows indicate time and are ordered
-from least recent (row 1) to most recent (row \code{nrow(counts)}).
-Columns indicate locations, numbered from 1 and up.}
+\item{counts}{Either:
+\itemize{
+  \item A matrix of observed counts. Rows indicate time and are ordered
+        from least recent (row 1) to most recent (row 
+        \code{nrow(counts)}). Columns indicate locations, numbered from 1 
+        and up. If \code{counts} is a matrix, the optional argument 
+        \code{population} should also be specified.
+  \item A data frame with columns "time", "location", "count", 
+        "population".
+}}
 
 \item{zones}{A list of integer vectors. Each vector corresponds to a single
 zone; its elements are the numbers of the locations in that zone.}
 
-\item{population}{A matrix or vector of populations for each location. Only
-needed if \code{baselines} are to be estimated and you want to account for
-the different populations in each location (and time).
-If a matrix, should be of the same dimensions as \code{counts}. If a
-vector, should be of the same length as the number of columns in
-\code{counts}.}
+\item{population}{Optional. A matrix or vector of populations for each 
+location and time point. Only needed if \code{baselines} are to be 
+estimated and you want to account for the different populations in each 
+location (and time). If a matrix, should be of the same dimensions as 
+\code{counts}. If a vector, should be of the same length as the number of 
+columns in \code{counts} (the number of locations).}
 
 \item{n_mcsim}{A non-negative integer; the number of replicate scan
 statistics to generate in order to calculate a P-value.}
@@ -30,27 +38,29 @@ largest such statistic (i.e. the scan statistic) is returned, along with
 the corresponding zone and duration.}
 }
 \value{
-A list with the following components:
+A list which, in addition to the information about the type of scan
+   statistic, has the following components:
    \describe{
      \item{MLC}{A list containing the number of the zone of the most likely
            cluster (MLC), the locations in that zone, the duration of the 
-           MLC, the calculated score, the relative risk inside and outside
-           the MLC, and matrices of the observed counts, population, and
-           estimated baselines for each location and time point in the MLC.}
-     \item{table}{A data frame containing, for each combination of zone and
-           duration investigated, the zone number, duration, score, relative 
-           risk. The table is sorted by score with the top-scoring location 
-           on top. If \code{max_only = TRUE}, only contains a single row 
-           corresponding to the MLC.}
-     \item{replicate_statistics}{A data frame of the Monte Carlo replicates 
-           of the scan statistic (if any ), and the corresponding zones and
-           durations.}
+           MLC, the calculated score, and the relative risk inside and 
+           outside the cluster. In order, the elements of this list are named  
+           \code{zone_number, locations, duration, score, relrisk_in,
+           relrisk_out}.}
+     \item{observed}{A data frame containing, for each combination of zone 
+           and duration investigated, the zone number, duration, score, 
+           relative risks. The table is sorted by score with the top-scoring 
+           location on top. If \code{max_only = TRUE}, only contains a single 
+           row corresponding to the MLC.}
+     \item{replicates}{A data frame of the Monte Carlo replicates of the scan 
+           statistic (if any), and the corresponding zones and durations.}
      \item{MC_pvalue}{The Monte Carlo \eqn{P}-value.}
      \item{Gumbel_pvalue}{A \eqn{P}-value obtained by fitting a Gumbel 
            distribution to the replicate scan statistics.}
      \item{n_zones}{The number of zones scanned.}
      \item{n_locations}{The number of locations.}
      \item{max_duration}{The maximum duration considered.}
+     \item{n_mcsim}{The number of Monte Carlo replicates made.}
    }
 }
 \description{
