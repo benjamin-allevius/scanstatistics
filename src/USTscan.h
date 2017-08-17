@@ -6,43 +6,33 @@
 #include "RcppArmadillo.h"
 // [[depends(RcppArmadillo)]]
 
-// Univariate Spate-Time scan statistic (base class) ---------------------------
+// Univariate Space-Time scan statistic (base class) ===========================
 template <class T, class t>
-class USTscan {
+class USTscanbase {
 
 public:
-  USTscan(const T& counts,
+  USTscanbase(const T& counts,
           const arma::uvec& zones,
           const arma::uvec& zone_lengths,
-          const bool store_everything,
-          const arma::uword num_mcsim);
+          const bool store_everything);
+  
   void run_scan();
-  virtual void run_mcsim();
-
   virtual Rcpp::DataFrame get_scan() = 0;
-  virtual Rcpp::DataFrame get_mcsim() = 0;
 
 protected:
-  arma::uword        m_num_locs;
-  arma::uword        m_num_zones;
-  arma::uword        m_max_dur;
-  arma::uword        m_num_mcsim;
-  bool       m_store_everything;
-  arma::uword        m_mcsim_index;
-  arma::uword        m_out_length;
-  T          m_counts;
-  arma::uvec m_zones;
-  arma::uvec m_zone_lengths;
+  arma::uword m_num_locs;
+  arma::uword m_num_zones;
+  arma::uword m_max_dur;
+  bool        m_store_everything;
+  arma::uword m_out_length;
+  T           m_counts;
+  arma::uvec  m_zones;
+  arma::uvec  m_zone_lengths;
 
   // Values calculated on observed data
   arma::uvec m_zone_numbers;
   arma::uvec m_durations;
   arma::vec  m_scores;
-
-  // Values calculated on simulated data
-  arma::uvec sim_zone_numbers;
-  arma::uvec sim_durations;
-  arma::vec  sim_scores;
 
   virtual void calculate(const arma::uword storage_index,
                          const arma::uword zone_nr,
@@ -50,52 +40,37 @@ protected:
                          const arma::uvec& current_zone,
                          const arma::uvec& current_rows) = 0;
 
-  virtual void simulate_counts();
-  virtual t draw_sample(arma::uword row, arma::uword col) = 0;
-  virtual void set_sim_store_fun() = 0;
-
-  arma::uvec zone_complement(const arma::uvec& zone);
-  arma::uvec duration_complement(const arma::uword d);
-
 };
 
 // Implementations -------------------------------------------------------------
 
 template <class T, class t>
-inline USTscan<T, t>::USTscan(const T& counts,
+inline USTscanbase<T, t>::USTscanbase(const T& counts,
                               const arma::uvec& zones,
                               const arma::uvec& zone_lengths,
-                              const bool store_everything,
-                              const arma::uword num_mcsim)
+                              const bool store_everything)
   : m_counts(counts),
     m_num_locs(counts.n_cols),
     m_num_zones(zone_lengths.n_elem),
     m_max_dur(counts.n_rows),
     m_zones(zones),
     m_zone_lengths(zone_lengths),
-    m_store_everything(store_everything),
-    m_num_mcsim(num_mcsim),
-    m_mcsim_index(0) {
-
+    m_store_everything(store_everything) {
+  
   m_out_length = (store_everything ? m_num_zones * m_max_dur : 1);
-
+  
   // Reserve sizes for values calculated on observed data
   m_zone_numbers.set_size(m_out_length);
   m_durations.set_size(m_out_length);
   m_scores.set_size(m_out_length);
-
-  // Reserve sizes for values calculated on simulated
-  sim_zone_numbers.set_size(m_num_mcsim);
-  sim_durations.set_size(m_num_mcsim);
-  sim_scores.set_size(m_num_mcsim);
-
+  
   if (!store_everything) {
     m_scores[0] = R_NegInf;
   }
 }
 
 template <class T, class t>
-inline void USTscan<T, t>::run_scan() {
+inline void USTscanbase<T, t>::run_scan() {
   arma::uword i = 0; // Storage index
   for (arma::uword d = 0; d < m_max_dur; ++d) {
 
@@ -123,22 +98,72 @@ inline void USTscan<T, t>::run_scan() {
   }
 }
 
+// Frequentist Univariate Space-Time scan statistic ============================
+
+template <class T, class t>
+class USTscan : public USTscanbase<T, t> {
+  
+public:
+  USTscan(const T& counts,
+              const arma::uvec& zones,
+              const arma::uvec& zone_lengths,
+              const bool store_everything,
+              const arma::uword num_mcsim);
+  
+  virtual void run_mcsim();
+  virtual Rcpp::DataFrame get_mcsim() = 0;
+  
+protected:
+  arma::uword        m_num_mcsim;
+  arma::uword        m_mcsim_index;
+
+  // Values calculated on simulated data
+  arma::uvec sim_zone_numbers;
+  arma::uvec sim_durations;
+  arma::vec  sim_scores;
+  
+  virtual void simulate_counts();
+  virtual t draw_sample(arma::uword row, arma::uword col) = 0;
+  virtual void set_sim_store_fun() = 0;
+  
+};
+
+// Implementations -------------------------------------------------------------
+
+template <class T, class t>
+inline USTscan<T, t>::USTscan(const T& counts,
+                                      const arma::uvec& zones,
+                                      const arma::uvec& zone_lengths,
+                                      const bool store_everything,
+                                      const arma::uword num_mcsim)
+  : USTscanbase<T, t>(counts, zones, zone_lengths, store_everything), 
+    m_num_mcsim(num_mcsim),
+    m_mcsim_index(0) {
+  
+  // Reserve sizes for values calculated on simulated
+  sim_zone_numbers.set_size(m_num_mcsim);
+  sim_durations.set_size(m_num_mcsim);
+  sim_scores.set_size(m_num_mcsim);
+}
+
+
+
 template <class T, class t>
 inline void USTscan<T, t>::run_mcsim() {
   set_sim_store_fun();
   while (m_mcsim_index < m_num_mcsim) {
     sim_scores[m_mcsim_index] = R_NegInf;
     simulate_counts();
-    run_scan();
+    this->run_scan();
     ++m_mcsim_index;
   }
 }
 
 template <class T, class t>
 inline void USTscan<T, t>::simulate_counts() {
-  for (arma::uword j = 0; j < m_counts.n_cols; ++j) {
-    for (arma::uword i = 0; i < m_counts.n_rows; ++i) {
-      m_counts.at(i, j) = draw_sample(i, j);
+  for (arma::uword j = 0; j < this->m_counts.n_cols; ++j) {
+    for (arma::uword i = 0; i < this->m_counts.n_rows; ++i) {
+      this->m_counts.at(i, j) = draw_sample(i, j);
     }
   }
 }
