@@ -13,19 +13,25 @@
 estimate_baselines <- function(counts, population = NULL) {
   total_count <- sum(counts)
   
-  if (is.null(population)) {
-    if (is.vector(counts)) {
-      counts <- matrix(counts, nrow = 1)
-    }
+  if (is.null(population) && is.vector(counts)) {
+    stop("Cannot reliably estimate baselines if counts are for a single time ",
+         "point and no population data is available")
+  }
+  
+  if (is.null(population) && is.matrix(counts) && nrow(counts) > 1) {
     return(tcrossprod(rowSums(counts), colSums(counts)) / total_count)
   }
   
   # If analysis is purely spatial:
-  if (is.vector(counts)) {
-    if (!is.vector(population)) {
+  if (is.vector(counts) || nrow(counts) == 1) {
+    if (is.matrix(population) && nrow(population) > 1) {
       stop("If counts is a vector, population should be too.")
     }
     return(matrix(population * total_count / sum(population), nrow = 1))
+  }
+  
+  if (is.vector(counts)) {
+    counts <- matrix(counts, nrow = 1)
   }
 
   # If population is a vector, re-format to a matrix
