@@ -71,8 +71,8 @@ df_to_matrix <- function(df, time_col = 1, location_col = 2, value_col = 3) {
 #' @param locations If not \code{NULL}, a vector with the names of the 
 #'    locations.
 #' @param times If not \code{NULL}, a vector with the time points. If 
-#'    \code{NULL}, the matrix is assumed to be ordered with the most recent
-#'    time point equal to 1 in the first row.
+#'    \code{NULL}, the matrix is assumed to be ordered with time point 1 in the 
+#'    first row.
 #' @return A matrix with columns \code{time, location, name}, where \code{name}
 #'    is specified in the input.
 #' @keywords internal
