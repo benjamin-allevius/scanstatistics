@@ -13,7 +13,8 @@ scan_eb_poisson(counts, zones, baselines = NULL, population = NULL,
   \item A matrix of observed counts. Rows indicate time and are ordered
         from least recent (row 1) to most recent (row 
         \code{nrow(counts)}). Columns indicate locations, numbered from 1 
-        and up.
+        and up. If \code{counts} is a matrix, the optional matrix argument 
+        \code{baselines} should also be specified.
   \item A data frame with columns "time", "location", "count", "baseline". 
         Alternatively, the column "baseline" can be replaced by a column
         "population". The baselines are the expected values of the counts.
@@ -59,7 +60,7 @@ A list which, in addition to the information about the type of scan
            location on top. If \code{max_only = TRUE}, only contains a single 
            row corresponding to the MLC.}
      \item{replicates}{A data frame of the Monte Carlo replicates of the scan 
-           statistic (if any ), and the corresponding zones and durations.}
+           statistic (if any), and the corresponding zones and durations.}
      \item{MC_pvalue}{The Monte Carlo \eqn{P}-value.}
      \item{Gumbel_pvalue}{A \eqn{P}-value obtained by fitting a Gumbel 
            distribution to the replicate scan statistics.}

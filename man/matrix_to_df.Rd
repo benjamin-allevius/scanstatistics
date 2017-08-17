@@ -15,8 +15,8 @@ matrix_to_df(mat, name, locations = NULL, times = NULL)
 locations.}
 
 \item{times}{If not \code{NULL}, a vector with the time points. If 
-\code{NULL}, the matrix is assumed to be ordered with the most recent
-time point equal to 1 in the first row.}
+\code{NULL}, the matrix is assumed to be ordered with time point 1 in the 
+first row.}
 }
 \value{
 A matrix with columns \code{time, location, name}, where \code{name}
