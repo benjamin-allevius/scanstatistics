@@ -12,8 +12,8 @@ class USTscan {
 
 public:
   USTscan(const T& counts,
-          const arma::uvec& m_zones,
-          const arma::uvec& m_zone_lengths,
+          const arma::uvec& zones,
+          const arma::uvec& zone_lengths,
           const bool store_everything,
           const arma::uword num_mcsim);
   void run_scan();
