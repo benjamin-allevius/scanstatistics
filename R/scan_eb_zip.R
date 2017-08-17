@@ -102,7 +102,7 @@
 #'    likelihood estimates.
 #' @references
 #'    Allévius, B. and Höhle, M, \emph{An expectation-based space-time scan 
-#'    statistic for ZIP-distributed data, (Technical report),
+#'    statistic for ZIP-distributed data}, (Technical report),
 #'    \href{https://goo.gl/yYJ42A}{Link to PDF}.
 #' @importFrom dplyr arrange
 #' @importFrom magrittr %<>%

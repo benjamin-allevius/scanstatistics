@@ -8,29 +8,42 @@ scan_eb_zip(counts, zones, baselines = NULL, probs = NULL,
   population = NULL, n_mcsim = 0, max_only = FALSE, rel_tol = 0.001)
 }
 \arguments{
-\item{counts}{A matrix of observed counts. Rows indicate time and are ordered
-from least recent (row 1) to most recent (row \code{nrow(counts)}).
-Columns indicate locations, numbered from 1 and up.}
+\item{counts}{Either:
+\itemize{
+  \item A matrix of observed counts. Rows indicate time and are ordered
+        from least recent (row 1) to most recent (row 
+        \code{nrow(counts)}). Columns indicate locations, numbered from 1 
+        and up. If \code{counts} is a matrix, the optional matrix 
+        arguments \code{baselines} and \code{probs} should also be 
+        specified.
+  \item A data frame with columns "time", "location", "count", "baseline",
+        "prob". The baselines are the expected values of the counts, and 
+        "prob" are the structural zero probabilities of the counts. If
+        "baseline" and "prob" are not found as columns, their values are
+        estimated in a \emph{very} heuristic fashion (not recommended).
+        If population numbers are available, they can be included in a 
+        column "population" to help with the estimation.
+}}
 
 \item{zones}{A list of integer vectors. Each vector corresponds to a single
 zone; its elements are the numbers of the locations in that zone.}
 
-\item{baselines}{A matrix of the same dimensions as \code{counts}. Holds the
-Poisson mean parameter of the ZIP distribution for each observed count.
-These parameters are typically estimated from past data using e.g. ZIP
-regression.}
-
-\item{probs}{A matrix of the same dimensions as \code{counts}. Holds the
-structural zero probability of the ZIP distribution for each observed
+\item{baselines}{Optional. A matrix of the same dimensions as \code{counts}. 
+Holds the Poisson mean parameter of the ZIP distribution for each observed 
 count. These parameters are typically estimated from past data using e.g. 
 ZIP regression.}
 
-\item{population}{A matrix or vector of populations for each location. Only
-needed if \code{baselines} and \code{probs} are to be estimated and you
-want to account for the different populations in each location (and time).
-If a matrix, should be of the same dimensions as \code{counts}. If a
-vector, should be of the same length as the number of columns in
-\code{counts}.}
+\item{probs}{Optional. A matrix of the same dimensions as \code{counts}. 
+Holds the structural zero probability of the ZIP distribution for each 
+observed count. These parameters are typically estimated from past data 
+using e.g. ZIP regression.}
+
+\item{population}{Optional. A matrix or vector of populations for each 
+location. Only needed if \code{baselines} and \code{probs} are to be 
+estimated and you want to account for the different populations in each 
+location (and time). If a matrix, should be of the same dimensions as 
+\code{counts}. If a vector, should be of the same length as the number of 
+columns in \code{counts}.}
 
 \item{n_mcsim}{A non-negative integer; the number of replicate scan
 statistics to generate in order to calculate a \eqn{P}-value.}
@@ -45,28 +58,30 @@ information likelihood is less than this value, then the EM algorithm is
 deemed to have converged.}
 }
 \value{
-A list with the following components:
+A list which, in addition to the information about the type of scan
+   statistic, has the following components:
    \describe{
      \item{MLC}{A list containing the number of the zone of the most likely
            cluster (MLC), the locations in that zone, the duration of the 
-           MLC, the calculated score, the relative risk, and matrices of the 
-           observed counts, baselines and structural zero probabilities for 
-           each location and time point in the MLC.}
-     \item{table}{A data frame containing, for each combination of zone and
-           duration investigated, the zone number, duration, score, relative 
-           risk, and number of iterations until convergence. The table is 
-           sorted by score with the top-scoring location on top. If 
+           MLC, the calculated score, the relative risk, and the number of 
+           iterations until convergence for the EM algorithm. In order, the 
+           elements of this list are named  \code{zone_number, locations, 
+           duration, score, relative_risk, n_iter}.}
+     \item{observed}{A data frame containing, for each combination of zone 
+           and duration investigated, the zone number, duration, score, 
+           relative risk, number of EM iterations. The table is sorted by 
+           score with the top-scoring location on top. If 
            \code{max_only = TRUE}, only contains a single row corresponding 
            to the MLC.}
-     \item{replicate_statistics}{A data frame of the Monte Carlo replicates 
-           of the scan statistic (if any ), and the corresponding zones and
-           durations.}
+     \item{replicates}{A data frame of the Monte Carlo replicates of the scan 
+           statistic (if any), and the corresponding zones and durations.}
      \item{MC_pvalue}{The Monte Carlo \eqn{P}-value.}
      \item{Gumbel_pvalue}{A \eqn{P}-value obtained by fitting a Gumbel 
            distribution to the replicate scan statistics.}
      \item{n_zones}{The number of zones scanned.}
      \item{n_locations}{The number of locations.}
      \item{max_duration}{The maximum duration considered.}
+     \item{n_mcsim}{The number of Monte Carlo replicates made.}
    }
 }
 \description{
@@ -74,11 +89,11 @@ Calculates the expectation-based scan statistic. See details below.
 }
 \details{
 For the expectation-based zero-inflated Poisson scan statistic
-   (Kjellson 2015), the null hypothesis of no anomaly holds that the count
-   observed at each location \eqn{i} and duration \eqn{t} (the number of time
-   periods before present) has a zero-inflated Poisson distribution with
-   expected value parameter \eqn{\mu_{it}} and structural zero probability
-   \eqn{p_{it}}:
+   (Allévius & Höhle 2017), the null hypothesis of no anomaly holds that 
+   the count observed at each location \eqn{i} and duration \eqn{t} (the 
+   number of time periods before present) has a zero-inflated Poisson 
+   distribution with expected value parameter \eqn{\mu_{it}} and structural 
+   zero probability \eqn{p_{it}}:
    \deqn{
      H_0 : Y_{it} \sim \textrm{ZIP}(\mu_{it}, p_{it}).
    }
@@ -103,9 +118,7 @@ For the expectation-based zero-inflated Poisson scan statistic
    hypotheses, and the expectation-based Poisson scan statistic is calculated
    as the maximum of these quantities over all space-time windows. The
    expectation-maximization (EM) algorithm is used to obtain maximum
-   likelihood estimates. Point estimates of the parameters \eqn{\mu_{it}}
-   must be specified in the column \code{mu} of the argument \code{table}
-   before this function is called.
+   likelihood estimates.
 }
 \examples{
 \dontrun{
@@ -140,8 +153,7 @@ res <- scan_eb_zip(counts = counts,
 }
 }
 \references{
-Kjellson, B. (2015), \emph{Spatiotemporal Outbreak Detection: A Scan
-   Statistic Based on the Zero-Inflated Poisson Distribution}, (Master
-   Thesis, Stockholm University),
-   \href{http://goo.gl/6Q89ML}{Link to PDF}.
+Allévius, B. and Höhle, M, \emph{An expectation-based space-time scan 
+   statistic for ZIP-distributed data}, (Technical report),
+   \href{https://goo.gl/yYJ42A}{Link to PDF}.
 }
