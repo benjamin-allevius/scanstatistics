@@ -80,3 +80,27 @@ arma::umat permute_matrix(const arma::umat& A) {
   x.col(0) = shuffle_time_counts(x.col(0));
   return contract_matrix(x, A.n_rows, A.n_cols);
 }
+
+double log_sum_exp(const arma::vec& v, 
+                   const double start_val, 
+                   const double max_val) {
+  double exp_sum = start_val;
+  for (arma::uword i = 0; i < v.n_elem; ++i) {
+    exp_sum += std::exp(v.at(i) - max_val);
+  }
+  return max_val + std::log(exp_sum);
+}
+
+double log_sum_exp(const arma::vec& v, const double max_val) {
+  return log_sum_exp(v, 0.0, max_val);
+}
+
+double log_sum_exp(const arma::vec& v) {
+  return log_sum_exp(v, 0.0, v.max());
+}
+
+double log_sum_exp(const double a, const double b) {
+  double m = std::max(a, b);
+  return m + std::log(std::exp(a - m) + std::exp(b - m));
+}
+

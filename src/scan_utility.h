@@ -2,6 +2,7 @@
 #define SCAN_UTILITY_H
 
 #include <vector>
+#include <cmath>
 #include "RcppArmadillo.h"
 // [[depends(RcppArmadillo)]]
 
@@ -50,5 +51,15 @@ arma::uvec shuffle_time_counts(const arma::uvec& v);
 //' @keywords internal
 // [[Rcpp::export]]
 arma::umat permute_matrix(const arma::umat& A);
+
+double log_sum_exp(const arma::vec& v, 
+                   const double start_val, 
+                   const double max_val);
+
+double log_sum_exp(const arma::vec& v, const double max_val);
+
+double log_sum_exp(const arma::vec& v);
+
+double log_sum_exp(const double a, const double b);
 
 #endif
