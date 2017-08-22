@@ -53,6 +53,12 @@ private:
                  const arma::uword duration,
                  const arma::uvec& current_zone,
                  const arma::uvec& current_rows) override;
+  
+  void aggregate_scores(const arma::uword storage_index,
+                        const arma::uword zone_nr,
+                        const arma::uword duration,
+                        const arma::uvec& current_zone,
+                        const arma::uvec& current_rows) override;
 
   using store_ptr = void (BGPscan::*)(arma::uword storage_index, double score,
                           arma::uword zone_nr, arma::uword duration);
@@ -145,7 +151,22 @@ inline void BGPscan::post_process() {
                               - m_log_data_prob);
   }
   m_log_outbreak_posterior = std::log(1.0 - std::exp(m_log_null_posterior));
+  
+  // 
+  score_locations();
+  m_location_posteriors = (arma::sum(m_spacetime_posteriors)).t();
 }
+
+inline void BGPscan::aggregate_scores(const arma::uword storage_index,
+                                      const arma::uword zone_nr,
+                                      const arma::uword duration,
+                                      const arma::uvec& current_zone,
+                                      const arma::uvec& current_rows) {
+  for (arma::uword loc : current_zone) {
+    m_spacetime_posteriors.at(duration, loc) += m_scores.at(storage_index);
+  }
+}
+
 
 inline double BGPscan::log_prob(const arma::uword C, const double B,
                                 const double alpha, const double beta) {
