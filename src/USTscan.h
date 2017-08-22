@@ -33,6 +33,13 @@ protected:
   arma::uvec m_zone_numbers;
   arma::uvec m_durations;
   arma::vec  m_scores;
+  
+  using calc_ptr = void (USTscanbase::*)(const arma::uword storage_index,
+                                         const arma::uword zone_nr,
+                                         const arma::uword duration,
+                                         const arma::uvec& current_zone,
+                                         const arma::uvec& current_rows);
+  calc_ptr calc;
 
   virtual void calculate(const arma::uword storage_index,
                          const arma::uword zone_nr,
@@ -66,6 +73,8 @@ inline USTscanbase<T, t>::USTscanbase(const T& counts,
   m_durations.set_size(m_out_length);
   m_scores.set_size(m_out_length);
   
+  calc = &USTscanbase::calculate;
+  
   if (!store_everything) {
     m_scores[0] = R_NegInf;
   }
@@ -90,7 +99,7 @@ inline void USTscanbase<T, t>::run_scan() {
       arma::uvec current_zone = m_zones(arma::span(zone_start, zone_end));
 
       // Calculate scan statistic + related quantities for current ST-window
-      calculate(i, z, d, current_zone, row_idx);
+      (this->*calc)(i, z, d, current_zone, row_idx);
 
       if (i % 500 == 0) Rcpp::checkUserInterrupt();
 
