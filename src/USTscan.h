@@ -12,9 +12,9 @@ class USTscanbase {
 
 public:
   USTscanbase(const T& counts,
-          const arma::uvec& zones,
-          const arma::uvec& zone_lengths,
-          const bool store_everything);
+              const arma::uvec& zones,
+              const arma::uvec& zone_lengths,
+              const bool store_everything);
   
   void run_scan();
   virtual Rcpp::DataFrame get_scan() = 0;
@@ -39,6 +39,7 @@ protected:
                          const arma::uword duration,
                          const arma::uvec& current_zone,
                          const arma::uvec& current_rows) = 0;
+  virtual void score_locations() {};
   virtual void post_process() {}
 
 };
@@ -47,9 +48,9 @@ protected:
 
 template <class T, class t>
 inline USTscanbase<T, t>::USTscanbase(const T& counts,
-                              const arma::uvec& zones,
-                              const arma::uvec& zone_lengths,
-                              const bool store_everything)
+                                      const arma::uvec& zones,
+                                      const arma::uvec& zone_lengths,
+                                      const bool store_everything)
   : m_counts(counts),
     m_num_locs(counts.n_cols),
     m_num_zones(zone_lengths.n_elem),
@@ -107,10 +108,10 @@ class USTscan : public USTscanbase<T, t> {
   
 public:
   USTscan(const T& counts,
-              const arma::uvec& zones,
-              const arma::uvec& zone_lengths,
-              const bool store_everything,
-              const arma::uword num_mcsim);
+          const arma::uvec& zones,
+          const arma::uvec& zone_lengths,
+          const bool store_everything,
+          const arma::uword num_mcsim);
   
   virtual void run_mcsim();
   virtual Rcpp::DataFrame get_mcsim() = 0;
@@ -134,10 +135,10 @@ protected:
 
 template <class T, class t>
 inline USTscan<T, t>::USTscan(const T& counts,
-                                      const arma::uvec& zones,
-                                      const arma::uvec& zone_lengths,
-                                      const bool store_everything,
-                                      const arma::uword num_mcsim)
+                              const arma::uvec& zones,
+                              const arma::uvec& zone_lengths,
+                              const bool store_everything,
+                              const arma::uword num_mcsim)
   : USTscanbase<T, t>(counts, zones, zone_lengths, store_everything), 
     m_num_mcsim(num_mcsim),
     m_mcsim_index(0) {
