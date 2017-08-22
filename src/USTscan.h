@@ -16,7 +16,7 @@ public:
               const arma::uvec& zone_lengths,
               const bool store_everything);
   
-  void run_scan();
+  void run_scan(bool process_after = true);
   virtual Rcpp::DataFrame get_scan() = 0;
 
 protected:
@@ -46,7 +46,12 @@ protected:
                          const arma::uword duration,
                          const arma::uvec& current_zone,
                          const arma::uvec& current_rows) = 0;
-  virtual void score_locations() {};
+  virtual void aggregate_scores(const arma::uword storage_index,
+                                const arma::uword zone_nr,
+                                const arma::uword duration,
+                                const arma::uvec& current_zone,
+                                const arma::uvec& current_rows) {};
+  virtual void score_locations();
   virtual void post_process() {}
 
 };
@@ -81,7 +86,7 @@ inline USTscanbase<T, t>::USTscanbase(const T& counts,
 }
 
 template <class T, class t>
-inline void USTscanbase<T, t>::run_scan() {
+inline void USTscanbase<T, t>::run_scan(bool process_after) {
   arma::uword i = 0; // Storage index
   for (arma::uword d = 0; d < m_max_dur; ++d) {
 
@@ -107,7 +112,14 @@ inline void USTscanbase<T, t>::run_scan() {
       ++i;
     }
   }
-  post_process();
+  if (process_after) post_process();
+}
+
+template <class T, class t>
+inline void USTscanbase<T, t>::score_locations() {
+  calc = &USTscanbase::aggregate_scores;
+  run_scan(false); // no post-processing
+  calc = &USTscanbase::calculate;
 }
 
 // Frequentist Univariate Space-Time scan statistic ============================
