@@ -17,10 +17,12 @@ beg_manual <- function(counts, baselines, zones, outbreak_prior, alpha_null, bet
       win_post[idx, 1] <- i
       win_post[idx, 2] <- j
       win_post[idx, 3] <- prob(sum(counts[1:j, z]), 
-                             sum(baselines[1:j, z]), 
-                             alpha_alt, beta_alt) * prob(sum(counts) - sum(counts[1:j, z]), 
-                                                         sum(baselines) - sum(baselines[1:j, z]), 
-                                                         alpha_null, beta_null) * outbreak_prior  / (length(zones) * nrow(counts))
+                               sum(baselines[1:j, z]), 
+                               alpha_alt, beta_alt) * 
+                          prob(sum(counts) - sum(counts[1:j, z]), 
+                               sum(baselines) - sum(baselines[1:j, z]), 
+                               alpha_null, beta_null) * 
+                          outbreak_prior  / (length(zones) * nrow(counts))
       idx <- idx + 1
     }
   }
@@ -29,11 +31,14 @@ beg_manual <- function(counts, baselines, zones, outbreak_prior, alpha_null, bet
   
   p_d <- sum(win_post$posterior) + null_post
   win_post$posterior <- win_post$posterior / p_d
+  
+  win_post$bayes_factor <- win_post$posterior / null_post
+  
   list(null_prior = 1 - outbreak_prior,
        null_post = null_post / p_d,
        outbreak_prior = outbreak_prior,
-       outbreak_post = sum(win_post) / p_d,
-       # marginal_data_prob = p_d,
+       outbreak_post = sum(win_post$posterior),
+       marginal_data_prob = p_d,
        window_prior = outbreak_prior  / (length(zones) * nrow(counts)),
        window_post = win_post)
   
