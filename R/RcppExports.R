@@ -28,13 +28,34 @@
 #'    (and variance) of an anomalous count.
 #' @param m_probs A vector of the prior probabilities of each value in 
 #'    \code{m_values}.
-#' @return A list with elements \code{observed} and \code{simulated}, each 
-#'    being a data frame with columns:
+#' @return A list with elements \code{priors} (list), \code{posteriors} (list), 
+#'    and \code{marginal_data_prob} (scalar). The list \code{priors} has 
+#'    elements
 #'    \describe{
-#'      \item{zone}{The top-scoring zone (spatial component of MLC).}
-#'      \item{duration}{The corresponding duration (time-length of MLC).}
-#'      \item{score}{The value of the loglihood ratio statistic (the scan
-#'                   statistic).}
+#'      \item{null_prior}{The prior probability of no anomaly.}
+#'      \item{alt_prior}{The prior probability of an anomaly.}
+#'      \item{inc_prior}{A vector (matrix with 1 row) of prior probabilities
+#'                       of each value in the argument \code{m_values}.}
+#'      \item{window_prior}{The prior probability of an outbreak in any of the
+#'                          space-time windows.}
+#'    }
+#'    The list \code{posteriors} has elements
+#'    \describe{
+#'      \item{null_posterior}{The posterior probability of no anomaly.}
+#'      \item{alt_posterior}{The posterior probability of an anomaly.}
+#'      \item{inc_posterior}{A vector (matrix with 1 row) of posterior 
+#'                           probabilities of each value in the argument 
+#'                           \code{m_values}.}
+#'      \item{window_posteriors}{A data frame with columns \code{zone}, 
+#'                               \code{duration}, \code{posterior} and 
+#'                               \code{bayes_factor}, each row corresponding to
+#'                               a space-time window.}
+#'      \item{space_time_posteriors}{A matrix with the posterior anomaly 
+#'                                   probability of each location-time 
+#'                                   combination.}
+#'      \item{location_posteriors}{A vector (matrix with 1 row) with the 
+#'                                 posterior probability of an anomaly at each
+#'                                 location.}
 #'    }
 #' @export
 #' @keywords internal
