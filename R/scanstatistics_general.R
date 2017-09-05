@@ -85,23 +85,34 @@ gumbel_pvalue <- function(observed, replicates, method = "ML") {
 #' @export
 #' @keywords internal
 print.scanstatistic <- function(x, ...) {
-  cat(paste0(
-    "Data distribution:                ", x$distribution, "\n",
-    "Type of scan statistic:           ", x$type, "\n",
-    "Setting:                          ", x$setting, "\n",
-    "Number of locations considered:   ", x$n_locations, "\n",
-    "Maximum duration considered:      ", x$max_duration, "\n",
-    "Number of spatial zones:          ", x$n_zones, "\n",
-    "Number of Monte Carlo replicates: ", x$n_mcsim, "\n",
-    "Monte Carlo P-value:              ", ifelse(is.null(x$MC_pvalue), 
-                                                 "NULL",
-                                                 round(x$MC_pvalue, 3)), "\n",
-    "Gumbel P-value:                   ", ifelse(is.null(x$Gumbel_pvalue), 
-                                                 "NULL",
-                                               round(x$Gumbel_pvalue, 3)), "\n",
-    "Most likely event duration:       ", x$MLC$duration, "\n",
-    "ID of locations in most likely cluster: ", toString(x$MLC$locations))
+  if (x$type == "Bayesian") {
+    cat(paste0(
+      "Data distribution:                ", x$distribution, "\n",
+      "Type of scan statistic:           ", x$type, "\n",
+      "Setting:                          ", x$setting, "\n",
+      "Number of locations considered:   ", x$n_locations, "\n",
+      "Maximum duration considered:      ", x$max_duration, "\n",
+      "Number of spatial zones:          ", x$n_zones, "\n")
     )
+  } else {
+    cat(paste0(
+      "Data distribution:                ", x$distribution, "\n",
+      "Type of scan statistic:           ", x$type, "\n",
+      "Setting:                          ", x$setting, "\n",
+      "Number of locations considered:   ", x$n_locations, "\n",
+      "Maximum duration considered:      ", x$max_duration, "\n",
+      "Number of spatial zones:          ", x$n_zones, "\n",
+      "Number of Monte Carlo replicates: ", x$n_mcsim, "\n",
+      "Monte Carlo P-value:              ", ifelse(is.null(x$MC_pvalue), 
+                                                   "NULL",
+                                                   round(x$MC_pvalue, 3)), "\n",
+      "Gumbel P-value:                   ", ifelse(is.null(x$Gumbel_pvalue), 
+                                                   "NULL",
+                                                 round(x$Gumbel_pvalue, 3)), "\n",
+      "Most likely event duration:       ", x$MLC$duration, "\n",
+      "ID of locations in most likely cluster: ", toString(x$MLC$locations))
+      )
+  }
   invisible(x)
 }
 
