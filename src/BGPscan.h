@@ -20,6 +20,18 @@ public:
   Rcpp::DataFrame get_scan() override;
   Rcpp::List get_results();
   Rcpp::List get_log_results();
+  
+  friend Rcpp::List scan_bayes_negbin_cpp(const arma::umat& counts,
+                                          const arma::mat& baselines,
+                                          const arma::uvec& zones,
+                                          const arma::uvec& zone_lengths,
+                                          const double outbreak_prob,
+                                          const double alpha_null,
+                                          const double beta_null,
+                                          const double alpha_alt,
+                                          const double beta_alt,
+                                          const arma::vec& m_values,
+                                          const arma::vec& m_probs);
 
 private:
   arma::vec m_log_scores;
@@ -179,7 +191,8 @@ inline double BGPscan::log_prob(const arma::uword C, const double B,
   return   alpha * std::log(beta) 
          + std::lgamma(alpha + C) 
          - (alpha + C) * std::log(beta + B) 
-         - std::lgamma(alpha);
+         - std::lgamma(alpha)
+         - std::lgamma(1.0 + C);
 }
 
 
