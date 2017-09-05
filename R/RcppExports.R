@@ -14,6 +14,20 @@
 #' @param zones An integer vector (all zones concatenated; locations indexed 
 #'    from 0 and up).
 #' @param zone_lengths An integer vector.
+#' @param outbreak_prob A scalar; the probability of an outbreak (at any time,
+#'    any place).
+#' @param alpha_null A scalar; the shape parameter for the gamma distribution
+#'    under the null hypothesis of no anomaly.
+#' @param beta_null A scalar; the scale parameter for the gamma distribution
+#'    under the null hypothesis of no anomaly.
+#' @param alpha_alt A scalar; the shape parameter for the gamma distribution
+#'    under the alternative hypothesis of an anomaly.
+#' @param beta_alt A scalar; the scale parameter for the gamma distribution
+#'    under the alternative hypothesis of an anomaly.
+#' @param m_values A vector of possible values for the increase in the mean
+#'    (and variance) of an anomalous count.
+#' @param m_probs A vector of the prior probabilities of each value in 
+#'    \code{m_values}.
 #' @return A list with elements \code{observed} and \code{simulated}, each 
 #'    being a data frame with columns:
 #'    \describe{
@@ -24,8 +38,8 @@
 #'    }
 #' @export
 #' @keywords internal
-scan_bayes_negbin_cpp <- function(counts, baselines, zones, zone_lengths, outbreak_prob, alpha_null, beta_null, alpha_alt, beta_alt) {
-    .Call(`_scanstatistics_scan_bayes_negbin_cpp`, counts, baselines, zones, zone_lengths, outbreak_prob, alpha_null, beta_null, alpha_alt, beta_alt)
+scan_bayes_negbin_cpp <- function(counts, baselines, zones, zone_lengths, outbreak_prob, alpha_null, beta_null, alpha_alt, beta_alt, m_values, m_probs) {
+    .Call(`_scanstatistics_scan_bayes_negbin_cpp`, counts, baselines, zones, zone_lengths, outbreak_prob, alpha_null, beta_null, alpha_alt, beta_alt, m_values, m_probs)
 }
 
 #' Calculate the expectation-based negative binomial scan statistic.
