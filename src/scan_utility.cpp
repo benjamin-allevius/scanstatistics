@@ -86,7 +86,7 @@ double log_sum_exp(const arma::vec& v,
                    const double max_val) {
   double exp_sum = start_val;
   for (arma::uword i = 0; i < v.n_elem; ++i) {
-    exp_sum += std::exp(v.at(i) - max_val);
+    exp_sum += std::exp(v(i) - max_val);
   }
   return max_val + std::log(exp_sum);
 }
