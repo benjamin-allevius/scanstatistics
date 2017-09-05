@@ -17,6 +17,20 @@
 //' @param zones An integer vector (all zones concatenated; locations indexed 
 //'    from 0 and up).
 //' @param zone_lengths An integer vector.
+//' @param outbreak_prob A scalar; the probability of an outbreak (at any time,
+//'    any place).
+//' @param alpha_null A scalar; the shape parameter for the gamma distribution
+//'    under the null hypothesis of no anomaly.
+//' @param beta_null A scalar; the scale parameter for the gamma distribution
+//'    under the null hypothesis of no anomaly.
+//' @param alpha_alt A scalar; the shape parameter for the gamma distribution
+//'    under the alternative hypothesis of an anomaly.
+//' @param beta_alt A scalar; the scale parameter for the gamma distribution
+//'    under the alternative hypothesis of an anomaly.
+//' @param m_values A vector of possible values for the increase in the mean
+//'    (and variance) of an anomalous count.
+//' @param m_probs A vector of the prior probabilities of each value in 
+//'    \code{m_values}.
 //' @return A list with elements \code{observed} and \code{simulated}, each 
 //'    being a data frame with columns:
 //'    \describe{
@@ -36,7 +50,9 @@ Rcpp::List scan_bayes_negbin_cpp(const arma::umat& counts,
                                  const double alpha_null,
                                  const double beta_null,
                                  const double alpha_alt,
-                                 const double beta_alt);
+                                 const double beta_alt,
+                                 const arma::vec& m_values,
+                                 const arma::vec& m_probs);
 
 
 #endif
