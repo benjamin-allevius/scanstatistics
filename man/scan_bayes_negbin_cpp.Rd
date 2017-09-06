@@ -5,7 +5,7 @@
 \title{Calculate the "Bayesian Spatial Scan Statistic" by Neill et al. (2006).}
 \usage{
 scan_bayes_negbin_cpp(counts, baselines, zones, zone_lengths, outbreak_prob,
-  alpha_null, beta_null, alpha_alt, beta_alt, m_values, m_probs)
+  alpha_null, beta_null, alpha_alt, beta_alt, inc_values, inc_probs)
 }
 \arguments{
 \item{counts}{An integer matrix (most recent timepoint in first row).}
@@ -33,11 +33,11 @@ under the alternative hypothesis of an anomaly.}
 \item{beta_alt}{A scalar; the scale parameter for the gamma distribution
 under the alternative hypothesis of an anomaly.}
 
-\item{m_values}{A vector of possible values for the increase in the mean
+\item{inc_values}{A vector of possible values for the increase in the mean
 (and variance) of an anomalous count.}
 
-\item{m_probs}{A vector of the prior probabilities of each value in 
-\code{m_values}.}
+\item{inc_probs}{A vector of the prior probabilities of each value in 
+\code{inc_values}.}
 }
 \value{
 A list with elements \code{priors} (list), \code{posteriors} (list), 
@@ -55,13 +55,12 @@ A list with elements \code{priors} (list), \code{posteriors} (list),
    \describe{
      \item{null_posterior}{The posterior probability of no anomaly.}
      \item{alt_posterior}{The posterior probability of an anomaly.}
-     \item{inc_posterior}{A vector (matrix with 1 row) of posterior 
-                          probabilities of each value in the argument 
-                          \code{m_values}.}
+     \item{inc_posterior}{A data frame with columns \code{inc_values} and
+                          \code{inc_posterior}.}
      \item{window_posteriors}{A data frame with columns \code{zone}, 
-                              \code{duration}, \code{posterior} and 
-                              \code{bayes_factor}, each row corresponding to
-                              a space-time window.}
+                              \code{duration}, \code{log_posterior} and 
+                              \code{log_bayes_factor}, each row 
+                              corresponding to a space-time window.}
      \item{space_time_posteriors}{A matrix with the posterior anomaly 
                                   probability of each location-time 
                                   combination.}

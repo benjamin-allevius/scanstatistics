@@ -13,9 +13,9 @@
 #'      \item A matrix of observed counts. Rows indicate time and are ordered
 #'            from least recent (row 1) to most recent (row 
 #'            \code{nrow(counts)}). Columns indicate locations, numbered from 1 
-#'            and up. If \code{counts} is a matrix, the optional matrix argument 
+#'            and up. If \code{counts} is a matrix, the optional matrix argument
 #'            \code{baselines} should also be specified.
-#'      \item A data frame with columns "time", "location", "count", "baseline". 
+#'      \item A data frame with columns "time", "location", "count", "baseline".
 #'            Alternatively, the column "baseline" can be replaced by a column
 #'            "population". The baselines are the expected values of the counts.
 #'    }
@@ -45,20 +45,21 @@
 #' @param beta_alt A scalar; the scale parameter for the gamma distribution
 #'    under the alternative hypothesis of an anomaly. Defaults to the same value
 #'    as \code{beta_null}.
-#' @param m_values A vector of possible values for the increase in the mean
+#' @param inc_values A vector of possible values for the increase in the mean
 #'    (and variance) of an anomalous count. Defaults to evenly spaced values 
 #'    between 1 and 3, with a difference of 0.1 between consecutive values.
-#' @param m_probs A vector of the prior probabilities of each value in 
-#'    \code{m_values}. Defaults to 1, implying a discrete uniform distribution.
+#' @param inc_probs A vector of the prior probabilities of each value in 
+#'    \code{inc_values}. Defaults to 1, implying a discrete uniform 
+#'    distribution.
 #' @return A list which, in addition to the information about the type of scan
 #'    statistic, has the following components: \code{priors} (list), 
-#'    \code{posteriors} (list), and \code{marginal_data_prob} (scalar). The list 
+#'    \code{posteriors} (list), and \code{marginal_data_prob} (scalar). The list
 #'    \code{priors} has elements
 #'    \describe{
 #'      \item{null_prior}{The prior probability of no anomaly.}
 #'      \item{alt_prior}{The prior probability of an anomaly.}
 #'      \item{inc_prior}{A vectorof prior probabilities of each value in the 
-#'                       argument \code{m_values}.}
+#'                       argument \code{inc_values}.}
 #'      \item{window_prior}{The prior probability of an outbreak in any of the
 #'                          space-time windows.}
 #'    }
@@ -66,16 +67,16 @@
 #'    \describe{
 #'      \item{null_posterior}{The posterior probability of no anomaly.}
 #'      \item{alt_posterior}{The posterior probability of an anomaly.}
-#'      \item{inc_posterior}{A vector of posterior probabilities of each value 
-#'                           in the argument \code{m_values}.}
+#'      \item{inc_posterior}{A data frame with columns \code{inc_values} and
+#'                           \code{inc_posterior}.}
 #'      \item{window_posteriors}{A data frame with columns \code{zone}, 
-#'                               \code{duration}, \code{posterior} and 
-#'                               \code{bayes_factor}, each row corresponding to
-#'                               a space-time window.}
+#'                               \code{duration}, \code{log_posterior} and 
+#'                               \code{log_bayes_factor}, each row corresponding
+#'                               to a space-time window.}
 #'      \item{space_time_posteriors}{A matrix with the posterior anomaly 
 #'                                   probability of each location-time 
 #'                                   combination.}
-#'      \item{location_posteriors}{A vector with the posterior probability of an 
+#'      \item{location_posteriors}{A vector with the posterior probability of an
 #'                                 anomaly at each location.}
 #'    }
 #' @references 
@@ -120,8 +121,8 @@ scan_bayes_negbin <- function(counts,
                             beta_null = 1,
                             alpha_alt = alpha_null,
                             beta_alt = beta_null,
-                            m_values = seq(1, 3, by = 0.1),
-                            m_probs = 1) {
+                            inc_values = seq(1, 3, by = 0.1),
+                            inc_probs = 1) {
   if (is.data.frame(counts)) {
     # Validate input -----------------------------------------------------------
     if (any(c("time", "location", "count") %notin% names(counts))) {
@@ -142,10 +143,10 @@ scan_bayes_negbin <- function(counts,
     counts <- df_to_matrix(counts, "time", "location", "count")
   }
   
-  if (length(m_probs) == 1) {
-    m_probs <- rep(1, length(m_values))
+  if (length(inc_probs) == 1) {
+    inc_probs <- rep(1, length(inc_values))
   }
-  m_probs <- m_probs / sum(m_probs)
+  inc_probs <- inc_probs / sum(inc_probs)
   
   # Validate input -------------------------------------------------------------
   if (any(as.vector(counts) != as.integer(counts))) {
@@ -154,11 +155,11 @@ scan_bayes_negbin <- function(counts,
   if (!is.null(baselines) && any(baselines <= 0)) {
     stop("baselines must be positive")
   }
-  if (length(m_values) != length(m_probs)) {
-    stop("m_probs must be either of length 1 or length(m_values).")
+  if (length(inc_values) != length(inc_probs)) {
+    stop("inc_probs must be either of length 1 or length(inc_values).")
   }
-  if (any(m_probs <= 0)) {
-    stop("m_probs must contain positive values only.")
+  if (any(inc_probs <= 0)) {
+    stop("inc_probs must contain positive values only.")
   }
   if (any(c(alpha_null, beta_null, alpha_alt, beta_alt) <= 0)) {
     stop("The alpha and beta parameters must be positive")
@@ -194,19 +195,16 @@ scan_bayes_negbin <- function(counts,
                beta_null = beta_null,
                alpha_alt = alpha_alt,
                beta_alt = beta_alt,
-               m_values = m_values,
-               m_probs = m_probs)
-
-
+               inc_values = inc_values,
+               inc_probs = inc_probs)
+  
   # Run analysis on observed counts --------------------------------------------
   scan <- do.call(scan_bayes_negbin_cpp, args)
   
   #  Rename and reshape some elements
-  scan$priors$m_prior <- as.vector(scan$priors$inc_prior)
-  scan$priors$inc_prior <- NULL
+  scan$priors$inc_prior <- as.vector(scan$priors$inc_prior)
   
-  scan$posteriors$m_prior <- as.vector(scan$posteriors$inc_prior)
-  scan$posteriors$inc_prior <- NULL
+  scan$posteriors$inc_prior <- as.vector(scan$posteriors$inc_prior)
   
   scan$posteriors$location_posteriors <- 
     as.vector(scan$posteriors$location_posteriors)

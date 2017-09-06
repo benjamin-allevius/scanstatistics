@@ -27,10 +27,10 @@
 //'    under the alternative hypothesis of an anomaly.
 //' @param beta_alt A scalar; the scale parameter for the gamma distribution
 //'    under the alternative hypothesis of an anomaly.
-//' @param m_values A vector of possible values for the increase in the mean
+//' @param inc_values A vector of possible values for the increase in the mean
 //'    (and variance) of an anomalous count.
-//' @param m_probs A vector of the prior probabilities of each value in 
-//'    \code{m_values}.
+//' @param inc_probs A vector of the prior probabilities of each value in 
+//'    \code{inc_values}.
 //' @return A list with elements \code{priors} (list), \code{posteriors} (list), 
 //'    and \code{marginal_data_prob} (scalar). The list \code{priors} has 
 //'    elements
@@ -46,13 +46,12 @@
 //'    \describe{
 //'      \item{null_posterior}{The posterior probability of no anomaly.}
 //'      \item{alt_posterior}{The posterior probability of an anomaly.}
-//'      \item{inc_posterior}{A vector (matrix with 1 row) of posterior 
-//'                           probabilities of each value in the argument 
-//'                           \code{m_values}.}
+//'      \item{inc_posterior}{A data frame with columns \code{inc_values} and
+//'                           \code{inc_posterior}.}
 //'      \item{window_posteriors}{A data frame with columns \code{zone}, 
-//'                               \code{duration}, \code{posterior} and 
-//'                               \code{bayes_factor}, each row corresponding to
-//'                               a space-time window.}
+//'                               \code{duration}, \code{log_posterior} and 
+//'                               \code{log_bayes_factor}, each row 
+//'                               corresponding to a space-time window.}
 //'      \item{space_time_posteriors}{A matrix with the posterior anomaly 
 //'                                   probability of each location-time 
 //'                                   combination.}
@@ -72,8 +71,8 @@ Rcpp::List scan_bayes_negbin_cpp(const arma::umat& counts,
                                  const double beta_null,
                                  const double alpha_alt,
                                  const double beta_alt,
-                                 const arma::vec& m_values,
-                                 const arma::vec& m_probs);
+                                 const arma::vec& inc_values,
+                                 const arma::vec& inc_probs);
 
 
 #endif

@@ -7,8 +7,8 @@
 using namespace Rcpp;
 
 // scan_bayes_negbin_cpp
-Rcpp::List scan_bayes_negbin_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::uvec& zones, const arma::uvec& zone_lengths, const double outbreak_prob, const double alpha_null, const double beta_null, const double alpha_alt, const double beta_alt, const arma::vec& m_values, const arma::vec& m_probs);
-RcppExport SEXP _scanstatistics_scan_bayes_negbin_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP outbreak_probSEXP, SEXP alpha_nullSEXP, SEXP beta_nullSEXP, SEXP alpha_altSEXP, SEXP beta_altSEXP, SEXP m_valuesSEXP, SEXP m_probsSEXP) {
+Rcpp::List scan_bayes_negbin_cpp(const arma::umat& counts, const arma::mat& baselines, const arma::uvec& zones, const arma::uvec& zone_lengths, const double outbreak_prob, const double alpha_null, const double beta_null, const double alpha_alt, const double beta_alt, const arma::vec& inc_values, const arma::vec& inc_probs);
+RcppExport SEXP _scanstatistics_scan_bayes_negbin_cpp(SEXP countsSEXP, SEXP baselinesSEXP, SEXP zonesSEXP, SEXP zone_lengthsSEXP, SEXP outbreak_probSEXP, SEXP alpha_nullSEXP, SEXP beta_nullSEXP, SEXP alpha_altSEXP, SEXP beta_altSEXP, SEXP inc_valuesSEXP, SEXP inc_probsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -21,9 +21,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double >::type beta_null(beta_nullSEXP);
     Rcpp::traits::input_parameter< const double >::type alpha_alt(alpha_altSEXP);
     Rcpp::traits::input_parameter< const double >::type beta_alt(beta_altSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type m_values(m_valuesSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type m_probs(m_probsSEXP);
-    rcpp_result_gen = Rcpp::wrap(scan_bayes_negbin_cpp(counts, baselines, zones, zone_lengths, outbreak_prob, alpha_null, beta_null, alpha_alt, beta_alt, m_values, m_probs));
+    Rcpp::traits::input_parameter< const arma::vec& >::type inc_values(inc_valuesSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type inc_probs(inc_probsSEXP);
+    rcpp_result_gen = Rcpp::wrap(scan_bayes_negbin_cpp(counts, baselines, zones, zone_lengths, outbreak_prob, alpha_null, beta_null, alpha_alt, beta_alt, inc_values, inc_probs));
     return rcpp_result_gen;
 END_RCPP
 }
