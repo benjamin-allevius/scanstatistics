@@ -14,22 +14,22 @@ beg_manual <- function(counts, baselines, zones,
                        alt_prior, 
                        alpha_null, beta_null,
                        alpha_alt, beta_alt,
-                       m_vals, m_probs) {
+                       inc_vals, inc_probs) {
  
   
   win_post <- data.frame(zone = rep(NA, length(zones) * nrow(counts)))
   win_post$duration <- NA
   win_post$posterior <- 0
   
-  win_cpost <- matrix(0, nrow(win_post), length(m_vals))
+  win_cpost <- matrix(0, nrow(win_post), length(inc_vals))
   
-  null_cpost <- rep(0, length(m_vals))
-  alt_cpost <- rep(0, length(m_vals))
-  m_post <- rep(0, length(m_vals))
-  data_cpost <- rep(0, length(m_vals))
+  null_cpost <- rep(0, length(inc_vals))
+  alt_cpost <- rep(0, length(inc_vals))
+  m_post <- rep(0, length(inc_vals))
+  data_cpost <- rep(0, length(inc_vals))
   
   
-  for (k in 1:length(m_vals)) {
+  for (k in 1:length(inc_vals)) {
     idx <- 1
     for (j in 1:nrow(counts)) {
       for (i in seq_along(zones)) {
@@ -39,7 +39,7 @@ beg_manual <- function(counts, baselines, zones,
         win_cpost[idx, k] <- win_score(
                           sum(counts[1:j, z]),
                           sum(baselines[1:j, z]),
-                          m_vals[k] * alpha_alt, beta_alt,
+                          inc_vals[k] * alpha_alt, beta_alt,
                           sum(counts) - sum(counts[1:j, z]),
                           sum(baselines) - sum(baselines[1:j, z]),
                           alpha_null, beta_null,
@@ -53,25 +53,26 @@ beg_manual <- function(counts, baselines, zones,
     win_cpost[, k] <- win_cpost[, k] / data_cpost[k]
     null_cpost[k] = np / data_cpost[k]
     alt_cpost[k] = 1 - null_cpost[k]
-    m_post[k] <- data_cpost[k] * m_probs[k]
+    m_post[k] <- data_cpost[k] * inc_probs[k]
   }
   
-  pd <- sum(data_cpost * m_probs)
+  pd <- sum(data_cpost * inc_probs)
   
   null_post <- sum(null_cpost * m_post) / pd
   alt_post <- 1 - null_post
   
-  m_post <- data_cpost * m_probs / pd
+  m_post <- data_cpost * inc_probs / pd
   
-  for (k in 1:length(m_vals)) {
+  for (k in 1:length(inc_vals)) {
     win_post$posterior <- win_post$posterior + win_cpost[, k] * m_post[k]
   }
+  win_post$log_posterior <- log(win_post$posterior)
   
   list(priors = 
          list(null_prior = 1 - alt_prior,
               alt_prior = alt_prior,
               window_prior = alt_prior  / (length(zones) * nrow(counts)),
-              m_prior = m_probs),
+              m_prior = inc_probs),
        posteriors =
          list(null_posterior = null_post,
               alt_posterior = alt_post,
@@ -92,12 +93,10 @@ test_that("scan_bayes_negbin: 1 timepoint", {
   in1$zones_flat =  unlist(in1$zones)
   in1$zone_lengths = unlist(lapply(in1$zones, length))
   
-  alt_prior <- 0.1
-  
   expected <- beg_manual(in1$counts,
                          in1$baselines,
                          in1$zones,
-                         alt_prior,
+                         0.1,
                          2, 2,
                          4, 2,
                          1, 1)
@@ -106,58 +105,56 @@ test_that("scan_bayes_negbin: 1 timepoint", {
                                   in1$baselines,
                                   in1$zones_flat - 1,
                                   in1$zone_lengths,
-                                  alt_prior,
+                                  0.1,
                                   alpha_null = 2,
                                   beta_null = 2,
                                   alpha_alt = 4,
                                   beta_alt = 2,
-                                  m_values = 1,
-                                  m_probs = 1)
+                                  inc_values = 1,
+                                  inc_probs = 1)
   
   expect_equal(actual$posteriors$null_posterior,
                expected$posteriors$null_posterior)
   expect_equal(actual$posteriors$alt_posterior,
                expected$posteriors$alt_posterior)
-  expect_equal(as.vector(actual$posteriors$inc_posterior),
+  expect_equal(as.vector(actual$posteriors$inc_posterior$inc_posterior),
                expected$posteriors$inc_posterior)
-  expect_equal(actual$posteriors$window_posteriors$posterior,
-               expected$posteriors$window_posteriors$posterior)
+  expect_equal(actual$posteriors$window_posteriors$log_posterior,
+               expected$posteriors$window_posteriors$log_posterior)
   
   
   # Multiple values of m -------------------------------------------------------
-  m_vals <- c(1, 2)
-  m_probs = c(0.5, 0.5)
+  inc_vals <- c(1, 2)
+  inc_probs = c(0.5, 0.5)
   
   expected <- beg_manual(in1$counts,
                          in1$baselines,
                          in1$zones,
-                         alt_prior,
+                         0.1,
                          2, 2,
                          4, 2,
-                         m_vals, m_probs)
+                         inc_vals, inc_probs)
   
   actual <- scan_bayes_negbin_cpp(in1$counts,
                                   in1$baselines,
                                   in1$zones_flat - 1,
                                   in1$zone_lengths,
-                                  alt_prior,
+                                  0.1,
                                   alpha_null = 2,
                                   beta_null = 2,
                                   alpha_alt = 4,
                                   beta_alt = 2,
-                                  m_values = m_vals,
-                                  m_probs = m_probs)
+                                  inc_values = inc_vals,
+                                  inc_probs = inc_probs)
   
   expect_equal(actual$posteriors$null_posterior,
                expected$posteriors$null_posterior)
   expect_equal(actual$posteriors$alt_posterior,
                expected$posteriors$alt_posterior)
-  expect_equal(as.vector(actual$posteriors$inc_posterior),
+  expect_equal(as.vector(actual$posteriors$inc_posterior$inc_posterior),
                expected$posteriors$inc_posterior)
-  expect_equal(actual$posteriors$window_posteriors$posterior,
-               expected$posteriors$window_posteriors$posterior)
-               
-  
+  expect_equal(actual$posteriors$window_posteriors$log_posterior,
+               expected$posteriors$window_posteriors$log_posterior)
 })
 
 
@@ -178,7 +175,7 @@ test_that("scan_bayes_negbin: 3 timepoints", {
   expected <- beg_manual(in2$counts,
                          in2$baselines,
                          in2$zones,
-                         alt_prior,
+                         0.1,
                          2, 2,
                          4, 2,
                          1, 1)
@@ -192,29 +189,29 @@ test_that("scan_bayes_negbin: 3 timepoints", {
                                   beta_null = 2,
                                   alpha_alt = 4,
                                   beta_alt = 2,
-                                  m_values = 1,
-                                  m_probs = 1)
+                                  inc_values = 1,
+                                  inc_probs = 1)
    
    expect_equal(actual$posteriors$null_posterior,
                 expected$posteriors$null_posterior)
    expect_equal(actual$posteriors$alt_posterior,
                 expected$posteriors$alt_posterior)
-   expect_equal(as.vector(actual$posteriors$inc_posterior),
+   expect_equal(as.vector(actual$posteriors$inc_posterior$inc_posterior),
                 expected$posteriors$inc_posterior)
-   expect_equal(actual$posteriors$window_posteriors$posterior,
-                expected$posteriors$window_posteriors$posterior)
+   expect_equal(actual$posteriors$window_posteriors$log_posterior,
+                expected$posteriors$window_posteriors$log_posterior)
   
   # Multiple values of m -------------------------------------------------------
-   m_vals <- seq(1, 3, 0.1)
-   m_probs <- rep(1 / length(m_vals), length(m_vals))
+   inc_vals <- seq(1, 3, 0.1)
+   inc_probs <- rep(1 / length(inc_vals), length(inc_vals))
    
    expected <- beg_manual(in2$counts,
                           in2$baselines,
                           in2$zones,
-                          alt_prior,
+                          0.1,
                           2, 2,
                           4, 2,
-                          m_vals, m_probs)
+                          inc_vals, inc_probs)
    
    actual <- scan_bayes_negbin_cpp(in2$counts,
                                    in2$baselines,
@@ -225,15 +222,15 @@ test_that("scan_bayes_negbin: 3 timepoints", {
                                    beta_null = 2,
                                    alpha_alt = 4,
                                    beta_alt = 2,
-                                   m_values = m_vals,
-                                   m_probs = m_probs)
+                                   inc_values = inc_vals,
+                                   inc_probs = inc_probs)
    
    expect_equal(actual$posteriors$null_posterior,
                 expected$posteriors$null_posterior)
    expect_equal(actual$posteriors$alt_posterior,
                 expected$posteriors$alt_posterior)
-   expect_equal(as.vector(actual$posteriors$inc_posterior),
+   expect_equal(as.vector(actual$posteriors$inc_posterior$inc_posterior),
                 expected$posteriors$inc_posterior)
-   expect_equal(actual$posteriors$window_posteriors$posterior,
-                expected$posteriors$window_posteriors$posterior)
+   expect_equal(actual$posteriors$window_posteriors$log_posterior,
+                expected$posteriors$window_posteriors$log_posterior)
 })
