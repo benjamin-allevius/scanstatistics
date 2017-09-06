@@ -21,8 +21,6 @@ public:
 
   Rcpp::DataFrame get_scan() override;
   Rcpp::List get_results();
-  Rcpp::List get_priors();
-  Rcpp::List get_posteriors();
   void run_over_inc();
 
 private:
@@ -87,7 +85,10 @@ private:
 
   double log_prob(const arma::uword C, const double B, const double alpha,
                   const double beta);
-
+  
+  Rcpp::List get_priors();
+  Rcpp::List get_posteriors();
+  Rcpp::DataFrame get_inc_posterior();
 };
 
 // Implementations -------------------------------------------------------------
@@ -254,10 +255,16 @@ inline void BGPscan::store_all(arma::uword storage_index, double score,
 
 inline Rcpp::DataFrame BGPscan::get_scan() {
   return Rcpp::DataFrame::create(
-    Rcpp::Named("zone")         = m_zone_numbers,
-    Rcpp::Named("duration")     = m_durations,
-    Rcpp::Named("posterior")    = m_scores,
-    Rcpp::Named("bayes_factor") = arma::exp(m_lprobs - m_null_lposterior));
+    Rcpp::Named("zone")          = m_zone_numbers,
+    Rcpp::Named("duration")      = m_durations,
+    Rcpp::Named("log_posterior") = m_lprobs,
+    Rcpp::Named("log_bayes_factor")  = m_lprobs - m_null_lposterior);
+}
+
+inline Rcpp::DataFrame BGPscan::get_inc_posterior() {
+  return Rcpp::DataFrame::create(
+    Rcpp::Named("inc_value") = m_inc_vals,
+    Rcpp::Named("inc_posterior") = arma::exp(m_inc_lposterior));
 }
 
 inline Rcpp::List BGPscan::get_priors() {
@@ -273,7 +280,7 @@ inline Rcpp::List BGPscan::get_posteriors() {
   return Rcpp::List::create(
     Rcpp::Named("null_posterior")        = std::exp(m_null_lposterior),
     Rcpp::Named("alt_posterior")         = std::exp(m_alt_lposterior),
-    Rcpp::Named("inc_posterior")         = arma::exp(m_inc_lposterior).t(),
+    Rcpp::Named("inc_posterior")         = get_inc_posterior(),
     Rcpp::Named("window_posteriors")     = get_scan(),
     Rcpp::Named("space_time_posteriors") = m_spacetime_posteriors,
     Rcpp::Named("location_posteriors")   = m_location_posteriors.t()
