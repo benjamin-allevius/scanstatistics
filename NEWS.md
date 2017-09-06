@@ -2,10 +2,10 @@
 
 # Major changes
 
-* New interface for main functions.
-* Multiple functions reimplemented in C++.
-* Fast detection for multivariate space-time data with the function 
-  `subset_aggregation`, for multiple distributional assumptions.
+* New interface for main functions: accept data frames or matrices instead of
+  data tables.
+* All scan statistics reimplemented in C++.
+* Several new scan statistics available.
 
 ## Minor changes
 
