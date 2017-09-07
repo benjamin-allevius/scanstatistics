@@ -10,9 +10,9 @@ output:
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "README-"
+  fig.path = "inst/image/"
 )
-knitr::opts_chunk$set(fig.width=10, fig.height=6, fig.path="README_figures/")
+knitr::opts_chunk$set(fig.width=10, fig.height=6, fig.path="inst/image/")
 ```
 
 [![Build Status](https://travis-ci.org/BenjaK/scanstatistics.svg?branch=master)](https://travis-ci.org/BenjaK/scanstatistics)
@@ -117,6 +117,7 @@ ggplot() +
   geom_text(data = NM_geo, 
             mapping = aes(x = center_long, y = center_lat, label = county)) +
   ggtitle("Counties of New Mexico")
+
 ```
 
 We can further obtain the yearly number of cases and the population for each

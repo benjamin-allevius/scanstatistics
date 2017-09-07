@@ -92,7 +92,7 @@ ggplot() +
   ggtitle("Counties of New Mexico")
 ```
 
-![](README_figures/newmexico_map-1.png)
+![](inst/image/newmexico_map-1.png)
 
 We can further obtain the yearly number of cases and the population for each country for the years 1973-1991 from the data table `NM_popcas` provided by the package:
 
@@ -239,7 +239,7 @@ ggplot() +
   ggtitle("County scores")
 ```
 
-![](README_figures/county_scores-1.png)
+![](inst/image/county_scores-1.png)
 
 A warning though: the `score_locations` function can be quite slow for large data sets. This might change in future versions of the package.
 
