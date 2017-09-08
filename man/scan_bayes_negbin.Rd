@@ -67,8 +67,20 @@ distribution.}
 \value{
 A list which, in addition to the information about the type of scan
    statistic, has the following components: \code{priors} (list), 
-   \code{posteriors} (list), and \code{marginal_data_prob} (scalar). The list
-   \code{priors} has elements
+   \code{posteriors} (list), \code{MLC} (list) and \code{marginal_data_prob} 
+   (scalar). The list \code{MLC} has elements
+   \describe{
+     \item{zone}{The number of the spatial zone of the most likely cluster 
+                 (MLC).}
+     \item{duration}{The most likely event duration.}
+     \item{log_posterior}{The posterior log probability that an event is 
+                          ongoing in the MLC.}
+     \item{log_bayes_factor}{The logarithm of the Bayes factor for the MLC.}
+     \item{posterior}{The posterior probability that an event is ongoing in 
+                      the MLC.}
+     \item{locations}{The locations involved in the MLC.}
+   }    
+   The list \code{priors} has elements
    \describe{
      \item{null_prior}{The prior probability of no anomaly.}
      \item{alt_prior}{The prior probability of an anomaly.}

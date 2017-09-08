@@ -53,8 +53,20 @@
 #'    distribution.
 #' @return A list which, in addition to the information about the type of scan
 #'    statistic, has the following components: \code{priors} (list), 
-#'    \code{posteriors} (list), and \code{marginal_data_prob} (scalar). The list
-#'    \code{priors} has elements
+#'    \code{posteriors} (list), \code{MLC} (list) and \code{marginal_data_prob} 
+#'    (scalar). The list \code{MLC} has elements
+#'    \describe{
+#'      \item{zone}{The number of the spatial zone of the most likely cluster 
+#'                  (MLC).}
+#'      \item{duration}{The most likely event duration.}
+#'      \item{log_posterior}{The posterior log probability that an event is 
+#'                           ongoing in the MLC.}
+#'      \item{log_bayes_factor}{The logarithm of the Bayes factor for the MLC.}
+#'      \item{posterior}{The posterior probability that an event is ongoing in 
+#'                       the MLC.}
+#'      \item{locations}{The locations involved in the MLC.}
+#'    }    
+#'    The list \code{priors} has elements
 #'    \describe{
 #'      \item{null_prior}{The prior probability of no anomaly.}
 #'      \item{alt_prior}{The prior probability of an anomaly.}
@@ -113,16 +125,16 @@
 #'                          baselines = baselines)
 #' }
 scan_bayes_negbin <- function(counts,
-                            zones,
-                            baselines = NULL,
-                            population = NULL,
-                            outbreak_prob = 0.05,
-                            alpha_null = 1,
-                            beta_null = 1,
-                            alpha_alt = alpha_null,
-                            beta_alt = beta_null,
-                            inc_values = seq(1, 3, by = 0.1),
-                            inc_probs = 1) {
+                              zones,
+                              baselines = NULL,
+                              population = NULL,
+                              outbreak_prob = 0.05,
+                              alpha_null = 1,
+                              beta_null = 1,
+                              alpha_alt = alpha_null,
+                              beta_alt = beta_null,
+                              inc_values = seq(1, 3, by = 0.1),
+                              inc_probs = 1) {
   if (is.data.frame(counts)) {
     # Validate input -----------------------------------------------------------
     if (any(c("time", "location", "count") %notin% names(counts))) {
@@ -208,6 +220,13 @@ scan_bayes_negbin <- function(counts,
   
   scan$posteriors$location_posteriors <- 
     as.vector(scan$posteriors$location_posteriors)
+  
+  # Sort posterior probabilities
+  scan$posteriors$window_posteriors %<>% arrange(-log_posterior)
+  
+  MLC <- as.list(scan$posteriors$window_posteriors[1, ])
+  MLC$posterior <- exp(MLC$log_posterior)
+  MLC$locations <- zones[[MLC$zone]]
 
   structure(
     c(list(# General
@@ -215,6 +234,7 @@ scan_bayes_negbin <- function(counts,
            type = "Bayesian",
            setting = "univariate"),
       # MLC + analysis
+      MLC = list(MLC),
       scan,
       # Configuration
       list(n_zones = length(zones),
