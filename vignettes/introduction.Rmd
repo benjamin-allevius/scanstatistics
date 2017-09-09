@@ -30,14 +30,18 @@ data. The gist of the methodology, at least in this package, is this:
 
 ### Scan statistics
 
-- __`scan_eb_poisson`__: computes an \emph{expectation-based} scan statistic for 
-  data following a Poisson distribution.
-- __`scan_pb_poisson`__: computes a \emph{population-based} scan statistic for 
-  data following a Poisson distribution.
-- __`scan_eb_negbin`__: computes an \emph{expectation-based} scan statistic for 
-  data following a negative binomial distribution.
-- __`scan_eb_zip`__: computes an \emph{expectation-based} scan statistic for 
-  data following a zero-inflated Poisson distribution.
+- __`scan_eb_poisson`__: computes the expectation-based Poisson scan 
+  statistic [@Neill2005].
+- __`scan_pb_poisson`__: computes the (population-based) space-time scan
+  statistic [@Kulldorff2001].
+- __`scan_eb_negbin`__: computes the expectation-based negative binomial scan 
+  statistic [@Tango2011].
+- __`scan_eb_zip`__: computes the expectation-based zero-inflated Poisson
+  scan statistic [@Allevius2017].
+- __`scan_permutation`__: computes the space-time permutation scan statistic 
+  [@Kulldorff2005].
+- __`scan_bayes_negbin`__: computes the Bayesian Spatial scan statistic 
+  [@Neill2006], extended to a space-time setting.
 
 ### Zone creation                  
 
