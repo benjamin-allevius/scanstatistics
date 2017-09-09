@@ -80,13 +80,13 @@
 #' counts[ob_rows, ob_cols] <- matrix(
 #'   rpois(ob_dur * length(ob_cols), 2 * population[ob_rows, ob_cols] / 20), 
 #'   length(ob_rows), length(ob_cols))
-#' res <- scan_pb_permutation(counts = counts,
+#' res <- scan_permutation(counts = counts,
 #'                            zones = zones,
 #'                            population = population,
 #'                            n_mcsim = 99,
 #'                            max_only = FALSE)
 #' }
-scan_pb_permutation <- function(counts,
+scan_permutation <- function(counts,
                                 zones,
                                 population = NULL,
                                 n_mcsim = 0,
