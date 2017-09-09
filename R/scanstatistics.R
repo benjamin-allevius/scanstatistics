@@ -23,6 +23,7 @@ NULL
 globalVariables(c(
 ## Variables used unquoted inside functions-------------------------------------
   "location",
+  "log_posterior",
   "score",
   "time",
   "zone"),
