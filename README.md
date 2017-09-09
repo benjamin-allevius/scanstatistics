@@ -13,11 +13,8 @@
 -   [References](#references)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-<!--
-[![Build Status](https://travis-ci.org/BenjaK/scanstatistics.svg?branch=master)](https://travis-ci.org/BenjaK/scanstatistics)
-[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/scanstatistics)](https://cran.r-project.org/package=scanstatistics)
-[![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/scanstatistics)](http://cran.rstudio.com/web/packages/scanstatistics/index.html)
--->
+[![Build Status](https://travis-ci.org/BenjaK/scanstatistics.svg?branch=master)](https://travis-ci.org/BenjaK/scanstatistics) [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/scanstatistics)](https://cran.r-project.org/package=scanstatistics) [![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/scanstatistics)](http://cran.rstudio.com/web/packages/scanstatistics/index.html)
+
 scanstatistics
 ==============
 
@@ -197,7 +194,7 @@ print(poisson_result)
 #> Monte Carlo P-value:              0.005
 #> Gumbel P-value:                   0.004
 #> Most likely event duration:       4
-#> ID of locations in most likely cluster: 15, 26
+#> ID of locations in MLC:           15, 26
 ```
 
 As we can see, the most likely cluster for an anomaly stretches from 1986-1989 and involves the locations numbered 15 and 26, which correspond to the counties
