@@ -1,3 +1,7 @@
+# scanstatistics 1.0.1
+
+* Fixes to compiler warnings; needed to keep package on CRAN.
+
 # scanstatistics 1.0
 
 # Major changes
