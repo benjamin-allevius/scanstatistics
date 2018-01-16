@@ -1,6 +1,12 @@
+## Release summary
+
+This release fixes the bugs reported by the CRAN Package Check reported on
+2018-01-16 12:47:21 CET.
+
 ## Test environments
 * local ubuntu 16.04 install, R 3.4.3
-* win-builder (devel and release)
+* ubuntu 14.04.5 (on travis-ci), R 3.4.2
+* win-builder (devel)
 
 ## Fixes to CRAN Package Check Results
 
@@ -29,6 +35,15 @@ virtual functions. The cost, in terms of code duplication and inability to add
 new functionality, that would result from not using these features of C++ is
 simply too high. Thus, I think the larger size of the installed package is 
 warranted.
+
+### Using Ubuntu 14.04.5
+There were no ERRORs or WARNINGs. 
+
+There was 1 NOTE:
+
+* installed size is 6.3Mb, sub-directories of 1Mb or more: libs 5.7Mb
+
+Explanation: see above.
 
 ### Using win-builder
 There were no ERRORs, WARNINGs or NOTEs. 
