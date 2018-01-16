@@ -1,5 +1,5 @@
-CC=/usr/bin/clang-5.0 -Qunused-arguments
-CXX=/usr/bin/clang++-5.0 -Qunused-arguments
+CC=/usr/bin/clang-5.0 -Qunused-arguments -Wall -Wreorder
+CXX=/usr/bin/clang++-5.0 -Qunused-arguments -Wall -Wreorder
 CCACHE_CPP2=yes
 CXX_STD = CXX11
 PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) 

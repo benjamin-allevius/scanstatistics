@@ -108,13 +108,13 @@ inline BGPscan::BGPscan(const arma::umat& counts,
     m_baselines_orig(baselines),
     m_alt_lprior(std::log(alt_prob)),
     m_null_lprior(std::log(1.0 - alt_prob)),
+    m_inc_idx(0),
+    m_inc_vals(inc_vals),
+    m_inc_lprior(arma::log(inc_prior)),
     m_alpha_null(alpha_null),
     m_beta_null(beta_null),
     m_alpha_alt(alpha_alt),
-    m_beta_alt(beta_alt),
-    m_inc_idx(0),
-    m_inc_vals(inc_vals),
-    m_inc_lprior(arma::log(inc_prior)) {
+    m_beta_alt(beta_alt) {
 
   m_total_count = arma::accu(counts);
   m_total_baseline = arma::accu(baselines);

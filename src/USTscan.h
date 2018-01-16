@@ -63,13 +63,13 @@ inline USTscanbase<T, t>::USTscanbase(const T& counts,
                                       const arma::uvec& zones,
                                       const arma::uvec& zone_lengths,
                                       const bool store_everything)
-  : m_counts(counts),
-    m_num_locs(counts.n_cols),
+  : m_num_locs(counts.n_cols),
     m_num_zones(zone_lengths.n_elem),
     m_max_dur(counts.n_rows),
+    m_store_everything(store_everything),
+    m_counts(counts),
     m_zones(zones),
-    m_zone_lengths(zone_lengths),
-    m_store_everything(store_everything) {
+    m_zone_lengths(zone_lengths) {
   
   m_out_length = (store_everything ? m_num_zones * m_max_dur : 1);
   
