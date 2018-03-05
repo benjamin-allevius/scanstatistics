@@ -96,7 +96,7 @@ print.scanstatistic <- function(x, ...) {
       "Overall event probability:        ", x$posteriors$alt_posterior, "\n",
       "Probability of event in MLC:      ", round(x$MLC$posterior, 3), "\n",
       "Most likely event duration:       ", x$MLC$duration, "\n",
-      "ID of locations in MLC:           ", toString(x$MLC$locations))
+      "ID of locations in MLC:           ", toString(x$MLC$locations), "\n")
     )
   } else {
     cat(paste0(
@@ -114,7 +114,7 @@ print.scanstatistic <- function(x, ...) {
                                                    "NULL",
                                                  round(x$Gumbel_pvalue, 3)), "\n",
       "Most likely event duration:       ", x$MLC$duration, "\n",
-      "ID of locations in MLC:           ", toString(x$MLC$locations))
+      "ID of locations in MLC:           ", toString(x$MLC$locations), "\n")
       )
   }
   invisible(x)
