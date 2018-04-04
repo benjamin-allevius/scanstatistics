@@ -1,25 +1,13 @@
 ## Release summary
 
-This release fixes the bugs reported by the CRAN Package Check reported on
-2018-01-16 12:47:21 CET.
+This release removes a number of internal functions that caused the package to
+not load in some circumstances.
 
 ## Test environments
-* local ubuntu 16.04 install, R 3.4.3
-* ubuntu 14.04.5 (on travis-ci), R 3.4.2
+* local Kubuntu 16.04 install, R 3.4.4
+* ubuntu 14.04.5 (on travis-ci), R 3.4.4
 * win-builder (devel)
 
-## Fixes to CRAN Package Check Results
-
-* WARNINGS from the flag -Wreorder have been fixed.
-* WARNINGS about unused package (gamlss.dist) import have been fixed by removing 
-  the imported package. Note: gamlss.dist is used (with namespace qualifier) in 
-  a dontrun example.
-* The NOTE about package size is explained below (and was present when the 
-  previous version of the package was submitted).
-* The ERROR on Flavor: r-oldrel-osx-x86_64 states "this R is version 3.3.2, 
-  package 'scanstatistics' requires R >=  3.4". Section 1.1.3 of Writing R 
-  Extensions does not mention that a minimum backward compatability in terms of
-  R versions is needed; this ERROR thus seems to be an acceptable one.
 
 ## R CMD check results
 
@@ -28,20 +16,20 @@ There were no ERRORs or WARNINGs.
 
 There was 1 NOTE:
 
-* installed size is 7.0Mb, sub-directories of 1Mb or more: libs 6.4Mb
+* installed size is 6.9Mb, sub-directories of 1Mb or more: libs 6.4Mb
 
-Explanation: The size is due to use of templated classes and functions, and 
-virtual functions. The cost, in terms of code duplication and inability to add 
-new functionality, that would result from not using these features of C++ is
-simply too high. Thus, I think the larger size of the installed package is 
-warranted.
+Explanation (same as given on previous releases): The size is due to use of 
+templated classes and functions, and virtual functions. The cost, in terms of 
+code duplication and inability to add new functionality, that would result from 
+not using these features of C++ is simply too high. Thus, I think the larger 
+size of the installed package is warranted.
 
 ### Using Ubuntu 14.04.5
 There were no ERRORs or WARNINGs. 
 
 There was 1 NOTE:
 
-* installed size is 6.3Mb, sub-directories of 1Mb or more: libs 5.7Mb
+* installed size is 6.2Mb, sub-directories of 1Mb or more: libs 5.7Mb
 
 Explanation: see above.
 
