@@ -1,3 +1,7 @@
+# scanstatistics 1.0.2
+
+* Removed unneeded internal functions that caused package to not be loaded.
+
 # scanstatistics 1.0.1
 
 * Fixes to compiler warnings; needed to keep package on CRAN.
