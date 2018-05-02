@@ -4,7 +4,7 @@ authors:
 - affiliation: 1
   name: Benjamin Allévius
   orcid: 0000-0002-0927-7183
-date: "22 September 2017"
+date: "2 May 2018"
 bibliography: paper.bib
 tags:
 - scan statistic
@@ -28,16 +28,19 @@ accomplish the detection task by searching the recent records of clusters of
 neighboring districts for patterns that seem anomalous given either past counts 
 or the counts outside the cluster currently searched.
 
-The `scanstatistics` package implements several scan statistics, some not 
-publically available elsewhere. The key references for these scan statistics 
-are:
+The `scanstatistics` package implements several scan statistics, making it a 
+partially overlapping complement to existing scan statistic software such as 
+[SaTScan](https://www.satscan.org/). For example, the `scanstatistics` package
+provides scan statistis for count data with overdispersion or zero inflation,
+which are currently not available in SaTScan. The key references for the scan 
+statistics in the package are:
 
 * @Kulldorff2001
 * @Kulldorff2005
 * @Neill2005
 * @Neill2006
 * @Tango2011
-* @Allevius2017
+* @Allevius2018
 
 The R package `scanstatistics` is available on 
 [CRAN](https://cran.r-project.org/package=scanstatistics) and its source code
