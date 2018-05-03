@@ -30,17 +30,13 @@ or the counts outside the cluster currently searched.
 
 The `scanstatistics` package implements several scan statistics, making it a 
 partially overlapping complement to existing scan statistic software such as 
-[SaTScan](https://www.satscan.org/). For example, the `scanstatistics` package
-provides scan statistis for count data with overdispersion or zero inflation,
-which are currently not available in SaTScan. The key references for the scan 
-statistics in the package are:
-
-* @Kulldorff2001
-* @Kulldorff2005
-* @Neill2005
-* @Neill2006
-* @Tango2011
-* @Allevius2018
+[SaTScan](https://www.satscan.org/). For example, the conditional Poisson 
+[@Kulldorff2001] and space-time permutation [@Kulldorff2005] scan statistics 
+are available in both [SaTScan](https://www.satscan.org/) and `scanstatistics`, 
+while only the latter implements scan statistics for zero-inflated data 
+[@Allevius2018], count data with overdispersion [@Tango2011], an unconditional
+(expectation-based) Poisson scan statistic [@Neill2005], and a Bayesian scan 
+statistic [@Neill2006].
 
 The R package `scanstatistics` is available on 
 [CRAN](https://cran.r-project.org/package=scanstatistics) and its source code

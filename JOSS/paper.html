@@ -126,22 +126,14 @@ $(document).ready(function () {
 <div id="summary" class="section level1">
 <h1>Summary</h1>
 <p>The R package <code>scanstatistics</code> enables the detection of anomalous space-time clusters using the scan statistics methodology. Scan statistics are commonly applied in disease surveillance, where they are used to detect disease outbreaks as they emerge locally. In this setting, cases of a given disease are recorded continuously across a country, and are then aggregated spatially to (say) district level, and temporally to (say) weekly counts. Scan statistics accomplish the detection task by searching the recent records of clusters of neighboring districts for patterns that seem anomalous given either past counts or the counts outside the cluster currently searched.</p>
-<p>The <code>scanstatistics</code> package implements several scan statistics, making it a partially overlapping complement to existing scan statistic software such as <a href="https://www.satscan.org/">SaTScan</a>. For example, the <code>scanstatistics</code> package provides scan statistis for count data with overdispersion or zero inflation, which are currently not available in SaTScan. The key references for the scan statistics in the package are:</p>
-<ul>
-<li><span class="citation">Kulldorff (2001)</span></li>
-<li><span class="citation">Kulldorff et al. (2005)</span></li>
-<li><span class="citation">Neill et al. (2005)</span></li>
-<li><span class="citation">Neill, Moore, and Cooper (2006)</span></li>
-<li><span class="citation">Tango, Takahashi, and Kohriyama (2011)</span></li>
-<li><span class="citation">Allévius and Höhle (In press 2018)</span></li>
-</ul>
+<p>The <code>scanstatistics</code> package implements several scan statistics, making it a partially overlapping complement to existing scan statistic software such as <a href="https://www.satscan.org/">SaTScan</a>. For example, the conditional Poisson <span class="citation">(Kulldorff 2001)</span> and space-time permutation <span class="citation">(Kulldorff et al. 2005)</span> scan statistics are available in both <a href="https://www.satscan.org/">SaTScan</a> and <code>scanstatistics</code>, while only the latter implements scan statistics for zero-inflated data <span class="citation">(Allévius and Höhle 2018, in press)</span>, count data with overdispersion <span class="citation">(Tango, Takahashi, and Kohriyama 2011)</span>, an unconditional (expectation-based) Poisson scan statistic <span class="citation">(Neill et al. 2005)</span>, and a Bayesian scan statistic <span class="citation">(Neill, Moore, and Cooper 2006)</span>.</p>
 <p>The R package <code>scanstatistics</code> is available on <a href="https://cran.r-project.org/package=scanstatistics">CRAN</a> and its source code is available on <a href="https://github.com/BenjaK/scanstatistics">GitHub</a>.</p>
 </div>
 <div id="references" class="section level1 unnumbered">
 <h1>References</h1>
 <div id="refs" class="references">
 <div id="ref-Allevius2018">
-<p>Allévius, Benjamin, and Michael Höhle. In press 2018. “An unconditional space-time scan statistic for ZIP-distributed data.” <em>Scandinavian Journal of Statistics</em>.</p>
+<p>Allévius, Benjamin, and Michael Höhle. 2018, in press. “An unconditional space-time scan statistic for ZIP-distributed data.” <em>Scandinavian Journal of Statistics</em>.</p>
 </div>
 <div id="ref-Kulldorff2001">
 <p>Kulldorff, Martin. 2001. “Prospective time periodic geographical disease surveillance using a scan statistic.” <em>Journal of the Royal Statistical Society Series a-Statistics in Society</em> 164: 61–72. doi:<a href="https://doi.org/10.1111/1467-985X.00186">10.1111/1467-985X.00186</a>.</p>
