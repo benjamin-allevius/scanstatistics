@@ -13,7 +13,7 @@
 -   [References](#references)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-[![Build Status](https://travis-ci.org/BenjaK/scanstatistics.svg?branch=master)](https://travis-ci.org/BenjaK/scanstatistics) [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/scanstatistics)](https://cran.r-project.org/package=scanstatistics) [![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/scanstatistics)](http://cran.rstudio.com/web/packages/scanstatistics/index.html)
+[![Build Status](https://travis-ci.org/BenjaK/scanstatistics.svg?branch=master)](https://travis-ci.org/BenjaK/scanstatistics) [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/scanstatistics)](https://cran.r-project.org/package=scanstatistics) [![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/scanstatistics)](http://cran.rstudio.com/web/packages/scanstatistics/index.html) [![DOI](http://joss.theoj.org/papers/10.21105/joss.00515/status.svg)](https://doi.org/10.21105/joss.00515)
 
 scanstatistics
 ==============
