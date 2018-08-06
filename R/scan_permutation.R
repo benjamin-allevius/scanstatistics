@@ -123,8 +123,11 @@ scan_permutation <- function(counts,
   
   # Reverse time order: most recent first --------------------------------------
   counts <- flipud(counts)
-  population <- flipud(population)
   baselines <- flipud(baselines)
+  
+  if (!is.null(population)) {
+    population <- flipud(population)
+  }
   
   # Prepare zone arguments for C++ ---------------------------------------------
   args <- list(counts = counts, 

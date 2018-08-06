@@ -198,7 +198,10 @@ scan_eb_zip <- function(counts,
   # Reverse time order: most recent first --------------------------------------
   counts <- flipud(counts)
   baselines <- flipud(baselines)
-  probs <- flipud(probs)
+  
+  if (!is.null(population)) {
+    population <- flipud(population)
+  }
   
 
   # Prepare zone arguments for C++ ---------------------------------------------
