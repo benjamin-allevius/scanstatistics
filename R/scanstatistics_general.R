@@ -52,17 +52,22 @@ mc_pvalue <- function(observed, replicates) {
 #' @param replicates A vector of Monte Carlo replicates of the scan statistic.
 #' @param method Either "ML", for maximum likelihood, or "MoM", for method of 
 #'    moments.
+#' @param ... Additional arguments passed to \code{ismev::gum.fit}, which 
+#'    may include arguments passed along further to \code{optim}.
 #' @return The \eqn{p}-value or \eqn{p}-values corresponding to the observed 
 #'    scan statistic(s).
 #' @importFrom ismev gum.fit
 #' @importFrom reliaR pgumbel
 #' @keywords internal
-gumbel_pvalue <- function(observed, replicates, method = "ML") {
+gumbel_pvalue <- function(observed, replicates, method = "ML", ...) {
+  if (length(replicates) < 2) {
+    stop("Need at least 2 observations to fit Gumbel distribution.")
+  }
   # Fit Gumbel distribution to Monte Carlo replicates
   gumbel_mu <- NA
   gumbel_sigma <- NA
   if (method == "ML") {
-    gum_fit <- gum.fit(replicates, show = FALSE)
+    gum_fit <- gum.fit(replicates, show = FALSE, ...)
     gumbel_mu <- gum_fit$mle[1]
     gumbel_sigma <- gum_fit$mle[2]
   } else {

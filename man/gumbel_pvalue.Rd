@@ -4,7 +4,7 @@
 \alias{gumbel_pvalue}
 \title{Calculate the Gumbel \eqn{p}-value for a scan statistic.}
 \usage{
-gumbel_pvalue(observed, replicates, method = "ML")
+gumbel_pvalue(observed, replicates, method = "ML", ...)
 }
 \arguments{
 \item{observed}{A scalar containing the observed value of the scan statistic,
@@ -14,6 +14,9 @@ or a vector of observed values from secondary clusters.}
 
 \item{method}{Either "ML", for maximum likelihood, or "MoM", for method of 
 moments.}
+
+\item{...}{Additional arguments passed to \code{ismev::gum.fit}, which 
+may include arguments passed along further to \code{optim}.}
 }
 \value{
 The \eqn{p}-value or \eqn{p}-values corresponding to the observed 
