@@ -87,10 +87,10 @@
 #'                            max_only = FALSE)
 #' }
 scan_permutation <- function(counts,
-                                zones,
-                                population = NULL,
-                                n_mcsim = 0,
-                                max_only = FALSE) {
+                             zones,
+                             population = NULL,
+                             n_mcsim = 0,
+                             max_only = FALSE) {
   if (is.data.frame(counts)) {
     # Validate input -----------------------------------------------------------
     if (any(c("time", "location", "count") %notin% names(counts))) {
