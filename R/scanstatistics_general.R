@@ -200,7 +200,7 @@ top_clusters <- function(x, zones, k = 5, overlapping = FALSE) {
     return(x$observed[seq_len(k), ])
   } else {
     row_idx <- c(1L, integer(k - 1))
-    seen_locations <- zones[[1]]
+    seen_locations <- zones[[x$observed[1,]$zone]]
     n_added <- 1L
     i <- 2L
     while (n_added < k && i <= nrow(x$observed)) {
