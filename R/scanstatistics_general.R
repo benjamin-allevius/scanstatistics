@@ -214,7 +214,7 @@ top_clusters <- function(x, zones, k = 5, overlapping = FALSE) {
       i <- i + 1L
     }
     res <- x$observed[row_idx[row_idx > 0], ]
-    res$MC_pvalue <- mc_pvalue(res$score, x$replicate_statistics$score)
+    res$MC_pvalue <- mc_pvalue(res$score, x$replicates$score)
     res$Gumbel_pvalue <- gumbel_pvalue(res$score, 
                                        x$replicates$score)$pvalue
     return(res)
