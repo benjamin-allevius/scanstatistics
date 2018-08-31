@@ -1,0 +1,12 @@
+bibentry(
+    bibtype = "Article",
+    header = "To cite package ‘scanstatistics’ in publications use:",
+    author = person("Benjamin", "Allévius"),
+    title = "scanstatistics: space-time anomaly detection using scan statistics",
+    journal = "Journal of Open Source Software",
+    year = "2018",
+    volume = "3",
+    number = "25",
+    pages = "515",
+    doi = "10.21105/joss.00515"
+)
