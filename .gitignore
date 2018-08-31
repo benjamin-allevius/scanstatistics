@@ -12,3 +12,4 @@ README_cache/
 docs/README_cache/
 docs/articles/articles/make_data_cache/
 vignettes/articles/make_data_cache/
+vignettes/.build.timestamp

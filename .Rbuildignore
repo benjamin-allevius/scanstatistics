@@ -10,6 +10,7 @@
 vignettes/introduction_cache/*
 vignettes/introduction_files/*
 vignettes/articles/*
+vignettes/.build.timestamp
 cran-comments\.md
 ^docs/*
 NOTES.txt
