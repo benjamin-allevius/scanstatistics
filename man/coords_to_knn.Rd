@@ -11,7 +11,7 @@ coords_to_knn(x, k = min(10, nrow(x)), method = "euclidean", p = 2)
 
 \item{k}{The number of nearest neighbors, counting the location itself.}
 
-\item{method}{the distance measure to be used. This must be one of
+\item{method}{the distance measure to be used.  This must be one of
     \code{"euclidean"}, \code{"maximum"}, \code{"manhattan"},
     \code{"canberra"}, \code{"binary"} or \code{"minkowski"}.
     Any unambiguous substring can be given.}

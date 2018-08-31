@@ -5,7 +5,8 @@
 \title{Calculate the expectation-based ZIP scan statistic.}
 \usage{
 scan_eb_zip(counts, zones, baselines = NULL, probs = NULL,
-  population = NULL, n_mcsim = 0, max_only = FALSE, rel_tol = 0.001)
+  population = NULL, n_mcsim = 0, max_only = FALSE,
+  rel_tol = 0.001)
 }
 \arguments{
 \item{counts}{Either:

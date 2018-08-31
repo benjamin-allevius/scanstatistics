@@ -6,8 +6,8 @@
 \usage{
 scan_bayes_negbin(counts, zones, baselines = NULL, population = NULL,
   outbreak_prob = 0.05, alpha_null = 1, beta_null = 1,
-  alpha_alt = alpha_null, beta_alt = beta_null, inc_values = seq(1, 3, by
-  = 0.1), inc_probs = 1)
+  alpha_alt = alpha_null, beta_alt = beta_null, inc_values = seq(1,
+  3, by = 0.1), inc_probs = 1)
 }
 \arguments{
 \item{counts}{Either:

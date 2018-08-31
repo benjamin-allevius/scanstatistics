@@ -4,8 +4,9 @@
 \alias{scan_bayes_negbin_cpp}
 \title{Calculate the "Bayesian Spatial Scan Statistic" by Neill et al. (2006).}
 \usage{
-scan_bayes_negbin_cpp(counts, baselines, zones, zone_lengths, outbreak_prob,
-  alpha_null, beta_null, alpha_alt, beta_alt, inc_values, inc_probs)
+scan_bayes_negbin_cpp(counts, baselines, zones, zone_lengths,
+  outbreak_prob, alpha_null, beta_null, alpha_alt, beta_alt, inc_values,
+  inc_probs)
 }
 \arguments{
 \item{counts}{An integer matrix (most recent timepoint in first row).}

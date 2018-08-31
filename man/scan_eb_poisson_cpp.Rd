@@ -4,8 +4,8 @@
 \alias{scan_eb_poisson_cpp}
 \title{Calculate the expecation-based Poisson scan statistic.}
 \usage{
-scan_eb_poisson_cpp(counts, baselines, zones, zone_lengths, store_everything,
-  num_mcsim)
+scan_eb_poisson_cpp(counts, baselines, zones, zone_lengths,
+  store_everything, num_mcsim)
 }
 \arguments{
 \item{counts}{An integer matrix (most recent timepoint in first row).}
