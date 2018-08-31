@@ -30,6 +30,8 @@
 #'    relative risk is assumed to increase with the duration of the outbreak.
 #' @param n_mcsim A non-negative integer; the number of replicate scan
 #'    statistics to generate in order to calculate a \eqn{P}-value.
+#' @param gumbel Logical: should a Gumbel P-value be calculated? Default is
+#'    \code{FALSE}.
 #' @param max_only Boolean. If \code{FALSE} (default) the statistic calculated
 #'    for each zone and duration is returned. If \code{TRUE}, only the largest 
 #'    such statistic (i.e. the scan statistic) is returned, along with the 
@@ -103,6 +105,7 @@ scan_eb_negbin <- function(counts,
                            thetas = 1,
                            type = c("hotspot", "emerging"),
                            n_mcsim = 0,
+                           gumbel = FALSE,
                            max_only = FALSE) {
   if (is.data.frame(counts)) {
     # Validate input -----------------------------------------------------------
@@ -160,7 +163,7 @@ scan_eb_negbin <- function(counts,
                score_hotspot = type[1] == "hotspot")
 
   # Run analysis on observed counts --------------------------------------------
-  scan <- run_scan(scan_eb_negbin_cpp, args)
+  scan <- run_scan(scan_eb_negbin_cpp, args, gumbel)
   
   MLC_row <- scan$observed[1, ]
   

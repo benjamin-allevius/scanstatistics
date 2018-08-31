@@ -4,12 +4,15 @@
 \alias{run_scan}
 \title{Run a scan statistic analysis.}
 \usage{
-run_scan(scanstat, args)
+run_scan(scanstat, args, gumbel = FALSE)
 }
 \arguments{
 \item{scanstat}{A scan statistic function.}
 
 \item{args}{A named list of arguments to be passed to \code{scanstat}.}
+
+\item{gumbel}{Logical: should a Gumbel P-value be calculated? Default is
+\code{FALSE}.}
 }
 \value{
 A list with components

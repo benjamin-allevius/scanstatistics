@@ -102,6 +102,8 @@ matrix_to_df <- function(mat, name, locations = NULL, times = NULL) {
 #' Run a scan statistic analysis with the given scan statistic and arguments.
 #' @param scanstat A scan statistic function.
 #' @param args A named list of arguments to be passed to \code{scanstat}.
+#' @param gumbel Logical: should a Gumbel P-value be calculated? Default is
+#'   \code{FALSE}.
 #' @return A list with components
 #'    \describe{
 #'      \item{observed}{The table of observed statistics.}
@@ -110,7 +112,7 @@ matrix_to_df <- function(mat, name, locations = NULL, times = NULL) {
 #'      \item{Gumbel_pvalue}{The Gumbel P-value of the scan statistic.}
 #'    }
 #' @keywords internal
-run_scan <- function(scanstat, args) {
+run_scan <- function(scanstat, args, gumbel = FALSE) {
   scan <- do.call(scanstat, args)
   
   # Extract the most likely cluster (MLC)
@@ -121,8 +123,10 @@ run_scan <- function(scanstat, args) {
   gumbel_pvalue <- NULL
   MC_pvalue <- NULL
   if (nrow(scan$simulated) > 0) {
-    gumbel_pvalue <- gumbel_pvalue(MLC$score, scan$simulated$score, 
-                                   method = "ML")$pvalue
+    if (gumbel) {
+      gumbel_pvalue <- gumbel_pvalue(MLC$score, scan$simulated$score, 
+                                     method = "ML")$pvalue
+    }
     MC_pvalue <- mc_pvalue(MLC$score, scan$simulated$score)
   }
   

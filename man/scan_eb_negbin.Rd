@@ -5,7 +5,8 @@
 \title{Calculate the expectation-based negative binomial scan statistic.}
 \usage{
 scan_eb_negbin(counts, zones, baselines, thetas = 1,
-  type = c("hotspot", "emerging"), n_mcsim = 0, max_only = FALSE)
+  type = c("hotspot", "emerging"), n_mcsim = 0, gumbel = FALSE,
+  max_only = FALSE)
 }
 \arguments{
 \item{counts}{Either:
@@ -41,6 +42,9 @@ relative risk is assumed to increase with the duration of the outbreak.}
 
 \item{n_mcsim}{A non-negative integer; the number of replicate scan
 statistics to generate in order to calculate a \eqn{P}-value.}
+
+\item{gumbel}{Logical: should a Gumbel P-value be calculated? Default is
+\code{FALSE}.}
 
 \item{max_only}{Boolean. If \code{FALSE} (default) the statistic calculated
 for each zone and duration is returned. If \code{TRUE}, only the largest 

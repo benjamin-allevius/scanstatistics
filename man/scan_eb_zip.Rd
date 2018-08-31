@@ -5,7 +5,7 @@
 \title{Calculate the expectation-based ZIP scan statistic.}
 \usage{
 scan_eb_zip(counts, zones, baselines = NULL, probs = NULL,
-  population = NULL, n_mcsim = 0, max_only = FALSE,
+  population = NULL, n_mcsim = 0, gumbel = FALSE, max_only = FALSE,
   rel_tol = 0.001)
 }
 \arguments{
@@ -48,6 +48,9 @@ columns in \code{counts}.}
 
 \item{n_mcsim}{A non-negative integer; the number of replicate scan
 statistics to generate in order to calculate a \eqn{P}-value.}
+
+\item{gumbel}{Logical: should a Gumbel P-value be calculated? Default is
+\code{FALSE}.}
 
 \item{max_only}{Boolean. If \code{FALSE} (default) the log-likelihood ratio
 statistic for each zone and duration is returned. If \code{TRUE}, only the
