@@ -40,7 +40,7 @@ Suggests:
     sp,
     testthat
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 ByteCompile: true
 SystemRequirements: C++11
 LinkingTo: Rcpp, RcppArmadillo
