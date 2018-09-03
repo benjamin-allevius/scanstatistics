@@ -101,7 +101,7 @@
 #' }
 scan_eb_negbin <- function(counts,
                            zones,
-                           baselines,
+                           baselines = NULL,
                            thetas = 1,
                            type = c("hotspot", "emerging"),
                            n_mcsim = 0,
@@ -125,7 +125,7 @@ scan_eb_negbin <- function(counts,
   if (any(as.vector(counts) != as.integer(counts))) {
     stop("counts must be integer")
   }
-  if (any(baselines <= 0)) stop("baselines must be positive")
+  if (!is.null(baselines) && any(baselines <= 0)) stop("baselines must be positive")
   if (any(thetas <= 0)) stop("thetas must be positive")
 
   # Reshape arguments into matrices --------------------------------------------
