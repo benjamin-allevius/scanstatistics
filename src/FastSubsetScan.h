@@ -165,6 +165,23 @@ SubsetAggregation<T>::optimize_locations_quickly(const streamSubset& streams,
   // 3. Sort locations according to priorities.
   // 4. For increasing subsets of priority-ordered locations, compute scores.
   // 5. Return top scoring subset and its score.
+  arma::mat aggregates = aggregatePerLocation(streams, duration);
+  arma::vec priorities = computePriorities(aggregates);
+  arma::uvec indices = arma::sort_index(priorities, "descend");
+  
+  arma::vec locations = m_locations(indices(0));
+  Subset topScorer {locations, streams, duration};
+  double topScore = 0;
+  double score;
+  for (arma::uword ii = 0; ii < indices.n_elem; ++ii) {
+    locations = m_locations(indices.head(i+1));
+    score = computeScore(aggregates.cols(locations));
+    if (score > topScore) {
+      topScore = score;
+      topScorer.locations = locations;
+    }
+  }
+  return std::make_pair(topScorer, topScore);
 }
 
 template <T>
@@ -176,6 +193,23 @@ SubsetAggregation<T>::optimize_streams_quickly(const locationSubset& locations,
   // 3. Sort streams according to priorities.
   // 4. For increasing subsets of priority-ordered streams, compute scores.
   // 5. Return top scoring subset and its score.
+  arma::mat aggregates = aggregatePerStream(locations, duration);
+  arma::vec priorities = computePriorities(aggregates);
+  arma::uvec indices = arma::sort_index(priorities, "descend");
+  
+  arma::vec streams = m_streams(indices(0));
+  Subset topScorer {locations, streams, duration};
+  double topScore = 0;
+  double score;
+  for (arma::uword ii = 0; ii < indices.n_elem; ++ii) {
+    streams = m_streams(indices.head(i+1));
+    score = computeScore(aggregates.cols(streams));
+    if (score > topScore) {
+      topScore = score;
+      topScorer.streams = streams;
+    }
+  }
+  return std::make_pair(topScorer, topScore);
 }
 
 template <T>
@@ -184,6 +218,7 @@ SubsetAggregation<T>::optimize_streams_naively();
   // For each stream subset and duration:
   //   1. Run Algorithm 1 (optimize_locations_quickly).
   //   2. Return top scoring subset and its score.
+  
 }
 
 template <T>
