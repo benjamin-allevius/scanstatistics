@@ -5,6 +5,7 @@
 * Removed unneeded internal functions that caused package to not be loaded.
 * Added `CITATION` file with updated citation for the package.
 * Fixes to multiple bugs found by Kelly Reeve.
+* Added functionality to function `top_clusters`.
 
 # scanstatistics 1.0.1
 

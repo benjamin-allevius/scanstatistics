@@ -4,7 +4,7 @@
 \alias{scan_eb_negbin}
 \title{Calculate the expectation-based negative binomial scan statistic.}
 \usage{
-scan_eb_negbin(counts, zones, baselines, thetas = 1,
+scan_eb_negbin(counts, zones, baselines = NULL, thetas = 1,
   type = c("hotspot", "emerging"), n_mcsim = 0, gumbel = FALSE,
   max_only = FALSE)
 }

@@ -4,7 +4,8 @@
 \alias{top_clusters}
 \title{Get the top (non-overlappig) clusters.}
 \usage{
-top_clusters(x, zones, k = 5, overlapping = FALSE)
+top_clusters(x, zones, k = 5, overlapping = FALSE, gumbel = FALSE,
+  alpha = NULL, ...)
 }
 \arguments{
 \item{x}{An object of class scanstatistics.}
@@ -15,10 +16,19 @@ top_clusters(x, zones, k = 5, overlapping = FALSE)
 
 \item{overlapping}{Logical; should the top clusters be allowed to overlap in
 the spatial dimension? The default is \code{FALSE}.}
+
+\item{gumbel}{Logical; should a Gumbel P-value be calculated? The default is 
+\code{FALSE}.}
+
+\item{alpha}{A significance level, which if not \code{NULL} will be used to
+calculate a critical value for the statistics in the table.}
+
+\item{...}{Parameters passed to \code{\link[stats]{quantile}}.}
 }
 \value{
-A \code{tibble} with at most \eqn{k} rows, with columns 
-   \code{zone, duration, score}.
+A data frame with at most \eqn{k} rows, with columns 
+   \code{zone, duration, score} and possibly \code{MC_pvalue, Gumbel_pvalue}
+   and \code{critical_value}.
 }
 \description{
 Get the top \eqn{k} space-time clusters according to the statistic calculated
@@ -31,7 +41,7 @@ any locations in common.
 set.seed(1)
 counts <- matrix(rpois(15, 3), 3, 5)
 zones <- list(1:2, 1:3, 2:5, c(1, 3), 4:5, c(1, 5))
-scanres <- scan_permutation(counts, zones)
+scanres <- scan_permutation(counts, zones, n_mcsim = 5)
 top_clusters(scanres, zones, k = 4, overlapping = FALSE)
 }
 }
