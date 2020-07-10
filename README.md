@@ -58,15 +58,15 @@ Main functions
 
 ### Zone creation
 
--   **`knn_zones`**: Creates a set of spatial *zones* (groups of locations) to scan for anomalies. Input is a matrix in which rows are the enumerated locations, and columns the k nearest neighbors. To create such a matrix, the following two functions are useful:
-    -   **`coords_to_knn`**: use `stats::dist` to get the k nearest neighbors of each location into a format usable by `knn_zones`.
-    -   **`dist_to_knn`**: use an already computed distance matrix to get the k nearest neighbors of each location into a format usable by `knn_zones`.
+-   **`knn_zones`**: Creates a set of spatial *zones* (groups of locations) to scan for anomalies. Input is a matrix in which rows are the enumerated locations, and columns the $k$ nearest neighbors. To create such a matrix, the following two functions are useful:
+    -   **`coords_to_knn`**: use `stats::dist` to get the $k$ nearest neighbors of each location into a format usable by `knn_zones`.
+    -   **`dist_to_knn`**: use an already computed distance matrix to get the $k$ nearest neighbors of each location into a format usable by `knn_zones`.
 -   **`flexible_zones`**: An alternative to `knn_zones` that uses the adjacency structure of locations to create a richer set of zones. The additional input is an adjacency matrix, but otherwise works as `knn_zones`.
 
 ### Miscellaneous
 
 -   **`score_locations`**: Score each location by how likely it is to have an ongoing anomaly in it. This score is heuristically motivated.
--   **`top_clusters`**: Get the top k space-time clusters, either overlapping or non-overlapping in the spatial dimension.
+-   **`top_clusters`**: Get the top $k$ space-time clusters, either overlapping or non-overlapping in the spatial dimension.
 -   **`df_to_matrix`**: Convert a data frame with data for each location and time point to a matrix with locations along the column dimension and time along the row dimension, with the selected data as values.
 
 Example: Brain cancer in New Mexico
@@ -114,7 +114,7 @@ It should be noted that Cibola county was split from Valencia county in 1981, an
 
 ### A scan statistic for Poisson data
 
-The Poisson distribution is a natural first option when dealing with count data. The *scanstatistics* package provides the two functions `scan_eb_poisson` and `scan_pb_poisson` with this distributional assumption. The first is an expectation-based[1] scan statistic for univariate Poisson-distributed data proposed by Neill et al. (2005), and we focus on this one in the example below. The second scan statistic is the population-based scan statistic proposed by Kulldorff (2001).
+The Poisson distribution is a natural first option when dealing with count data. The *scanstatistics* package provides the two functions `scan_eb_poisson` and `scan_pb_poisson` with this distributional assumption. The first is an expectation-based [1] scan statistic for univariate Poisson-distributed data proposed by Neill et al. (2005), and we focus on this one in the example below. The second scan statistic is the population-based scan statistic proposed by Kulldorff (2001).
 
 #### Using the Poisson scan statistic
 
@@ -280,16 +280,16 @@ Allévius, B., M. Höhle (2017): *An expectation-based space-time scan statistic
 
 Kleinman, K. (2015): *Rsatscan: Tools, Classes, and Methods for Interfacing with SaTScan Stand-Alone Software*, <https://CRAN.R-project.org/package=rsatscan>.
 
-Kulldorff, M., Athas, W. F., Feuer, E. J., Miller, B. A., Key, C. R. (1998): *Evaluating Cluster Alarms: A Space-Time Scan Statistic and Brain Cancer in Los Alamos*, American Journal of Public Health 88 (9), 1377–80.
+Kulldorff, M., Athas, W. F., Feuer, E. J., Miller, B. A., Key, C. R. (1998): *Evaluating Cluster Alarms: A Space-Time Scan Statistic and Brain Cancer in Los Alamos*, American Journal of Public Health 88 (9), 1377–1380. DOI: [10.2105/AJPH.88.9.1377](https://doi.org/10.2105/AJPH.88.9.1377)
 
-Kulldorff, M. (2001), *Prospective time periodic geographical disease surveillance using a scan statistic*, Journal of the Royal Statistical Society, Series A (Statistics in Society), 164, 61–72.
+Kulldorff, M. (2001), *Prospective time periodic geographical disease surveillance using a scan statistic*, Journal of the Royal Statistical Society, Series A (Statistics in Society), 164, 61–72. DOI: [10.1111/1467-985X.00186](https://doi.org/10.1111/1467-985X.00186)
 
-Kulldorff, M., Heffernan, R., Hartman, J., Assunção, R. M., Mostashari, F. (2005): *A space-time permutation scan statistic for disease outbreak detection*, PLoS Medicine, 2 (3), 0216-0224.
+Kulldorff, M., Heffernan, R., Hartman, J., Assunção, R. M., Mostashari, F. (2005): *A space-time permutation scan statistic for disease outbreak detection*, PLoS Medicine, 2 (3), 216-224. DOI: [10.1371/journal.pmed.0020059](https://doi.org/10.1371/journal.pmed.0020059)
 
-Neill, D. B., Moore, A. W., Sabhnani, M., Daniel, K. (2005): *Detection of Emerging Space-Time Clusters*, In Proceedings of the Eleventh ACM SIGKDD International Conference on Knowledge Discovery in Data Mining, 218–27. ACM.
+Neill, D. B., Moore, A. W., Sabhnani, M., Daniel, K. (2005): *Detection of Emerging Space-Time Clusters*, In Proceedings of the Eleventh ACM SIGKDD International Conference on Knowledge Discovery in Data Mining, 218–227. ACM. DOI: [10.1145/1081870.1081897](https://doi.org/10.1145/1081870.1081897)
 
-Neill, D. B., Moore, A. W., Cooper, G. F. (2006): *A Bayesian Spatial Scan Statistic*, Advances in Neural Information Processing Systems 18: Proceedings of the 2005 Conference.
+Neill, D. B., Moore, A. W., Cooper, G. F. (2006): *A Bayesian Spatial Scan Statistic*, Advances in Neural Information Processing Systems 18: Proceedings of the 2005 Conference. Available at http://papers.nips.cc/paper/2819-a-bayesian-spatial-scan-statistic.pdf
 
-Tango, T., Takahashi, K. Kohriyama, K. (2011), *A Space-Time Scan Statistic for Detecting Emerging Outbreaks*, Biometrics 67 (1), 106–15.
+Tango, T., Takahashi, K., Kohriyama, K. (2011), *A Space-Time Scan Statistic for Detecting Emerging Outbreaks*, Biometrics 67 (1), 106–115. DOI: [10.1111/j.1541-0420.2010.01412.x](https://doi.org/10.1111/j.1541-0420.2010.01412.x)
 
 [1] Expectation-based scan statistics use past non-anomalous data to estimate distribution parameters, and then compares observed cluster counts from the time period of interest to these estimates. In contrast, *population-based* scan statistics compare counts in a cluster to those outside, only using data from the period of interest, and does so conditional on the observed total count.
